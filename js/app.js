@@ -410,8 +410,9 @@ function fitBackTitle() {
   let fs = 28;
   el.style.fontSize = fs + 'px';
   el.style.lineHeight = '0.9';
-  const mW = wrap.clientWidth - 10;
-  while (el.scrollWidth > mW && fs > 8) {
+  const mW = wrap.clientWidth  - 10;
+  const mH = wrap.clientHeight * 0.26; // max ~26% of label height for title
+  while ((el.scrollWidth > mW || el.scrollHeight > mH) && fs > 7) {
     el.style.fontSize = (--fs) + 'px';
   }
 }
@@ -485,7 +486,7 @@ function pB() {
     '.tx{font-size:5pt;font-weight:600}',
     '.pg{font-size:6pt;font-weight:700}'
   ].join('');
-  const fitScript2 = '<scr'+'ipt>window.onload=function(){var ti=document.getElementById("ti-el");if(!ti)return;var L=document.querySelector(".L"),mW=L.offsetWidth-14,fs=20,i=0;ti.style.fontSize=fs+"pt";while(ti.scrollWidth>mW&&fs>6&&i++<100){ti.style.fontSize=(--fs)+"pt";}setTimeout(function(){window.print();window.close();},400);};<\/scr'+'ipt>';
+  const fitScript2 = '<scr'+'ipt>window.onload=function(){var ti=document.getElementById("ti-el");if(!ti)return;var L=document.querySelector(".L"),mW=L.offsetWidth-14,mH=L.offsetHeight*0.26,fs=20,i=0;ti.style.fontSize=fs+"pt";while((ti.scrollWidth>mW||ti.scrollHeight>mH)&&fs>4&&i++<150){ti.style.fontSize=(--fs)+"pt";}setTimeout(function(){window.print();window.close();},400);};<\/scr'+'ipt>';
   const body = `<div class="L">
     <div class="ti" id="ti-el">${p.n.toUpperCase()}</div>
     <div class="ca">Category - ${p.c || '—'}</div>
