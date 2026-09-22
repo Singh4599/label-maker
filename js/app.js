@@ -45,6 +45,14 @@ function showToast(msg, type = 'success') {
   }, 3500);
 }
 
+/* ─── Mobile Sidebar Toggle ─── */
+function toggleSidebar() {
+  document.body.classList.toggle('sidebar-open');
+}
+function closeSidebar() {
+  document.body.classList.remove('sidebar-open');
+}
+
 /* ─── Clock ─── */
 function updateClock() {
   const now = new Date();
@@ -64,6 +72,7 @@ function setTodayDates() {
 /* ─── Mode Switch ─── */
 function setMode(mode) {
   ST.mode = mode;
+  closeSidebar();
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
   // DB and Excel both use mode-db panel

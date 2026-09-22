@@ -12,6 +12,9 @@
 
   <!-- ══ RED TOP BAR ══ -->
   <header class="top-bar">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="top-bar-left">
       <div class="top-logo-mark">+365<br>SPICERY</div>
       <div class="top-divider"></div>
@@ -79,6 +82,9 @@
         <span>v1.0.0 · Offline Ready</span>
       </div>
     </aside>
+
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
     <!-- ══ MAIN CONTENT ══ -->
     <main class="main">
