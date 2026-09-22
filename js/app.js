@@ -317,8 +317,8 @@ function render() {
 function renderFront() {
   const fp = $('fp'); if (!fp) return;
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
-  const { a, b } = splitName(ST.prod.n);
-  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name">${a}${b ? '<br>' + b : ''}</div></div>`;
+  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div></div>`;
+  requestAnimationFrame(fitFrontName);
 }
 
 function renderBack() {
@@ -326,6 +326,7 @@ function renderBack() {
   if (!ST.prod || ST.vi < 0) { bp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
   const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
   bp.innerHTML = buildBackHTML(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+  requestAnimationFrame(fitBackTitle);
 }
 
 function renderManual() {
@@ -337,8 +338,8 @@ function renderManual() {
     bp.innerHTML = '<span class="emptylbl">Fill in details to preview</span>';
     return;
   }
-  const { a, b } = splitName(mn);
-  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name">${a}${b ? '<br>' + b : ''}</div></div>`;
+  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${mn.toUpperCase()}</div></div>`;
+  requestAnimationFrame(fitFrontName);
   const vg = gn('m-vg');
   if (vg > 0) {
     const p = {
@@ -351,6 +352,7 @@ function renderManual() {
     const v = { d: vd, g: vg, oz: voz, m: gn('m-mrp') };
     const bn = gv('m-bn'), pd = fmtDate(gv('m-pd')), bb = getBBValue('m-bb-sel','m-bb');
     bp.innerHTML = buildBackHTML(p, v, bn, pd, bb);
+    requestAnimationFrame(fitBackTitle);
   } else {
     bp.innerHTML = '<span class="emptylbl">Enter weight (g) to preview back label</span>';
   }
@@ -359,9 +361,8 @@ function renderManual() {
 function buildBackHTML(p, v, bn, pd, bb) {
   const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
   const ns = getNutrition(p);
-  const { a, b: b2 } = splitName(p.n);
   return `<div class="bl-wrap">
-    <div class="bltit">${a}${b2 ? '<br>' + b2 : ''}</div>
+    <div class="bltit" id="bltit-el">${p.n.toUpperCase()}</div>
     <div class="blcat">Category - ${p.c || '—'}</div>
     <hr class="blhr">
     <div class="blsec">INGREDIENTS :-</div>
@@ -386,6 +387,35 @@ function splitName(n) {
   return { a: w.slice(0,m).join(' '), b: w.slice(m).join(' ') };
 }
 
+/* Auto-scale front label name to fit container */
+function fitFrontName() {
+  const el = document.getElementById('fl-name-el');
+  const wrap = el && el.closest('.fl-wrap');
+  if (!el || !wrap) return;
+  let fs = 35;
+  el.style.fontSize = fs + 'px';
+  el.style.lineHeight = '0.9';
+  const mW = wrap.clientWidth  - 20;
+  const mH = wrap.clientHeight - 10;
+  while ((el.scrollWidth > mW || el.scrollHeight > mH) && fs > 9) {
+    el.style.fontSize = (--fs) + 'px';
+  }
+}
+
+/* Auto-scale back label title to fit container */
+function fitBackTitle() {
+  const el = document.getElementById('bltit-el');
+  const wrap = el && el.closest('.bl-wrap');
+  if (!el || !wrap) return;
+  let fs = 28;
+  el.style.fontSize = fs + 'px';
+  el.style.lineHeight = '0.9';
+  const mW = wrap.clientWidth - 10;
+  while (el.scrollWidth > mW && fs > 8) {
+    el.style.fontSize = (--fs) + 'px';
+  }
+}
+
 function getNutrition(p) {
   return [
     ['Energy',(p.e||'—')+'kcal'],['Protein',(p.p||'—')+'g'],
@@ -408,9 +438,13 @@ function pF() {
   if (ST.mode === 'manual') { pname = gv('m-name'); }
   else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = ST.prod.n; }
   if (!pname) { showToast('No product name entered', 'error'); return; }
-  const { a, b } = splitName(pname);
-  const css = '@page{size:65mm 25mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:65mm;height:25mm;background:#fff;overflow:hidden}body{display:flex;align-items:center;justify-content:center}.w{width:65mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 3mm}.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;text-align:center;line-height:0.88;text-transform:uppercase;color:#000;letter-spacing:-0.5pt}';
-  openPrint(css, `<div class="w"><div class="n">${a}${b ? '<br>' + b : ''}</div></div>`);
+  const name = pname.toUpperCase();
+  const css = '@page{size:65mm 25mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:65mm;height:25mm;background:#fff;overflow:hidden}body{display:flex;align-items:center;justify-content:center}.w{width:65mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm}.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;text-align:center;line-height:0.9;text-transform:uppercase;color:#000;letter-spacing:-0.5pt;width:100%;word-break:break-word}';
+  const fitScript = '<scr'+'ipt>window.onload=function(){var el=document.getElementById("pn"),w=el.parentElement,mW=w.offsetWidth-10,mH=w.offsetHeight-6,fs=23,i=0;el.style.fontSize=fs+"pt";while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>5&&i++<100){el.style.fontSize=(fs-=0.5)+"pt";}setTimeout(function(){window.print();window.close();},350);};<\/scr'+'ipt>';
+  const win = window.open('', '_print', 'width=300,height=200');
+  win.document.open();
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head><body><div class="w"><div class="n" id="pn">'+name+'</div></div>'+fitScript+'</body></html>');
+  win.document.close();
 }
 
 function pB() {
@@ -432,13 +466,13 @@ function pB() {
     bn = gv('bn'); pd = fmtDate(gv('pd')); bb = getBBValue('bb-sel','bb');
   }
   const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
-  const ns = getNutrition(p), { a, b: b2 } = splitName(p.n);
+  const ns = getNutrition(p);
   const css = [
     '@page{size:50mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
     'html,body{width:50mm;height:90mm;background:#fff;font-family:Arial,sans-serif}',
     '.L{width:50mm;height:90mm;padding:2mm 3mm 2mm;display:flex;flex-direction:column;color:#000;overflow:hidden}',
-    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:20pt;text-align:center;line-height:0.88;text-transform:uppercase;letter-spacing:-0.5pt;margin-bottom:0.8mm}',
+    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:20pt;text-align:center;line-height:0.88;text-transform:uppercase;letter-spacing:-0.5pt;margin-bottom:0.8mm;word-break:break-word}',
     '.ca{font-size:6pt;text-align:center;font-weight:600;margin-bottom:0.8mm}',
     'hr{border:none;border-top:0.5pt solid #888;margin:0.8mm 0}',
     '.se{font-size:7.5pt;font-weight:700;margin-bottom:0.3mm}',
@@ -451,8 +485,9 @@ function pB() {
     '.tx{font-size:5pt;font-weight:600}',
     '.pg{font-size:6pt;font-weight:700}'
   ].join('');
+  const fitScript2 = '<scr'+'ipt>window.onload=function(){var ti=document.getElementById("ti-el");if(!ti)return;var L=document.querySelector(".L"),mW=L.offsetWidth-14,fs=20,i=0;ti.style.fontSize=fs+"pt";while(ti.scrollWidth>mW&&fs>6&&i++<100){ti.style.fontSize=(--fs)+"pt";}setTimeout(function(){window.print();window.close();},400);};<\/scr'+'ipt>';
   const body = `<div class="L">
-    <div class="ti">${a}${b2 ? '<br>'+b2 : ''}</div>
+    <div class="ti" id="ti-el">${p.n.toUpperCase()}</div>
     <div class="ca">Category - ${p.c || '—'}</div>
     <hr>
     <div class="se">INGREDIENTS :-</div>
@@ -468,7 +503,10 @@ function pB() {
     <div class="tx">(INCL. OF ALL TAXES)</div>
     <div class="pg">FOR 1g = Rs ${pg}</div>
   </div>`;
-  openPrint(css, body);
+  const win2 = window.open('', '_print', 'width=300,height=500');
+  win2.document.open();
+  win2.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head><body>'+body+fitScript2+'</body></html>');
+  win2.document.close();
 }
 
 function openPrint(css, body) {
