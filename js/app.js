@@ -400,7 +400,7 @@ function pF() {
   else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = ST.prod.n; }
   if (!pname) { showToast('No product name entered', 'error'); return; }
   const { a, b } = splitName(pname);
-  const css = '@page{size:65mm 25mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:65mm;height:25mm;background:#fff;overflow:hidden}body{display:flex;align-items:center;justify-content:center}.w{width:65mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1.5mm 4mm}.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:19pt;text-align:center;line-height:0.9;text-transform:uppercase;color:#000;letter-spacing:-0.5pt}';
+  const css = '@page{size:65mm 25mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:65mm;height:25mm;background:#fff;overflow:hidden}body{display:flex;align-items:center;justify-content:center}.w{width:65mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 3mm}.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;text-align:center;line-height:0.88;text-transform:uppercase;color:#000;letter-spacing:-0.5pt}';
   openPrint(css, `<div class="w"><div class="n">${a}${b ? '<br>' + b : ''}</div></div>`);
 }
 
@@ -428,17 +428,17 @@ function pB() {
     '@page{size:50mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
     'html,body{width:50mm;height:90mm;background:#fff;font-family:Arial,sans-serif}',
-    '.L{width:50mm;height:90mm;padding:2.5mm 3mm 2mm;display:flex;flex-direction:column;color:#000;overflow:hidden}',
-    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:16pt;text-align:center;line-height:0.9;text-transform:uppercase;letter-spacing:-0.5pt;margin-bottom:0.8mm}',
+    '.L{width:50mm;height:90mm;padding:2mm 3mm 2mm;display:flex;flex-direction:column;color:#000;overflow:hidden}',
+    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:20pt;text-align:center;line-height:0.88;text-transform:uppercase;letter-spacing:-0.5pt;margin-bottom:0.8mm}',
     '.ca{font-size:6pt;text-align:center;font-weight:600;margin-bottom:0.8mm}',
-    'hr{border:none;border-top:0.5pt solid #888;margin:1mm 0}',
-    '.se{font-size:8pt;font-weight:900;font-family:"Arial Black",Arial,sans-serif;margin-bottom:0.4mm}',
-    '.in{font-size:5.5pt;line-height:1.38;margin-bottom:1.2mm}',
+    'hr{border:none;border-top:0.5pt solid #888;margin:0.8mm 0}',
+    '.se{font-size:7.5pt;font-weight:700;margin-bottom:0.3mm}',
+    '.in{font-size:5.5pt;line-height:1.35;margin-bottom:1mm}',
     '.nt{font-size:7pt;font-weight:900;text-align:center;text-transform:uppercase;font-family:"Arial Black",Arial,sans-serif}',
-    '.ns{font-size:6pt;text-align:center;font-style:italic;font-weight:700;margin-bottom:0.8mm}',
-    '.nb{border:0.7pt solid #000;padding:1mm 1.2mm;font-size:5pt;line-height:1.42;margin-bottom:1.5mm}',
-    '.r{font-size:8.5pt;font-weight:900;font-style:italic;line-height:1.5;font-family:"Arial Black",Arial,sans-serif}',
-    '.mrp{font-size:12pt;font-weight:900;font-style:italic;line-height:1.2;margin-top:0.5mm;font-family:"Arial Black",Arial,sans-serif}',
+    '.ns{font-size:5.5pt;text-align:center;font-style:italic;font-weight:600;margin-bottom:0.6mm}',
+    '.nb{border:0.7pt solid #000;padding:0.8mm 1mm;font-size:5pt;line-height:1.4;margin-bottom:1.2mm}',
+    '.r{font-size:7.5pt;font-weight:700;font-style:normal;line-height:1.45;font-family:Arial,sans-serif}',
+    '.mrp{font-size:11pt;font-weight:900;font-style:normal;line-height:1.2;margin-top:0.4mm;font-family:"Arial Black",Arial,sans-serif}',
     '.tx{font-size:5pt;font-weight:600}',
     '.pg{font-size:6pt;font-weight:700}'
   ].join('');

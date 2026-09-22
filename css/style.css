@@ -350,8 +350,8 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:v
 }
 .fl-name {
   font-family:'Arial Black', Arial, sans-serif; font-weight:900;
-  font-size:29px; color:#000; text-align:center;
-  line-height:.95; text-transform:uppercase; letter-spacing:-1px; width:100%
+  font-size:35px; color:#000; text-align:center;
+  line-height:.88; text-transform:uppercase; letter-spacing:-1px; width:100%
 }
 
 /* Back label preview */
@@ -362,17 +362,17 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:v
   font-family:Arial, sans-serif; flex-shrink:0;
   box-shadow:0 3px 20px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.05)
 }
-.bltit { font-family:'Arial Black',Arial,sans-serif; font-weight:900; font-size:22px; text-align:center; line-height:.95; text-transform:uppercase; letter-spacing:-.5px; margin-bottom:3px }
+.bltit { font-family:'Arial Black',Arial,sans-serif; font-weight:900; font-size:28px; text-align:center; line-height:.88; text-transform:uppercase; letter-spacing:-.5px; margin-bottom:3px }
 .blcat { font-size:8.5px; text-align:center; font-weight:600; margin-bottom:3px }
-.blhr { border:none; border-top:.7px solid #999; margin:3px 0 }
-.blsec { font-size:9.5px; font-weight:900; margin-bottom:1px; font-family:'Arial Black',Arial,sans-serif }
-.blingr { font-size:7px; line-height:1.38; margin-bottom:4px }
+.blhr { border:none; border-top:.7px solid #999; margin:2px 0 }
+.blsec { font-size:9px; font-weight:700; margin-bottom:1px }
+.blingr { font-size:7px; line-height:1.35; margin-bottom:3px }
 .blnt { font-size:8px; font-weight:900; text-align:center; text-transform:uppercase; font-family:'Arial Black',Arial,sans-serif }
-.blns { font-size:7.5px; text-align:center; font-style:italic; font-weight:700; margin-bottom:2px }
-.blnb { border:1.1px solid #000; padding:3px 4px; font-size:6.5px; line-height:1.42; margin-bottom:4px }
-.blsp { height:4px; flex-shrink:0 }
-.blr { font-size:9.5px; font-weight:900; font-style:italic; line-height:1.55; font-family:'Arial Black',Arial,sans-serif }
-.blmrp { font-size:13px; font-weight:900; font-style:italic; line-height:1.2; margin-top:2px; font-family:'Arial Black',Arial,sans-serif }
+.blns { font-size:7px; text-align:center; font-style:italic; font-weight:600; margin-bottom:2px }
+.blnb { border:1.1px solid #000; padding:3px 4px; font-size:6.5px; line-height:1.4; margin-bottom:3px }
+.blsp { height:2px; flex-shrink:0 }
+.blr { font-size:9.5px; font-weight:700; font-style:normal; line-height:1.45; font-family:Arial,sans-serif }
+.blmrp { font-size:13px; font-weight:900; font-style:normal; line-height:1.2; margin-top:2px; font-family:'Arial Black',Arial,sans-serif }
 .bltax { font-size:6.5px; font-weight:600 }
 .blper { font-size:7.5px; font-weight:700 }
 
