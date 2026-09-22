@@ -23,7 +23,27 @@ window.addEventListener('DOMContentLoaded', () => {
   initExcelUpload();
   attachDragDrop();
   setMode('db');
+  // Inject toast container
+  const tc = document.createElement('div');
+  tc.id = 'toast-container';
+  document.body.appendChild(tc);
 });
+
+/* ─── Toast Notifications ─── */
+function showToast(msg, type = 'success') {
+  const tc = document.getElementById('toast-container');
+  if (!tc) return;
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  t.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ'}</span><span class="toast-msg">${msg}</span>`;
+  tc.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('toast-show'));
+  setTimeout(() => {
+    t.classList.remove('toast-show');
+    setTimeout(() => t.remove(), 300);
+  }, 3500);
+}
 
 /* ─── Clock ─── */
 function updateClock() {
@@ -234,7 +254,7 @@ function initExcelUpload() {
         const wb = XLSX.read(e.target.result, { type: 'binary' });
         const ps = wb.SheetNames.find(s => /product/i.test(s));
         const vs = wb.SheetNames.find(s => /variant/i.test(s));
-        if (!ps || !vs) { alert('Excel needs "Products" and "Variants" sheets'); return; }
+        if (!ps || !vs) { showToast('Excel needs "Products" and "Variants" sheets', 'error'); return; }
         const pRows = XLSX.utils.sheet_to_json(wb.Sheets[ps]);
         const vRows = XLSX.utils.sheet_to_json(wb.Sheets[vs]);
         const newP = {}, newV = {};
@@ -257,8 +277,8 @@ function initExcelUpload() {
         if (badge) { badge.innerHTML = `<span>✓ ${count} products loaded from Excel — ready to search</span>`; badge.style.display = 'flex'; }
         const si = $('si'); if (si) { si.disabled = false; si.placeholder = `Search ${count} products...`; }
         clearProduct();
-        alert(`✓ Excel loaded! ${count} products ready.`);
-      } catch (err) { alert('Error reading Excel: ' + err.message); }
+        showToast(`✓ ${count} products loaded from Excel`, 'success');
+      } catch (err) { showToast('Error reading Excel: ' + err.message, 'error'); }
     };
     r.readAsBinaryString(f);
   });
@@ -377,8 +397,8 @@ function clearAll() {
 function pF() {
   let pname;
   if (ST.mode === 'manual') { pname = gv('m-name'); }
-  else { if (!ST.prod) { alert('Select a product first'); return; } pname = ST.prod.n; }
-  if (!pname) { alert('No product name'); return; }
+  else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = ST.prod.n; }
+  if (!pname) { showToast('No product name entered', 'error'); return; }
   const { a, b } = splitName(pname);
   const css = '@page{size:65mm 25mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:65mm;height:25mm;background:#fff;overflow:hidden}body{display:flex;align-items:center;justify-content:center}.w{width:65mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1.5mm 4mm}.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:19pt;text-align:center;line-height:0.9;text-transform:uppercase;color:#000;letter-spacing:-0.5pt}';
   openPrint(css, `<div class="w"><div class="n">${a}${b ? '<br>' + b : ''}</div></div>`);
@@ -387,8 +407,8 @@ function pF() {
 function pB() {
   let p, v, bn, pd, bb;
   if (ST.mode === 'manual') {
-    const mn = gv('m-name'); if (!mn) { alert('Enter product name'); return; }
-    const vg = gn('m-vg'); if (!vg) { alert('Enter weight in grams'); return; }
+    const mn = gv('m-name'); if (!mn) { showToast('Enter product name', 'error'); return; }
+    const vg = gn('m-vg'); if (!vg) { showToast('Enter weight in grams', 'error'); return; }
     p = {
       n: mn, c: gv('m-cat'), i: gv('m-ingr') || '—',
       e:gn('m-e'), p:gn('m-pr'), cb:gn('m-cb'), ts:gn('m-ts'), as:gn('m-as'),
@@ -397,8 +417,8 @@ function pB() {
     v = { d: gv('m-vd') || vg + 'g', g: vg, oz: gv('m-voz') || (vg*0.03527).toFixed(2)+'oz', m: gn('m-mrp') };
     bn = gv('m-bn'); pd = fmtDate(gv('m-pd')); bb = getBBValue('m-bb-sel','m-bb');
   } else {
-    if (!ST.prod) { alert('Select a product first'); return; }
-    if (ST.vi < 0) { alert('Select a pack size'); return; }
+    if (!ST.prod) { showToast('Select a product first', 'error'); return; }
+    if (ST.vi < 0) { showToast('Select a pack size', 'error'); return; }
     p = ST.prod; v = ST.db.v[p.n][ST.vi];
     bn = gv('bn'); pd = fmtDate(gv('pd')); bb = getBBValue('bb-sel','bb');
   }
@@ -447,21 +467,4 @@ function openPrint(css, body) {
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${body}</body></html>`);
   w.document.close();
   setTimeout(() => w.print(), 700);
-}
-
-/* Print Both — opens front window first, then back after short delay */
-function pBoth() {
-  // Validate first
-  let prod, variant, bn, pd, bb;
-  if (ST.mode === 'manual') {
-    if (!document.getElementById('m-name')?.value?.trim()) { alert('Enter product name first'); return; }
-    if (!parseFloat(document.getElementById('m-vg')?.value)) { alert('Enter weight (grams)'); return; }
-  } else {
-    if (!ST.prod) { alert('Select a product first'); return; }
-    if (ST.vi < 0) { alert('Select a pack size first'); return; }
-  }
-  // Fire front
-  pF();
-  // Fire back after 1.2s so print dialogs don't overlap
-  setTimeout(() => pB(), 1200);
 }

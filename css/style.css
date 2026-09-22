@@ -427,6 +427,34 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:v
 .btn-print-both:hover { background:linear-gradient(135deg, #000 0%, #1a1a18 100%); box-shadow:0 4px 20px rgba(0,0,0,.3); transform:translateY(-1px) }
 .btn-print-both:active { transform:translateY(0) }
 
+/* ── Toast Notifications ── */
+#toast-container {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  display:flex; flex-direction:column; gap:10px; pointer-events:none
+}
+.toast {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 18px; border-radius:10px;
+  font-family:var(--font); font-size:13px; font-weight:600;
+  box-shadow:0 4px 24px rgba(0,0,0,.15);
+  opacity:0; transform:translateY(10px) scale(.97);
+  transition:all .28s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:auto; min-width:220px; max-width:340px
+}
+.toast.toast-show { opacity:1; transform:translateY(0) scale(1) }
+.toast-success { background:#fff; border-left:4px solid #22c55e; color:var(--txt) }
+.toast-error   { background:#fff; border-left:4px solid var(--red); color:var(--txt) }
+.toast-info    { background:#fff; border-left:4px solid #3b82f6; color:var(--txt) }
+.toast-icon {
+  width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:900; flex-shrink:0; color:#fff
+}
+.toast-success .toast-icon { background:#22c55e }
+.toast-error   .toast-icon { background:var(--red) }
+.toast-info    .toast-icon { background:#3b82f6 }
+.toast-msg { line-height:1.4 }
+
 /* ── Utils ── */
 .hidden { display:none !important }
 input[type="file"] { display:none }

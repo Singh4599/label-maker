@@ -1,13 +1,28 @@
-# 365 Spicery — Label Maker
+# 365 Spicery — Label Studio
+## Complete Context & Operations Guide
 
-> Internal tool for generating FSSAI-compliant product labels.  
-> Last updated: September 2026
+> **Version:** 1.0.0  
+> **Last Updated:** September 2026  
+> **Built by:** Dhruv Singh / Antigravity AI  
+> **Status:** ✅ Production Ready (demo data) | ⏳ Awaiting final client prices
 
 ---
 
-## What This Is
+## What Is This?
 
-A browser-based label generation tool for 365 Spicery's operations team. No server, no login, no dependencies except SheetJS (loaded via CDN). Open `index.html` and print.
+A browser-based internal label generation tool for 365 Spicery's operations team.
+- No server. No database. No login. No internet required (after first load).
+- Open `index.html` → select product → print labels. Done in 60 seconds.
+- Generates **FSSAI-compliant** front + back labels for thermal printers.
+
+---
+
+## Label Dimensions (Thermal Printer)
+
+| Label | Print Size | Physical Purpose |
+|---|---|---|
+| **Front** | 65 mm × 25 mm | Product name (bold, large) — sticks on front of pouch |
+| **Back** | 50 mm × 90 mm | Full FSSAI info — sticks on back of pouch |
 
 ---
 
@@ -15,109 +30,254 @@ A browser-based label generation tool for 365 Spicery's operations team. No serv
 
 ```
 label-maker/
-├── index.html          ← Main app (HTML structure)
+│
+├── index.html              ← Main app entry point — just open this
 ├── css/
-│   └── style.css       ← All styles (premium light theme)
+│   └── style.css           ← All UI styles (edit here for visual changes)
 ├── js/
-│   ├── data.js         ← 365 Spicery product database (10 products)
-│   └── app.js          ← All application logic
-├── sidebar.png         ← Spice photo for sidebar (white bg)
-├── spice-preview.jpg   ← Preview panel decoration (unused currently)
-├── CONTEXT.md          ← This file
-└── LABLEFRONT.png      ← Reference label design (front)
-    LABLEBACK.png       ← Reference label design (back)
+│   ├── app.js              ← All application logic, rendering, print functions
+│   └── data.js             ← Product database (auto-generated — see below)
+│
+├── build_data.py           ← Script to regenerate data.js from CSV
+│
+├── sidebar.png             ← Spice photo in left sidebar (white bg)
+├── spice-preview.jpg       ← Unused (kept for reference)
+│
+├── TEMPLATE.xlsx           ← Excel upload template (send to client)
+├── TEST_DATA.xlsx          ← Sample Excel for testing upload mode
+│
+├── LABLEFRONT.png          ← Reference design image (front label)
+├── LABLEBACK.png           ← Reference design image (back label)
+├── image.png               ← UI reference image used during design
+│
+└── CONTEXT.md              ← This file
 ```
 
 ---
 
-## Label Dimensions
+## Three Modes — How It Works
 
-| Label | Size | Used For |
-|---|---|---|
-| **Front** | 65 × 25 mm | Product name (bold, large) |
-| **Back** | 50 × 90 mm | Full FSSAI-compliant info |
+### Mode 1: 365 Spicery Data (Default)
+Pre-loaded database of **1,757 products** (auto-generated from `enriched_products.csv`).
+- Search by product name → select → fill batch/dates → print.
+- Data source: `/365 Spicery V2/enriched_products.csv`
+- To regenerate: run `python3 build_data.py` (see Data Management section)
 
----
+### Mode 2: Upload Excel
+Client/team uploads a `.xlsx` file with two sheets:
 
-## Three Modes
-
-### 1. 365 Spicery Data (default)
-Pre-loaded database of all 10 current products. Select product → select pack size → dates auto-fill → print.
-
-### 2. Upload Excel
-Upload a `.xlsx` file with two sheets:
-- **Products** sheet: `Product Name, Category, Ingredients, Icon, Description, Energy_kcal, Protein_g, Carbohydrate_g, Total_Sugars_g, Added_Sugars_g, Total_Fat_g, Saturated_Fat_g, Trans_Fat_g, Cholesterol_mg, Sodium_mg`
-- **Variants** sheet: `Product Name, Weight_Display, Weight_g, Weight_oz, MRP, Batch_No`
-
-### 3. Manual Entry
-Fill in all fields by hand. Useful for one-off or custom products.
-
----
-
-## Pre-loaded Products (data.js)
-
-| Product | Category |
+**Sheet 1 — Products:**
+| Column | Description |
 |---|---|
-| Mexican Seasoning | Seasoning |
-| Pav Bhaji Masala | Blended Spices |
-| Garam Masala | Blended Spices |
-| Turmeric Powder | Single Spices |
-| Kashmiri Chilli Powder | Chilli Powders |
-| Coriander Powder | Single Spices |
-| Cumin Powder | Single Spices |
-| Chaat Masala | Blended Spices |
-| Kitchen King Masala | Blended Spices |
-| Biryani Masala | Blended Spices |
+| Product Name | Exact product name |
+| Category | e.g. Blended Spices, Seasoning |
+| Ingredients | Comma-separated, descending by weight |
+| Icon | Emoji (optional) |
+| Description | Short tagline (optional) |
+| Energy_kcal | Number only |
+| Protein_g | Number only |
+| Carbohydrate_g | Number only |
+| Total_Sugars_g | Number only |
+| Added_Sugars_g | Number only |
+| Total_Fat_g | Number only |
+| Saturated_Fat_g | Number only |
+| Trans_Fat_g | Number only |
+| Cholesterol_mg | Number only |
+| Sodium_mg | Number only |
 
-Each product has:
-- 4 variants: 100g / 200g / 500g / 1 Kg (with MRP and batch prefix)
-- 10 nutritional values (FSSAI required)
-- Ingredient list (descending order by weight)
-
----
-
-## Print Functions
-
-| Button | Action |
+**Sheet 2 — Variants:**
+| Column | Description |
 |---|---|
-| **Print Front** | Opens 65×25mm print window |
-| **Print Back** | Opens 50×90mm print window |
-| **Print Both** | Opens front window, then back window 1.2s later — print both from their dialogs |
+| Product Name | Must match Products sheet exactly |
+| Weight_Display | e.g. 100g, 200g, 500g, 1 Kg |
+| Weight_g | Number (e.g. 100, 200) |
+| Weight_oz | e.g. 3.53oz |
+| MRP | Number only (e.g. 99) |
+| Batch_No | e.g. GM0001 |
 
-> **Tip:** For multiple copies, use the browser's print dialog Copies field.
-
----
-
-## Label Content (Back Label — FSSAI Compliant)
-
-- Product Name (bold, large)
-- Category
-- Ingredients (descending by weight)
-- Nutritional Information table (per 100g)
-- Net Weight + oz equivalent
-- Batch Number
-- Date of Packing (DD/MM/YYYY)
-- Best Before (auto-calculated: 3/6/12/18/24 months or custom date)
-- MRP (incl. all taxes)
-- Per-gram price
+### Mode 3: Manual Entry
+Type everything by hand — for one-off or custom products.
+All 10 nutritional values + ingredients + pack + pricing.
 
 ---
 
-## UI Notes
+## Data Management
 
-- **Theme:** Premium light — warm `#F5F4F0` bg, white sidebar, white preview panel
-- **Top bar:** Red `#C8001E` — 365 Spicery branding
-- **Fonts:** DM Sans (UI), Arial Black (label text — matches thermal printer output)
-- **Sidebar image:** `sidebar.png` — pure white bg spice photo, fades into sidebar
-- **No internet required** after initial Google Fonts load (can be made fully offline by embedding fonts)
+### Regenerating data.js from CSV
+
+When `enriched_products.csv` is updated (new products added, data corrected):
+
+```bash
+cd "/Users/dhruvsingh/Desktop/365 Spicery V2/label-maker"
+python3 build_data.py
+```
+
+This overwrites `js/data.js` with fresh data.
+
+### ⚠️ Current Data Status
+
+| Field | Status |
+|---|---|
+| Product names | ✅ Real (1,757 products from Shopify) |
+| Categories | ✅ Real |
+| Ingredients | ✅ Real (from enriched_products.csv) |
+| Nutritional values | ✅ Real (from enriched_products.csv) |
+| **MRP / Prices** | ❌ PLACEHOLDER (₹0) — **client to provide** |
+| Batch numbers | ⚠️ Auto-generated prefix (XX0001 format) — **client to confirm** |
+| Pack sizes | ⚠️ Fixed (100g/200g/500g/1kg) — **confirm with client** |
+
+### When Client Provides Price Data
+
+**Option A — Update data.js directly:**  
+In `data.js`, find the product and update the `m` value in each variant:
+```js
+{ d: '100g', g: 100, oz: '3.53oz', m: 99,   bn: 'GM0001' },
+{ d: '200g', g: 200, oz: '7.05oz', m: 179,  bn: 'GM0001' },
+{ d: '500g', g: 500, oz: '17.64oz', m: 399, bn: 'GM0001' },
+{ d: '1 Kg', g: 1000, oz: '35.27oz', m: 749, bn: 'GM0001' },
+```
+
+**Option B — Use build_data.py with a prices CSV:**  
+Update `build_data.py` to read a prices file and merge.
+Ask Antigravity AI: *"Add price data from [file] to build_data.py"*
+
+**Option C — Excel Upload mode:**  
+Use Mode 2 (Upload Excel) with the TEMPLATE.xlsx — no code changes needed.
 
 ---
 
-## Known Limitations / Future Ideas
+## Print System
 
-- [ ] Batch No. auto-increment between prints
-- [ ] MRP manual override (currently auto from DB only)
-- [ ] Save/history of recently printed labels
-- [ ] Barcode/QR code on back label
-- [ ] Fully offline mode (embed DM Sans font locally)
-- [ ] Bulk batch — print different products sequentially from a list
+### How Print Windows Work
+
+```
+User clicks "Print Front"
+→ app.js → pF() function
+→ opens new browser window
+→ writes CSS with @page { size: 65mm 25mm }
+→ renders label HTML
+→ auto-triggers window.print() after 700ms
+→ browser print dialog opens
+→ user selects thermal printer → prints
+```
+
+### For Multiple Copies
+Use the browser print dialog's **"Copies"** field. No changes needed in the app.
+
+### Print Functions in app.js
+
+| Function | What it does |
+|---|---|
+| `pF()` | Prints front label (65×25mm) |
+| `pB()` | Prints back label (50×90mm) |
+| `openPrint(css, body)` | Opens print window — shared utility |
+| `buildBackHTML(p, v, bn, pd, bb)` | Builds back label HTML string |
+
+---
+
+## Notifications (Toast System)
+
+All error/success messages use toast notifications (bottom-right corner).
+No `alert()` popups.
+
+| Trigger | Toast Type |
+|---|---|
+| Excel loaded successfully | ✅ Green |
+| Wrong Excel format | ❌ Red |
+| Print without product selected | ❌ Red |
+| Print without pack size | ❌ Red |
+
+To add a toast anywhere in `app.js`:
+```js
+showToast('Your message here', 'success'); // or 'error' or 'info'
+```
+
+---
+
+## Deployment (GitHub + Vercel)
+
+### Current Git Setup
+The `label-maker/` folder has its own standalone git repo (not the parent 365 Spicery V2 repo).
+```bash
+cd "/Users/dhruvsingh/Desktop/365 Spicery V2/label-maker"
+git log --oneline   # see history
+```
+
+### Push Changes to GitHub
+```bash
+cd "/Users/dhruvsingh/Desktop/365 Spicery V2/label-maker"
+git add .
+git commit -m "Describe what changed"
+git push origin main
+```
+
+### Deploy to Vercel
+1. Connect GitHub repo `365-label-studio` to Vercel
+2. Framework: `Other` (static site)
+3. Build command: empty
+4. Output directory: empty
+5. Every `git push` auto-deploys — no manual step needed
+
+### After Updating Data
+```bash
+python3 build_data.py          # regenerate data.js
+git add js/data.js
+git commit -m "Update product database"
+git push                       # auto-deploys to Vercel
+```
+
+---
+
+## Common Tasks — Quick Reference
+
+| Task | How |
+|---|---|
+| Add a new product to database | Edit `enriched_products.csv` → run `build_data.py` → push |
+| Change prices | Edit `m` values in `data.js` → push |
+| Change label layout/design | Edit `css/style.css` (preview section) + `app.js` (buildBackHTML) |
+| Change label print size | Edit `@page{size:...}` inside `pF()` or `pB()` in `app.js` |
+| Change brand copy/text | Edit `index.html` directly |
+| Add a new pack size | Add to `make_variants()` in `build_data.py` + re-run |
+| Change sidebar image | Replace `sidebar.png` with new file (same name) |
+| Test Excel upload | Use `TEST_DATA.xlsx` — drag it into the Excel upload area |
+
+---
+
+## UI Structure (index.html)
+
+```
+<body>
+  <header class="top-bar">       ← Red top bar (logo, tagline, clock, avatar)
+  <div class="app-wrap">
+    <aside class="sidebar">      ← Left sidebar (nav, spice photo)
+    <main class="main">          ← Center form area
+      <div class="main-header">  ← "LABEL MAKER" heading
+      <div class="main-body">
+        <div id="mode-db">       ← DB + Excel mode form
+        <div id="mode-manual">   ← Manual entry form
+    <aside class="preview-panel"> ← Right panel (live preview + print buttons)
+      <div id="fp">              ← Front label preview target
+      <div id="bp">              ← Back label preview target
+```
+
+---
+
+## Known Limitations & Future Ideas
+
+- [ ] **Prices** — Currently ₹0 placeholder — awaiting client data
+- [ ] **Batch auto-increment** — Currently manual — could auto-count
+- [ ] **MRP override** — DB mode doesn't allow price edit — add input field
+- [ ] **Manufacturer address** — Not on label — add if FSSAI requires
+- [ ] **FSSAI License No.** — Not on label — add per requirement
+- [ ] **Barcode/QR** — Not implemented — future enhancement
+- [ ] **Offline fonts** — DM Sans loaded from Google CDN — embed locally for full offline
+- [ ] **Bulk print queue** — Select multiple products, print all labels in sequence
+
+---
+
+## Contact / Built With
+
+- **Project:** 365 Spicery Internal Tools
+- **Tool:** Antigravity AI (Google DeepMind)
+- **Stack:** Vanilla HTML + CSS + JavaScript (zero frameworks)
+- **Data source:** `enriched_products.csv` (Shopify product export → enriched)
