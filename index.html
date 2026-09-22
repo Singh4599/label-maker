@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>365 Spicery — Label Studio</title>
+  <meta name="description" content="365 Spicery internal label maker — FSSAI-compliant labels in seconds">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <!-- ══ RED TOP BAR ══ -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <div class="top-logo-mark">+365<br>SPICERY</div>
+      <div class="top-divider"></div>
+      <div>
+        <div class="top-studio-title">LABEL STUDIO</div>
+        <div class="top-studio-sub">Internal Operations</div>
+      </div>
+    </div>
+    <div class="top-bar-center">
+      <div class="top-tagline">Real Spices. Real Impact.</div>
+    </div>
+    <div class="top-bar-right">
+      <div>
+        <div class="top-date" id="dt-date"></div>
+        <div class="top-time" id="dt-time"></div>
+      </div>
+      <div class="top-avatar">DS</div>
+    </div>
+  </header>
+
+  <div class="app-wrap">
+
+    <!-- ══ DARK SIDEBAR ══ -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-dot">
+          <svg viewBox="0 0 20 20" fill="white"><circle cx="10" cy="10" r="5"/></svg>
+        </div>
+        <div>
+          <div class="logo-name">365 Spicery</div>
+          <div class="logo-sub">Label Studio</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item" data-mode="db" onclick="setMode('db')">
+          <div class="nav-icon">🌶️</div>
+          <div>
+            <span class="nav-title">365 Spicery Data</span>
+            <span class="nav-sub">10 pre-loaded products</span>
+          </div>
+        </button>
+        <button class="nav-item" data-mode="excel" onclick="setMode('excel')">
+          <div class="nav-icon">📊</div>
+          <div>
+            <span class="nav-title">Upload Excel</span>
+            <span class="nav-sub">Custom .xlsx file</span>
+          </div>
+        </button>
+        <button class="nav-item" data-mode="manual" onclick="setMode('manual')">
+          <div class="nav-icon">✏️</div>
+          <div>
+            <span class="nav-title">Manual Entry</span>
+            <span class="nav-sub">Type all details</span>
+          </div>
+        </button>
+      </nav>
+
+      <div class="sidebar-deco">
+        <img src="sidebar.png" alt="Indian Spices">
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="status-dot"></div>
+        <span>v1.0.0 · Offline Ready</span>
+      </div>
+    </aside>
+
+    <!-- ══ MAIN CONTENT ══ -->
+    <main class="main">
+      <div class="main-header">
+        <div class="hd-top">
+          <div>
+            <div class="hd-eyebrow">365 Spicery</div>
+            <div class="hd-title">LABEL MAKER</div>
+            <div class="hd-sub">Select · Preview · Print · Done</div>
+          </div>
+          <div class="hd-right">
+            <div class="hd-tagline">CRAFT EVERY<br>LABEL. PERFECT<br>EVERY TIME.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-body">
+
+        <!-- MODE: DB + Excel -->
+        <div class="mode-panel" id="mode-db">
+
+          <!-- Excel upload strip (hidden unless excel mode) -->
+          <div id="excel-strip" class="step-card" style="display:none">
+            <div class="step-head">
+              <div class="step-num" style="background:#1a7c4b;font-size:16px">📊</div>
+              <div>
+                <div class="step-title-text">Load Excel File</div>
+                <div class="step-desc">Upload .xlsx with Products + Variants sheets</div>
+              </div>
+            </div>
+            <div class="excel-upload-area" id="excel-drop-area" onclick="document.getElementById('ef').click()">
+              <div class="upload-icon">📁</div>
+              <div class="upload-text">Drop .xlsx here or click to choose</div>
+              <button class="upload-btn" type="button" onclick="event.stopPropagation();document.getElementById('ef').click()">Browse File</button>
+              <div class="upload-hint">
+                Sheet 1 — <strong>Products</strong>: Product Name, Category, Ingredients, Energy_kcal, Protein_g, Carbohydrate_g, Total_Sugars_g, Added_Sugars_g, Total_Fat_g, Saturated_Fat_g, Trans_Fat_g, Cholesterol_mg, Sodium_mg<br>
+                Sheet 2 — <strong>Variants</strong>: Product Name, Weight_Display, Weight_g, Weight_oz, MRP, Batch_No
+              </div>
+            </div>
+            <div id="excel-badge" class="excel-loaded-badge" style="display:none"></div>
+            <input type="file" id="ef" accept=".xlsx,.xls">
+          </div>
+
+          <!-- Step 01 -->
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">01</div>
+              <div>
+                <div class="step-title-text">Select Product</div>
+                <div class="step-desc" id="step1-desc">Search from our 365 Spicery product library</div>
+              </div>
+            </div>
+            <div class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input type="text" id="si" placeholder="Search products, masalas, seasonings..." autocomplete="off">
+              <button id="si-clear" title="Clear">✕</button>
+              <div id="drop" class="dropdown"></div>
+            </div>
+            <div id="product-card" class="product-card"></div>
+          </div>
+
+          <!-- Step 02 -->
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">02</div>
+              <div>
+                <div class="step-title-text">Select Pack Size</div>
+                <div class="step-desc">Choose the weight variant for this label</div>
+              </div>
+            </div>
+            <div id="pack-btns" class="pack-btns">
+              <span style="font-size:12px;color:var(--muted);font-style:italic">Select a product first</span>
+            </div>
+          </div>
+
+          <!-- Step 03 -->
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">03</div>
+              <div>
+                <div class="step-title-text">Batch &amp; Dates</div>
+                <div class="step-desc">Enter batch number and packing dates</div>
+              </div>
+            </div>
+            <div class="fields-row">
+              <div class="field">
+                <label for="bn">Batch No.</label>
+                <input type="text" id="bn" placeholder="e.g. BM0001">
+              </div>
+              <div class="field">
+                <label for="pd">Date of Packing</label>
+                <input type="date" id="pd">
+              </div>
+              <div class="field">
+                <label>Best Before</label>
+                <select id="bb-sel">
+                  <option value="3">3 Months</option>
+                  <option value="6">6 Months</option>
+                  <option value="12" selected>12 Months</option>
+                  <option value="18">18 Months</option>
+                  <option value="24">24 Months</option>
+                  <option value="custom">Custom Date</option>
+                </select>
+                <input type="date" id="bb" class="hidden" style="margin-top:6px">
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 04 -->
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">04</div>
+              <div>
+                <div class="step-title-text">Price <span style="font-weight:500;font-size:10px;letter-spacing:.04em;color:var(--muted)">(FROM DATABASE)</span></div>
+                <div class="step-desc">MRP auto-filled from product database</div>
+              </div>
+            </div>
+            <div class="mrp-row">
+              <div class="mrp-value" id="mrp-val"></div>
+              <div class="mrp-note" id="per-g" style="margin-left:10px"></div>
+            </div>
+          </div>
+
+        </div><!-- /mode-db -->
+
+
+        <!-- MODE: Manual Entry -->
+        <div class="mode-panel" id="mode-manual">
+
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">01</div>
+              <div>
+                <div class="step-title-text">Product Details</div>
+                <div class="step-desc">Enter product name, category and ingredients</div>
+              </div>
+            </div>
+            <div class="manual-grid">
+              <div class="field manual-full">
+                <label>Product Name *</label>
+                <input type="text" id="m-name" placeholder="e.g. Biryani Masala" oninput="manualRender()">
+              </div>
+              <div class="field">
+                <label>Category</label>
+                <input type="text" id="m-cat" placeholder="e.g. Blended Spices" oninput="manualRender()">
+              </div>
+              <div class="field manual-full">
+                <label>Ingredients (comma separated, descending order by weight)</label>
+                <textarea id="m-ingr" placeholder="e.g. Coriander, Cumin, Red Chilli, Black Pepper, Salt..." oninput="manualRender()"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">02</div>
+              <div>
+                <div class="step-title-text">Nutritional Values</div>
+                <div class="step-desc">Per 100g approximate composition</div>
+              </div>
+            </div>
+            <div class="nutri-grid">
+              <div class="field"><label>Energy (kcal)</label><input type="number" id="m-e" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Protein (g)</label><input type="number" id="m-pr" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Carbohydrate (g)</label><input type="number" id="m-cb" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Total Sugars (g)</label><input type="number" id="m-ts" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Added Sugars (g)</label><input type="number" id="m-as" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Total Fat (g)</label><input type="number" id="m-tf" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Saturated Fat (g)</label><input type="number" id="m-sf" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Trans Fat (g)</label><input type="number" id="m-tr" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Cholesterol (mg)</label><input type="number" id="m-ch" placeholder="0" oninput="manualRender()"></div>
+              <div class="field"><label>Sodium (mg)</label><input type="number" id="m-so" placeholder="0" oninput="manualRender()"></div>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">03</div>
+              <div>
+                <div class="step-title-text">Pack &amp; Pricing</div>
+                <div class="step-desc">Weight details and MRP</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px">
+              <div class="field"><label>Weight Display</label><input type="text" id="m-vd" placeholder="e.g. 200g" oninput="manualRender()"></div>
+              <div class="field"><label>Weight (grams) *</label><input type="number" id="m-vg" placeholder="200" oninput="manualRender()"></div>
+              <div class="field"><label>Weight (oz)</label><input type="text" id="m-voz" placeholder="7.05oz" oninput="manualRender()"></div>
+              <div class="field"><label>MRP (₹) *</label><input type="number" id="m-mrp" placeholder="299" oninput="manualRender()"></div>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-head">
+              <div class="step-num">04</div>
+              <div>
+                <div class="step-title-text">Batch &amp; Dates</div>
+                <div class="step-desc">Batch number and packing dates</div>
+              </div>
+            </div>
+            <div class="fields-row">
+              <div class="field"><label>Batch No.</label><input type="text" id="m-bn" placeholder="e.g. XX0001" oninput="manualRender()"></div>
+              <div class="field"><label>Date of Packing</label><input type="date" id="m-pd" oninput="manualRender()"></div>
+              <div class="field">
+                <label>Best Before</label>
+                <select id="m-bb-sel" onchange="calcManualBestBefore();manualRender()">
+                  <option value="3">3 Months</option>
+                  <option value="6">6 Months</option>
+                  <option value="12" selected>12 Months</option>
+                  <option value="18">18 Months</option>
+                  <option value="24">24 Months</option>
+                  <option value="custom">Custom Date</option>
+                </select>
+                <input type="date" id="m-bb" class="hidden" style="margin-top:6px" oninput="manualRender()">
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /mode-manual -->
+
+      </div><!-- /main-body -->
+    </main>
+
+    <!-- ══ PREVIEW PANEL ══ -->
+    <aside class="preview-panel">
+      <div class="preview-header">
+        <div class="preview-title">Live Label Preview</div>
+        <div class="preview-subtitle">Exactly how it will be printed · Thermal Printer Ready</div>
+      </div>
+
+      <div class="preview-body">
+        <div class="preview-section">
+          <div class="preview-lbl-head">
+            <div class="preview-lbl-title">Front Label</div>
+            <div class="preview-lbl-size">65 × 25 MM</div>
+          </div>
+          <div class="prevwrap" id="fp">
+            <span class="emptylbl">Select a product to preview</span>
+          </div>
+        </div>
+
+        <div class="preview-section">
+          <div class="preview-lbl-head">
+            <div class="preview-lbl-title">Back Label</div>
+            <div class="preview-lbl-size">50 × 90 MM</div>
+          </div>
+          <div class="prevwrap prevwrap-back" id="bp">
+            <span class="emptylbl">Select product + pack size to preview</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Print buttons -->
+      <div class="print-bar">
+        <div class="print-bar-row">
+          <button class="btn-clear" onclick="clearAll()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
+            </svg>
+            Clear
+          </button>
+          <button class="btn-print-f" onclick="pF()">🖨️ Front — 65×25MM</button>
+          <button class="btn-print-b" onclick="pB()">🖨️ Back — 50×90MM</button>
+        </div>
+      </div>
+    </aside>
+
+  </div><!-- /app-wrap -->
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
