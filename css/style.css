@@ -583,7 +583,7 @@ body.sidebar-open .sidebar-overlay { display:block }
   .nav-title { font-size:13px }
 
   /* Search */
-  #si { font-size:14px; padding:11px 14px }
+  #si { font-size:14px; padding:11px 42px 11px 40px }
 
   /* Category filter — stack on tablet */
   .cat-filter-wrap { flex-wrap:wrap }
