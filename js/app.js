@@ -488,33 +488,24 @@ function pF() {
   const name = pname.toUpperCase();
 
   /* ── FRONT LABEL: 65mm × 25mm ──
-   * TSC printer loads 25mm-wide roll, 65mm label length (feed direction).
-   * @page must be PORTRAIT (25mm W × 65mm H) to match printer's native orientation.
-   * Content (.w) is a 65mm×25mm div, pre-rotated -90° (CCW) around its centre.
-   * Centre of .w on the page = (12.5mm, 32.5mm) = centre of 25×65mm page.
-   * ∴  left = 12.5 - 32.5 = -20mm,  top = 32.5 - 12.5 = 20mm  ✓
-   * After rotation the visual footprint is exactly 25mm×65mm — no clipping. */
+   * Label roll is physically 65mm wide, feeding 25mm at a time (Landscape).
+   * We output a pure 65x25mm box. No CSS rotation needed. */
   const css = [
-    '@page{size:25mm 65mm;margin:0}',
+    '@media print { @page { size:65mm 25mm; margin:0; } }',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html{width:25mm;height:65mm}',
-    'body{width:25mm;height:65mm;margin:0;background:#fff;position:relative;overflow:hidden}',
-    '.w{position:absolute;left:-20mm;top:20mm;width:65mm;height:25mm;',
-      'transform:rotate(-90deg);transform-origin:center center;',
-      'display:flex;align-items:center;justify-content:center;padding:1mm 2mm}',
+    'html,body{width:65mm;height:25mm;margin:0;padding:0;background:#fff;overflow:hidden}',
+    '.w{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:1mm 2mm}',
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;',
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;',
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}'
   ].join('');
 
-  /* JS auto-scaler runs BEFORE print dialog.
-   * Measures .w in its UNROTATED dimensions (65mm×25mm) — CSS transform
-   * does not affect offsetWidth / offsetHeight, so measurements are correct. */
+  /* JS auto-scaler runs BEFORE print dialog. */
   const fitScript = '<scr'+'ipt>window.onload=function(){'+
     'var el=document.getElementById("pn"),'+
         'w=el.parentElement,'+
-        'mW=w.offsetWidth-8,'+   /* ≈ 65mm minus 2×padding */
-        'mH=w.offsetHeight-5,'+  /* ≈ 25mm minus 2×padding */
+        'mW=w.offsetWidth-8,'+
+        'mH=w.offsetHeight-5,'+
         'fs=23,i=0;'+
     'el.style.fontSize=fs+"pt";'+
     'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<120){'+
@@ -554,16 +545,12 @@ function pB() {
   const ns = getNutrition(p);
 
   /* ── BACK LABEL: 50mm × 90mm ──
-   * TSC printer loads 50mm-wide roll, 90mm label length (feed direction).
-   * @page is PORTRAIT (50mm W × 90mm H) — already portrait, NO rotation needed.
-   * Usable height ≈ 88mm (90 − 2mm top−bottom padding).
-   * Content budget: title≤18mm + cat2mm + hr2mm + ingr-hdr3mm + ingr8mm
-   *   + nt3mm + ns2mm + box14mm + 4×detail-rows12mm + mrp5mm + tax2mm + pg2mm = ≈73mm ✓ */
+   * Label roll is 50mm wide, feeding 90mm at a time (Portrait). */
   const css = [
-    '@page{size:50mm 90mm;margin:0}',
+    '@media print { @page { size:50mm 90mm; margin:0; } }',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:50mm;height:90mm;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
-    '.L{width:50mm;height:90mm;padding:2mm 3mm;display:flex;flex-direction:column;color:#000}',
+    'html,body{width:50mm;height:90mm;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
+    '.L{width:100%;height:100%;padding:2mm 3mm;display:flex;flex-direction:column;color:#000}',
     /* Title: auto-scaled by JS, starts at 15pt, max height 20% of label (18mm) */
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:15pt;',
       'text-align:center;line-height:0.9;text-transform:uppercase;',
