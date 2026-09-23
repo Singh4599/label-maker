@@ -550,42 +550,47 @@ function pB() {
     '@media print { @page { size:50mm 90mm; margin:0; } }',
     '*{margin:0;padding:0;box-sizing:border-box}',
     'html,body{width:50mm;height:90mm;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
-    '.L{width:100%;height:100%;padding:2mm 3mm;display:flex;flex-direction:column;color:#000}',
-    /* Title: auto-scaled by JS, starts at 15pt, max height 20% of label (18mm) */
-    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:15pt;',
+    '.L{width:100%;height:100%;padding:2mm 3mm;display:flex;flex-direction:column;color:#000;font-size:10pt}',
+    '#inL{width:100%;display:flex;flex-direction:column}',
+    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.5em;',
       'text-align:center;line-height:0.9;text-transform:uppercase;',
-      'letter-spacing:-0.3pt;margin-bottom:0.8mm;word-break:break-word}',
-    '.ca{font-size:6pt;text-align:center;font-weight:600;margin-bottom:0.8mm}',
-    'hr{border:none;border-top:0.5pt solid #888;margin:0.8mm 0}',
-    '.se{font-size:7.5pt;font-weight:700;margin-bottom:0.3mm}',
-    '.in{font-size:5.5pt;line-height:1.3;margin-bottom:0.8mm}',
-    '.nt{font-size:7pt;font-weight:900;text-align:center;text-transform:uppercase;',
+      'letter-spacing:-0.03em;margin-bottom:0.2em;word-break:break-word}',
+    '.ca{font-size:0.6em;text-align:center;font-weight:600;margin-bottom:0.4em}',
+    'hr{border:none;border-top:0.5pt solid #888;margin:0.3em 0}',
+    '.se{font-size:0.75em;font-weight:700;margin-bottom:0.1em}',
+    '.in{font-size:0.55em;line-height:1.3;margin-bottom:0.4em}',
+    '.nt{font-size:0.7em;font-weight:900;text-align:center;text-transform:uppercase;',
       'font-family:"Arial Black",Arial,sans-serif}',
-    '.ns{font-size:5pt;text-align:center;font-style:italic;font-weight:600;margin-bottom:0.5mm}',
-    '.nb{border:0.7pt solid #000;padding:0.8mm 1mm;font-size:4.8pt;line-height:1.35;margin-bottom:1mm}',
-    '.r{font-size:7pt;font-weight:700;line-height:1.4;font-family:Arial,sans-serif}',
-    '.mrp{font-size:10pt;font-weight:900;line-height:1.2;margin-top:0.3mm;',
+    '.ns{font-size:0.5em;text-align:center;font-style:italic;font-weight:600;margin-bottom:0.2em}',
+    '.nb{border:0.7pt solid #000;padding:0.4em;font-size:0.48em;line-height:1.35;margin-bottom:0.5em}',
+    '.r{font-size:0.7em;font-weight:700;line-height:1.4;font-family:Arial,sans-serif}',
+    '.mrp{font-size:1.0em;font-weight:900;line-height:1.2;margin-top:0.1em;',
       'font-family:"Arial Black",Arial,sans-serif}',
-    '.tx{font-size:4.8pt;font-weight:600}',
-    '.pg{font-size:5.8pt;font-weight:700}'
+    '.tx{font-size:0.48em;font-weight:600}',
+    '.pg{font-size:0.58em;font-weight:700}'
   ].join('');
 
-  /* JS scaler for title: shrinks font until title fits ≤20% of label height */
+  /* JS scaler for entire back label: auto-adjusts base font size to fill height */
   const fitScript2 = '<scr'+'ipt>window.onload=function(){'+
-    'var ti=document.getElementById("ti-el");if(!ti)return;'+
     'var L=document.querySelector(".L"),'+
-        'mW=L.offsetWidth-16,'+   /* 50mm minus 2×3mm padding and 1mm extra */
-        'mH=L.offsetHeight*0.20,'+ /* max 20% of 90mm = 18mm for title */
-        'fs=15,i=0;'+
-    'ti.style.fontSize=fs+"pt";'+
-    'while((ti.scrollWidth>mW||ti.scrollHeight>mH)&&fs>4&&i++<150){'+
-      'ti.style.fontSize=(--fs)+"pt";'+
+        'inL=document.getElementById("inL"),'+
+        'mH=L.offsetHeight-15,'+ /* usable height ≈ 90mm - 4mm padding */
+        'fs=10,i=0;'+
+    'while(inL.scrollHeight<=mH && fs<25 && i++<150){'+
+      'fs+=0.2; L.style.fontSize=fs+"pt";'+
     '}'+
-    'setTimeout(function(){window.print();},600);'+ /* 600ms: fonts + layout settle */
+    'i=0;'+
+    'while(inL.scrollHeight>mH && fs>4 && i++<150){'+
+      'fs-=0.2; L.style.fontSize=fs+"pt";'+
+    '}'+
+    'inL.style.height="100%";'+
+    'inL.style.justifyContent="space-between";'+
+    'setTimeout(function(){window.print();},600);'+
   '};<\/scr'+'ipt>';
 
   const body =
     '<div class="L">'+
+    '<div id="inL">'+
     '<div class="ti" id="ti-el">'+p.n.toUpperCase()+'</div>'+
     '<div class="ca">Category - '+(p.c||'—')+'</div>'+
     '<hr>'+
@@ -601,7 +606,7 @@ function pB() {
     '<div class="mrp">MRP : ₹ '+mrp+'/-</div>'+
     '<div class="tx">(INCL. OF ALL TAXES)</div>'+
     '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
-    '</div>';
+    '</div></div>';
 
   const win2 = window.open('', '_back_print', 'width=200,height=360');
   win2.document.open();
