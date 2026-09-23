@@ -491,7 +491,7 @@ function pF() {
    * Label roll is physically 65mm wide, feeding 25mm at a time (Landscape).
    * We output a pure 65x25mm box. No CSS rotation needed. */
   const css = [
-    '@page{size:65mm 25mm landscape;margin:0}',
+    '@page{size:65mm 25mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
     'html,body{width:65mm;height:25mm;margin:0;padding:0;background:#fff;overflow:hidden}',
     '.w{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:1mm 2mm}',
@@ -547,7 +547,7 @@ function pB() {
   /* ── BACK LABEL: 50mm × 90mm ──
    * Label roll is 50mm wide, feeding 90mm at a time (Portrait). */
   const css = [
-    '@page{size:50mm 90mm portrait;margin:0}',
+    '@page{size:50mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
     'html,body{width:50mm;height:90mm;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
     '.L{width:100%;height:100%;padding:2mm 3mm;display:flex;flex-direction:column;color:#000}',
