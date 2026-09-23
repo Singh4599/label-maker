@@ -137,6 +137,12 @@
                 <div class="step-desc" id="step1-desc">Search from our 365 Spicery product library</div>
               </div>
             </div>
+            <div class="cat-filter-wrap">
+              <label class="cat-filter-label">Category</label>
+              <select id="cat-sel" onchange="filterByCategory()" class="cat-sel">
+                <option value="">All Categories</option>
+              </select>
+            </div>
             <div class="search-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               <input type="text" id="si" placeholder="Search products, masalas, seasonings..." autocomplete="off">

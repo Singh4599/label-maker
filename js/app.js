@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initExcelUpload();
   attachDragDrop();
   setMode('db');
+  populateCategories();
   // Inject toast container
   const tc = document.createElement('div');
   tc.id = 'toast-container';
@@ -108,7 +109,14 @@ function attachSearchListeners() {
     const q = this.value.trim().toLowerCase();
     if (clr) clr.style.display = q ? 'block' : 'none';
     if (!q) { closeDrop(); return; }
-    const hits = Object.keys(ST.db.p).filter(n => n.toLowerCase().includes(q)).slice(0, 20);
+    const catFilter = ($('cat-sel') || {}).value || '';
+    const hits = Object.keys(ST.db.p)
+      .filter(n => {
+        const prod = ST.db.p[n];
+        if (catFilter && prod.c !== catFilter) return false;
+        return n.toLowerCase().includes(q);
+      })
+      .slice(0, 20);
     if (!hits.length) { closeDrop(); return; }
     drop.innerHTML = '';
     hits.forEach(n => {
@@ -286,6 +294,7 @@ function initExcelUpload() {
         if (badge) { badge.innerHTML = `<span>✓ ${count} products loaded from Excel — ready to search</span>`; badge.style.display = 'flex'; }
         const si = $('si'); if (si) { si.disabled = false; si.placeholder = `Search ${count} products...`; }
         clearProduct();
+        populateCategories();
         showToast(`✓ ${count} products loaded from Excel`, 'success');
       } catch (err) { showToast('Error reading Excel: ' + err.message, 'error'); }
     };
@@ -432,15 +441,36 @@ function clearAll() {
   ['bn','pd','bb'].forEach(id => { const el=$(id); if(el) el.value=''; });
   setTodayDates();
 }
+/* ─── Category Filter ─── */
+function populateCategories() {
+  const sel = $('cat-sel'); if (!sel) return;
+  const cats = [...new Set(
+    Object.values(ST.db.p).map(p => p.c).filter(Boolean)
+  )].sort();
+  // Keep first option (All Categories)
+  sel.innerHTML = '<option value="">All Categories</option>';
+  cats.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+}
 
-/* ─── Print Functions ─── */
+function filterByCategory() {
+  // Reset search and product when category changes
+  const si = $('si');
+  if (si) { si.value = ''; si.dispatchEvent(new Event('input')); }
+  closeDrop();
+}
+
+
 function pF() {
   let pname;
   if (ST.mode === 'manual') { pname = gv('m-name'); }
   else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = ST.prod.n; }
   if (!pname) { showToast('No product name entered', 'error'); return; }
   const name = pname.toUpperCase();
-  const css = '@page{size:65mm 25mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:65mm;height:25mm;background:#fff;overflow:hidden}body{display:flex;align-items:center;justify-content:center}.w{width:65mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm}.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;text-align:center;line-height:0.9;text-transform:uppercase;color:#000;letter-spacing:-0.5pt;width:100%;word-break:break-word}';
+  const css = '@page{size:25mm 65mm;margin:0}*{margin:0;padding:0;box-sizing:border-box}html,body{width:25mm;height:65mm;background:#fff;overflow:hidden;position:relative}.w{position:absolute;left:-20mm;top:20mm;width:65mm;height:25mm;transform:rotate(-90deg);transform-origin:center center;display:flex;align-items:center;justify-content:center;padding:1mm 2mm}.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;text-align:center;line-height:0.9;text-transform:uppercase;color:#000;letter-spacing:-0.5pt;width:100%;word-break:break-word}';
   const fitScript = '<scr'+'ipt>window.onload=function(){var el=document.getElementById("pn"),w=el.parentElement,mW=w.offsetWidth-10,mH=w.offsetHeight-6,fs=23,i=0;el.style.fontSize=fs+"pt";while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>5&&i++<100){el.style.fontSize=(fs-=0.5)+"pt";}setTimeout(function(){window.print();window.close();},350);};<\/scr'+'ipt>';
   const win = window.open('', '_print', 'width=300,height=200');
   win.document.open();
@@ -469,10 +499,10 @@ function pB() {
   const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
   const ns = getNutrition(p);
   const css = [
-    '@page{size:50mm 90mm;margin:0}',
+    '@page{size:65mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:50mm;height:90mm;background:#fff;font-family:Arial,sans-serif}',
-    '.L{width:50mm;height:90mm;padding:2mm 3mm 2mm;display:flex;flex-direction:column;color:#000;overflow:hidden}',
+    'html,body{width:65mm;height:90mm;background:#fff;font-family:Arial,sans-serif}',
+    '.L{width:65mm;height:90mm;padding:2mm 4mm 2mm;display:flex;flex-direction:column;color:#000;overflow:hidden}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:20pt;text-align:center;line-height:0.88;text-transform:uppercase;letter-spacing:-0.5pt;margin-bottom:0.8mm;word-break:break-word}',
     '.ca{font-size:6pt;text-align:center;font-weight:600;margin-bottom:0.8mm}',
     'hr{border:none;border-top:0.5pt solid #888;margin:0.8mm 0}',
