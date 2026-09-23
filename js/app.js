@@ -491,7 +491,7 @@ function pF() {
    * Label roll is physically 65mm wide, feeding 25mm at a time (Landscape).
    * We output a pure 65x25mm box. No CSS rotation needed. */
   const css = [
-    '@media print { @page { size:65mm 25mm; margin:0; } }',
+    '@media print { @page { size:65mm 25mm landscape; margin:0; } }',
     '*{margin:0;padding:0;box-sizing:border-box}',
     'html,body{width:65mm;height:25mm;margin:0;padding:0;background:#fff;overflow:hidden}',
     '.w{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:1mm 2mm}',
