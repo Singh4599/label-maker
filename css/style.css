@@ -182,7 +182,8 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:v
 .step-card {
   background:var(--white); border:1px solid var(--border);
   border-radius:var(--r); padding:22px 24px; margin-bottom:12px;
-  box-shadow:var(--shadow-sm); transition:box-shadow .2s
+  box-shadow:var(--shadow-sm); transition:box-shadow .2s;
+  position:relative; overflow:visible
 }
 .step-card:hover { box-shadow:var(--shadow) }
 .step-head { display:flex; align-items:flex-start; gap:14px; margin-bottom:18px }
@@ -197,10 +198,10 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:v
 .step-desc { font-size:11.5px; color:var(--muted); line-height:1.5 }
 
 /* ── Search ── */
-.search-wrap { position:relative; margin-bottom:12px }
+.search-wrap { position:relative; margin-bottom:12px; z-index:20 }
 .search-wrap svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted); width:15px; height:15px }
 #si {
-  width:100%; padding:12px 36px 12px 40px;
+  width:100%; padding:12px 42px 12px 40px;
   border:1.5px solid var(--border); border-radius:var(--r-sm);
   font-family:var(--font); font-size:13.5px; background:var(--bg); color:var(--txt);
   outline:none; transition:all .18s; font-weight:500
@@ -215,7 +216,7 @@ html, body { height:100%; overflow:hidden; font-family:var(--font); background:v
 }
 #si-clear:hover { background:var(--red); color:#fff }
 .dropdown {
-  position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:100;
+  position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:200;
   background:var(--white); border:1.5px solid var(--border); border-radius:var(--r-sm);
   box-shadow:var(--shadow-lg); max-height:220px; overflow-y:auto; display:none
 }
@@ -506,8 +507,11 @@ body.sidebar-open .hamburger span:nth-child(3) { transform:rotate(-45deg) transl
 }
 body.sidebar-open .sidebar-overlay { display:block }
 
+/* Mobile print bar — hidden on desktop */
+.print-bar-mobile { display:none }
+
 /* ══════════════════════════════════════
-   RESPONSIVE — Tablet + Mobile
+   RESPONSIVE — Tablet + Mobile (≤900px)
 ══════════════════════════════════════ */
 @media (max-width: 900px) {
   /* Hamburger visible */
@@ -541,12 +545,12 @@ body.sidebar-open .sidebar-overlay { display:block }
   /* Main — full width */
   .main { flex:1; min-width:0; width:100%; order:1 }
   .main-header { padding:16px 16px 12px }
-  .main-body { padding:0 14px 14px }
+  .main-body { padding:0 14px 120px } /* extra bottom padding for print bar */
   .hd-title { font-size:32px }
   .hd-right { display:none }
   .hd-dots { display:none }
 
-  /* Preview — full width, stacked below form */
+  /* Preview — full width, below form */
   .preview-panel {
     width:100%; border-left:none; border-top:1px solid var(--border);
     flex-shrink:0; max-height:none; order:2
@@ -557,11 +561,22 @@ body.sidebar-open .sidebar-overlay { display:block }
   }
   .preview-section { flex:1; min-width:180px; max-width:320px }
 
-  /* Print bar — full width */
-  .print-bar { padding:12px 14px }
-  .print-bar-row { flex-wrap:wrap }
+  /* Hide desktop print bar, show mobile one */
+  .print-bar-desktop { display:none }
+  .print-bar-mobile {
+    display:block;
+    position:fixed; bottom:0; left:0; right:0; z-index:40;
+    background:var(--white);
+    border-top:2px solid var(--border);
+    box-shadow:0 -4px 20px rgba(0,0,0,.1);
+    padding:10px 14px;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom)) /* iOS home bar */
+  }
+  .print-bar-mobile .print-bar-row {
+    display:flex; gap:8px; align-items:center
+  }
 
-  /* Cards — touch size */
+  /* Cards */
   .step-card { margin-bottom:12px }
   .pack-btn { padding:10px 14px; font-size:12px }
   .nav-item { padding:12px 14px }
@@ -569,9 +584,12 @@ body.sidebar-open .sidebar-overlay { display:block }
 
   /* Search */
   #si { font-size:14px; padding:11px 14px }
+
+  /* Category filter — stack on tablet */
+  .cat-filter-wrap { flex-wrap:wrap }
 }
 
-/* ═══ Phone ═══ */
+/* ═══ Phone (≤580px) ═══ */
 @media (max-width: 580px) {
   /* Top bar — minimal */
   .top-bar { height:46px; padding:0 10px }
@@ -590,44 +608,66 @@ body.sidebar-open .sidebar-overlay { display:block }
   .hd-title { font-size:26px }
   .hd-sub { font-size:10px }
 
-  /* Form areas */
-  .main-body { padding:0 10px 100px }
-  .step-card { padding:12px }
+  /* Form */
+  .main-body { padding:0 10px 120px }
+  .step-card { padding:14px 12px }
 
-  /* Preview */
-  .preview-body {
-    flex-direction:column; align-items:center; padding:12px 10px
+  /* Fields row — stack on phone */
+  .fields-row { flex-direction:column; gap:10px }
+  .field { width:100%; min-width:0 }
+
+  /* Pack buttons — wrap nicely */
+  .pack-btns { gap:6px }
+  .pack-btn { padding:9px 12px; font-size:11.5px }
+
+  /* Category filter */
+  .cat-filter-wrap { flex-direction:column; align-items:flex-start; gap:6px }
+  .cat-sel { width:100% }
+
+  /* Preview hidden on phone — no preview panel */
+  .preview-panel {
+    display:none
   }
-  .preview-section { max-width:100%; min-width:0 }
-  .prevwrap { max-width:100% }
-  .bl-wrap { width:100% }
-  .fl-wrap { max-width:100%; height:auto; min-height:80px }
-  .fl-name { font-size:26px }
-  .bltit { font-size:22px }
 
-  /* Preview — hide on phone, but keep print bar */
-  .preview-panel { 
-    position:static; background:none; border:none;
-    width:0; height:0; overflow:visible; padding:0; margin:0
+  /* Mobile print bar — larger touch targets */
+  .print-bar-mobile {
+    padding:12px 12px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom))
   }
-  .preview-header, .preview-body { display:none }
-
-  /* Print bar — sticky bottom */
-  .print-bar {
-    position:fixed; bottom:0; left:0; right:0; z-index:40;
-    padding:10px 12px;
-    background:var(--white);
-    border-top:1px solid var(--border);
-    box-shadow:0 -2px 12px rgba(0,0,0,.08)
+  .print-bar-mobile .print-bar-row { gap:6px }
+  .btn-clear { padding:11px 10px; font-size:11px; flex-shrink:0 }
+  .btn-print-f, .btn-print-b {
+    flex:1; font-size:11px; padding:11px 6px;
+    text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis
   }
-  .print-bar-row { gap:6px }
-  .btn-clear { padding:9px 10px; font-size:10px }
-  .btn-print-f, .btn-print-b { font-size:10.5px; padding:10px 6px }
 
-  /* Toasts — bottom center */
-  #toast-container { bottom:70px; right:10px; left:10px }
+  /* Mobile print tip */
+  .mobile-print-tip {
+    font-size:10px; color:var(--muted); text-align:center;
+    margin-top:5px; font-style:italic
+  }
+
+  /* Toasts — above print bar */
+  #toast-container { bottom:80px; right:10px; left:10px }
   .toast { min-width:0; max-width:100%; font-size:12px }
 
-  /* Drop-down — full width */
-  #drop { max-height:200px }
+  /* Dropdown */
+  #drop { max-height:220px; overflow-y:auto }
+
+  /* Step numbers smaller */
+  .step-num { width:30px; height:30px; font-size:13px }
+  .step-title-text { font-size:13.5px }
+  .step-desc { font-size:11px }
+
+  /* MRP / Info row */
+  #mrp-val { font-size:22px }
 }
+
+/* ═══ Very small (≤380px) ═══ */
+@media (max-width: 380px) {
+  .hd-title { font-size:22px }
+  .btn-print-f, .btn-print-b { font-size:10px; padding:10px 4px }
+  .pack-btn { font-size:11px; padding:8px 10px }
+}
+
+

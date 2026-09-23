@@ -100,6 +100,26 @@ function setMode(mode) {
   render();
 }
 
+function showDrop(names) {
+  const drop = $('drop'); if (!drop) return;
+  drop.innerHTML = '';
+  names.forEach(n => {
+    const d = document.createElement('div');
+    d.innerHTML = `${ST.db.p[n].icon || '🌿'} &nbsp;${n}`;
+    d.addEventListener('mousedown', e => { e.preventDefault(); pickProduct(n); });
+    drop.appendChild(d);
+  });
+  drop.style.display = names.length ? 'block' : 'none';
+}
+
+function showAllProducts() {
+  const catFilter = ($('cat-sel') || {}).value || '';
+  const all = Object.keys(ST.db.p)
+    .filter(n => !catFilter || ST.db.p[n].c === catFilter)
+    .sort();
+  showDrop(all);
+}
+
 /* ─── Search / Autocomplete ─── */
 function attachSearchListeners() {
   const si = $('si'), drop = $('drop'), clr = $('si-clear');
@@ -118,14 +138,11 @@ function attachSearchListeners() {
       })
       .slice(0, 20);
     if (!hits.length) { closeDrop(); return; }
-    drop.innerHTML = '';
-    hits.forEach(n => {
-      const d = document.createElement('div');
-      d.innerHTML = `${ST.db.p[n].icon || '🌿'} &nbsp;${n}`;
-      d.addEventListener('mousedown', e => { e.preventDefault(); pickProduct(n); });
-      drop.appendChild(d);
-    });
-    drop.style.display = 'block';
+    showDrop(hits);
+  });
+
+  si.addEventListener('focus', function () {
+    if (!this.value.trim()) showAllProducts();
   });
 
   si.addEventListener('blur', () => setTimeout(closeDrop, 150));
@@ -457,10 +474,9 @@ function populateCategories() {
 }
 
 function filterByCategory() {
-  // Reset search and product when category changes
   const si = $('si');
-  if (si) { si.value = ''; si.dispatchEvent(new Event('input')); }
-  closeDrop();
+  if (si) { si.value = ''; si.focus(); }
+  showAllProducts();
 }
 
 

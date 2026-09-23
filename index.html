@@ -342,8 +342,8 @@
         </div>
       </div>
 
-      <!-- Print buttons -->
-      <div class="print-bar">
+      <!-- Print buttons (desktop — inside preview) -->
+      <div class="print-bar print-bar-desktop">
         <div class="print-bar-row">
           <button class="btn-clear" onclick="clearAll()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -356,6 +356,21 @@
         </div>
       </div>
     </aside>
+
+    <!-- Print bar (mobile only — sticky bottom of screen) -->
+    <div class="print-bar-mobile">
+      <div class="print-bar-row">
+        <button class="btn-clear" onclick="clearAll()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
+          </svg>
+          Clear
+        </button>
+        <button class="btn-print-f" onclick="pF()">🖨️ Front 65×25</button>
+        <button class="btn-print-b" onclick="pB()">🖨️ Back 50×90</button>
+      </div>
+      <div class="mobile-print-tip">Tap print → select printer in dialog</div>
+    </div>
 
   </div><!-- /app-wrap -->
 
