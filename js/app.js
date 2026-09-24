@@ -514,18 +514,21 @@ function pF() {
     pages += '<div class="w"><div class="n" id="pn'+c+'">'+name+'</div></div>';
   }
 
-  /* Scaler: shrink font on ALL copies, then print */
+  /* Scaler: start BIG (60pt), shrink until text fits label.
+   * Calculate once on first copy, apply same size to all. */
   const headScript = '<scr'+'ipt>'+
     'window.onload=function(){'+
       'var els=document.querySelectorAll(".n");'+
-      'for(var j=0;j<els.length;j++){'+
-        'var el=els[j],w=el.parentElement,'+
-            'mW=w.offsetWidth-4,mH=w.offsetHeight-2,'+
-            'fs=23,i=0;'+
-        'el.style.fontSize=fs+"pt";'+
-        'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<120){'+
-          'el.style.fontSize=(fs-=0.5)+"pt";'+
-        '}'+
+      'if(!els.length)return;'+
+      'var el=els[0],w=el.parentElement,'+
+          'mW=w.offsetWidth-4,mH=w.offsetHeight-2,'+
+          'fs=60,i=0;'+
+      'el.style.fontSize=fs+"pt";'+
+      'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<200){'+
+        'el.style.fontSize=(fs-=0.5)+"pt";'+
+      '}'+
+      'for(var j=1;j<els.length;j++){'+
+        'els[j].style.fontSize=fs+"pt";'+
       '}'+
       'setTimeout(function(){window.print();},500);'+
     '};'+
