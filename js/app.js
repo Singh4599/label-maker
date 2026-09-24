@@ -609,18 +609,25 @@ function pB() {
     pages += '<div class="L">'+oneLabel+'</div>';
   }
 
-  /* Scaler: adjust font on ALL .L copies so content fills 90mm height */
+  /* Scaler: calculate font on FIRST .L, apply to ALL copies.
+   * Separate counters for grow/shrink. Extra 0.4pt safety margin. */
   const headScript2 = '<scr'+'ipt>'+
     'window.onload=function(){'+
       'var Ls=document.querySelectorAll(".L");'+
-      'for(var j=0;j<Ls.length;j++){'+
-        'var L=Ls[j],bH=L.offsetHeight,fs=9,i=0;'+
-        'while(L.scrollHeight<=bH && fs<22 && i++<130){'+
-          'fs+=0.2; L.style.fontSize=fs+"pt";'+
-        '}'+
-        'while(L.scrollHeight>bH && fs>4 && i++<200){'+
-          'fs-=0.2; L.style.fontSize=fs+"pt";'+
-        '}'+
+      'if(!Ls.length)return;'+
+      /* Calculate optimal font on first copy */
+      'var L=Ls[0],bH=L.offsetHeight,fs=9,g=0,s=0;'+
+      'while(L.scrollHeight<=bH && fs<22 && g++<150){'+
+        'fs+=0.2; L.style.fontSize=fs+"pt";'+
+      '}'+
+      'while(L.scrollHeight>bH && fs>4 && s++<150){'+
+        'fs-=0.2; L.style.fontSize=fs+"pt";'+
+      '}'+
+      /* Extra safety: pull back 0.4pt more to guarantee no overflow */
+      'fs=Math.max(4,fs-0.4); L.style.fontSize=fs+"pt";'+
+      /* Apply same font size to all other copies */
+      'for(var j=1;j<Ls.length;j++){'+
+        'Ls[j].style.fontSize=fs+"pt";'+
       '}'+
       'setTimeout(function(){window.print();},600);'+
     '};'+
