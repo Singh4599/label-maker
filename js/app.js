@@ -514,7 +514,10 @@ function pF() {
     'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<120){'+
       'el.style.fontSize=(fs-=0.5)+"pt";'+
     '}'+
-    'setTimeout(function(){window.print();},500);'+
+    'setTimeout(function(){'+
+      'window.addEventListener("afterprint",function(){window.close();});'+
+      'window.print();'+
+    '},500);'+
   '};<\/scr'+'ipt>';
 
   const win = window.open('', '_front_print', 'width=232,height=95');
@@ -586,7 +589,10 @@ function pB() {
     '}'+
     /* Pull back 1 step so content never overflows */
     'if(document.body.scrollHeight>limit){ fs-=0.2; L.style.fontSize=fs+"pt"; }'+
-    'setTimeout(function(){window.print();},600);'+
+    'setTimeout(function(){'+
+      'window.addEventListener("afterprint",function(){window.close();});'+
+      'window.print();'+
+    '},600);'+
   '};<\/scr'+'ipt>';
 
   const body =
