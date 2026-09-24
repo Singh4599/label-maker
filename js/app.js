@@ -487,41 +487,40 @@ function pF() {
   if (!pname) { showToast('No product name entered', 'error'); return; }
   const name = pname.toUpperCase();
 
-  /* ── FRONT LABEL: 65mm × 25mm ──
-   * Label roll is physically 65mm wide, feeding 25mm at a time (Landscape).
-   * We output a pure 65x25mm box. No CSS rotation needed. */
-  /* BarTender shows Front stock: Width 61.5mm × Height 25.0mm (after 1.3mm liner each side)
-   * Pixel equivalents at 96dpi: 61.5mm=232px, 25mm=95px */
+  /* ── FRONT LABEL: 61.5mm × 25mm (TSC TE244 BarTender stock)
+   * ALL dimensions in mm only — no px — to match @page exactly.
+   * Explicit page-break prevention so Chrome never creates page 2. */
   const css = [
     '@page{size:61.5mm 25mm;margin:0}',
-    '*{margin:0;padding:0;box-sizing:border-box}',
-    'html{width:232px;height:95px;margin:0;padding:0;overflow:hidden}',
-    'body{width:232px;height:95px;margin:0;padding:0;background:#fff;overflow:hidden}',
-    '.w{width:232px;height:95px;display:flex;align-items:center;justify-content:center;padding:4px 8px}',
+    '*{margin:0;padding:0;box-sizing:border-box;break-inside:avoid;break-after:avoid}',
+    'html,body{width:61.5mm;height:25mm;margin:0;padding:0;overflow:hidden;background:#fff}',
+    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden}',
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;',
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;',
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}'
   ].join('');
 
-  /* JS auto-scaler: shrinks font to fit, then opens print dialog. NO window.close() - it cancels print! */
-  const fitScript = '<scr'+'ipt>window.onload=function(){'+
-    'var el=document.getElementById("pn"),'+
-        'w=el.parentElement,'+
-        'mW=w.offsetWidth-8,'+
-        'mH=w.offsetHeight-4,'+
-        'fs=23,i=0;'+
-    'el.style.fontSize=fs+"pt";'+
-    'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<120){'+
-      'el.style.fontSize=(fs-=0.5)+"pt";'+
-    '}'+
-    'setTimeout(function(){window.print();},500);'+
-  '};<\/scr'+'ipt>';
+  /* Scaler in <head> so <script> tag doesn't add height to <body> content */
+  const headScript = '<scr'+'ipt>'+
+    'window.onload=function(){'+
+      'var el=document.getElementById("pn"),'+
+          'w=el.parentElement,'+
+          'mW=w.offsetWidth-4,'+
+          'mH=w.offsetHeight-2,'+
+          'fs=23,i=0;'+
+      'el.style.fontSize=fs+"pt";'+
+      'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<120){'+
+        'el.style.fontSize=(fs-=0.5)+"pt";'+
+      '}'+
+      'setTimeout(function(){window.print();},500);'+
+    '};'+
+  '<\/scr'+'ipt>';
 
-  const win = window.open('', '_front_print', 'width=232,height=95');
+  const win = window.open('', 'fp_'+Date.now(), 'width=250,height=120');
   win.document.open();
   win.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head>'+
-    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div>'+fitScript+'</body></html>'
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+headScript+'</head>'+
+    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>'
   );
   win.document.close();
 }
@@ -547,16 +546,14 @@ function pB() {
   const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
   const ns = getNutrition(p);
 
-  /* ── BACK LABEL: 47.5mm × 90mm (BarTender TSC TE244 stock, after 1.3mm liner each side)
-   * 47.5mm × (96/25.4) = 179px  |  90mm × (96/25.4) = 340px
-   * Body is locked to exactly 179×340px so browser sends exactly 1 label page.
-   * All font sizes are 'em' relative to .L base — scaler only adjusts .L font-size. */
+  /* ── BACK LABEL: 47.5mm × 90mm (TSC TE244 BarTender stock)
+   * ALL dimensions in mm — matches @page exactly.
+   * Explicit break prevention so Chrome never creates page 2. */
   const css = [
     '@page{size:47.5mm 90mm;margin:0}',
-    '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:179px;height:340px;margin:0;padding:0;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
-    /* .L is the single full-label container; font-size here is the master scale knob */
-    '.L{width:179px;height:340px;padding:8px 10px 6px 10px;display:flex;flex-direction:column;',
+    '*{margin:0;padding:0;box-sizing:border-box;break-inside:avoid;break-after:avoid}',
+    'html,body{width:47.5mm;height:90mm;margin:0;padding:0;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
+    '.L{width:47.5mm;height:90mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
       'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
       'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
@@ -566,28 +563,27 @@ function pB() {
     '.in{font-size:0.54em;line-height:1.25}',
     '.nt{font-size:0.68em;font-weight:900;text-align:center;font-family:"Arial Black",Arial,sans-serif;text-transform:uppercase}',
     '.ns{font-size:0.5em;text-align:center;font-style:italic;font-weight:600}',
-    '.nb{border:0.7pt solid #000;padding:2px 3px;font-size:0.48em;line-height:1.3}',
+    '.nb{border:0.7pt solid #000;padding:0.5mm 1mm;font-size:0.48em;line-height:1.3}',
     '.r{font-size:0.68em;font-weight:700;line-height:1.35}',
     '.mrp{font-size:1.05em;font-weight:900;font-family:"Arial Black",Arial,sans-serif}',
     '.tx{font-size:0.46em;font-weight:600}',
     '.pg{font-size:0.56em;font-weight:700}'
   ].join('');
 
-  /* Scaler: starts at 9pt base, steps UP until content JUST fits 340px, then steps back 1.
-   * Uses body.scrollHeight (most reliable cross-browser) vs fixed 340px limit.
-   * NO window.close() — it cancels the print dialog. */
-  const fitScript2 = '<scr'+'ipt>window.onload=function(){'+
-    'var L=document.querySelector(".L"),'+
-        'limit=338,'+ /* 340px total - 2px safety margin */
-        'fs=9,i=0;'+
-    /* Scale UP while content fits */
-    'while(document.body.scrollHeight<=limit && fs<22 && i++<130){'+
-      'fs+=0.2; L.style.fontSize=fs+"pt";'+
-    '}'+
-    /* Pull back 1 step so content never overflows */
-    'if(document.body.scrollHeight>limit){ fs-=0.2; L.style.fontSize=fs+"pt"; }'+
-    'setTimeout(function(){window.print();},600);'+
-  '};<\/scr'+'ipt>';
+  /* Scaler in <head>: adjusts .L font-size so content fills but never overflows 90mm.
+   * Uses L.scrollHeight (the container) which is reliable since body has overflow:hidden. */
+  const headScript2 = '<scr'+'ipt>'+
+    'window.onload=function(){'+
+      'var L=document.querySelector(".L"),'+
+          'bH=document.body.offsetHeight,'+ /* = 90mm in px */
+          'fs=9,i=0;'+
+      'while(L.scrollHeight<=bH && fs<22 && i++<130){'+
+        'fs+=0.2; L.style.fontSize=fs+"pt";'+
+      '}'+
+      'if(L.scrollHeight>bH){ fs-=0.2; L.style.fontSize=fs+"pt"; }'+
+      'setTimeout(function(){window.print();},600);'+
+    '};'+
+  '<\/scr'+'ipt>';
 
   const body =
     '<div class="L">'+
@@ -608,11 +604,11 @@ function pB() {
     '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
     '</div>';
 
-  const win2 = window.open('', '_back_print', 'width=179,height=340');
+  const win2 = window.open('', 'bp_'+Date.now(), 'width=200,height=380');
   win2.document.open();
   win2.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head>'+
-    '<body>'+body+fitScript2+'</body></html>'
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+headScript2+'</head>'+
+    '<body>'+body+'</body></html>'
   );
   win2.document.close();
 }
