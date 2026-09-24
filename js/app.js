@@ -490,18 +490,20 @@ function pF() {
   /* ── FRONT LABEL: 65mm × 25mm ──
    * Label roll is physically 65mm wide, feeding 25mm at a time (Landscape).
    * We output a pure 65x25mm box. No CSS rotation needed. */
+  /* BarTender shows Front stock: Width 61.5mm × Height 25.0mm (after 1.3mm liner each side)
+   * Pixel equivalents at 96dpi: 61.5mm=232px, 25mm=95px */
   const css = [
-    '@page{size:65mm 25mm;margin:0}',
+    '@page{size:61.5mm 25mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html{width:246px;height:95px;margin:0;padding:0;overflow:hidden}',
-    'body{width:246px;height:95px;margin:0;padding:0;background:#fff;overflow:hidden}',
-    '.w{width:246px;height:95px;display:flex;align-items:center;justify-content:center;padding:4px 8px}',
+    'html{width:232px;height:95px;margin:0;padding:0;overflow:hidden}',
+    'body{width:232px;height:95px;margin:0;padding:0;background:#fff;overflow:hidden}',
+    '.w{width:232px;height:95px;display:flex;align-items:center;justify-content:center;padding:4px 8px}',
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;',
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;',
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}'
   ].join('');
 
-  /* JS auto-scaler runs BEFORE print dialog. */
+  /* JS auto-scaler: shrinks font to fit, then opens print dialog. NO window.close() - it cancels print! */
   const fitScript = '<scr'+'ipt>window.onload=function(){'+
     'var el=document.getElementById("pn"),'+
         'w=el.parentElement,'+
@@ -512,10 +514,10 @@ function pF() {
     'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<120){'+
       'el.style.fontSize=(fs-=0.5)+"pt";'+
     '}'+
-    'setTimeout(function(){window.print();window.close();},400);'+
+    'setTimeout(function(){window.print();},500);'+
   '};<\/scr'+'ipt>';
 
-  const win = window.open('', '_front_print', 'width=246,height=95');
+  const win = window.open('', '_front_print', 'width=232,height=95');
   win.document.open();
   win.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head>'+
@@ -547,12 +549,14 @@ function pB() {
 
   /* ── BACK LABEL: 50mm × 90mm ──
    * Label roll is 50mm wide, feeding 90mm at a time (Portrait). */
+  /* BarTender shows Back stock: Width 47.5mm × Height 90.0mm (after 1.3mm liner each side)
+   * Pixel equivalents at 96dpi: 47.5mm=179px, 90mm=340px */
   const css = [
-    '@page{size:50mm 90mm;margin:0}',
+    '@page{size:47.5mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html{width:189px;height:340px;margin:0;padding:0;overflow:hidden}',
-    'body{width:189px;height:340px;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
-    '.L{width:189px;height:340px;padding:8px 11px;display:flex;flex-direction:column;color:#000;font-size:10pt;box-sizing:border-box}',
+    'html{width:179px;height:340px;margin:0;padding:0;overflow:hidden}',
+    'body{width:179px;height:340px;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
+    '.L{width:179px;height:340px;padding:8px 10px;display:flex;flex-direction:column;color:#000;font-size:10pt;box-sizing:border-box}',
     '#inL{width:100%;display:flex;flex-direction:column}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.5em;',
       'text-align:center;line-height:0.9;text-transform:uppercase;',
