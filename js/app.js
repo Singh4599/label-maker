@@ -491,10 +491,11 @@ function pF() {
    * Label roll is physically 65mm wide, feeding 25mm at a time (Landscape).
    * We output a pure 65x25mm box. No CSS rotation needed. */
   const css = [
-    '@media print { @page { size:65mm 25mm; margin:0; } }',
+    '@page{size:65mm 25mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:65mm;height:25mm;margin:0;padding:0;background:#fff;overflow:hidden}',
-    '.w{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:1mm 2mm}',
+    'html{width:246px;height:95px;margin:0;padding:0;overflow:hidden}',
+    'body{width:246px;height:95px;margin:0;padding:0;background:#fff;overflow:hidden}',
+    '.w{width:246px;height:95px;display:flex;align-items:center;justify-content:center;padding:4px 8px}',
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;',
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;',
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}'
@@ -505,16 +506,16 @@ function pF() {
     'var el=document.getElementById("pn"),'+
         'w=el.parentElement,'+
         'mW=w.offsetWidth-8,'+
-        'mH=w.offsetHeight-5,'+
+        'mH=w.offsetHeight-4,'+
         'fs=23,i=0;'+
     'el.style.fontSize=fs+"pt";'+
     'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<120){'+
       'el.style.fontSize=(fs-=0.5)+"pt";'+
     '}'+
-    'setTimeout(function(){window.print();},500);'+  /* give fonts time to load */
+    'setTimeout(function(){window.print();window.close();},400);'+
   '};<\/scr'+'ipt>';
 
-  const win = window.open('', '_front_print', 'width=220,height=560');
+  const win = window.open('', '_front_print', 'width=246,height=95');
   win.document.open();
   win.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head>'+
@@ -547,10 +548,11 @@ function pB() {
   /* ── BACK LABEL: 50mm × 90mm ──
    * Label roll is 50mm wide, feeding 90mm at a time (Portrait). */
   const css = [
-    '@media print { @page { size:50mm 90mm; margin:0; } }',
+    '@page{size:50mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:50mm;height:90mm;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
-    '.L{width:100%;height:100%;padding:2mm 3mm;display:flex;flex-direction:column;color:#000;font-size:10pt}',
+    'html{width:189px;height:340px;margin:0;padding:0;overflow:hidden}',
+    'body{width:189px;height:340px;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
+    '.L{width:189px;height:340px;padding:8px 11px;display:flex;flex-direction:column;color:#000;font-size:10pt;box-sizing:border-box}',
     '#inL{width:100%;display:flex;flex-direction:column}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.5em;',
       'text-align:center;line-height:0.9;text-transform:uppercase;',
@@ -608,7 +610,7 @@ function pB() {
     '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
     '</div></div>';
 
-  const win2 = window.open('', '_back_print', 'width=200,height=360');
+  const win2 = window.open('', '_back_print', 'width=189,height=340');
   win2.document.open();
   win2.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head>'+
