@@ -547,57 +547,51 @@ function pB() {
   const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
   const ns = getNutrition(p);
 
-  /* ── BACK LABEL: 50mm × 90mm ──
-   * Label roll is 50mm wide, feeding 90mm at a time (Portrait). */
-  /* BarTender shows Back stock: Width 47.5mm × Height 90.0mm (after 1.3mm liner each side)
-   * Pixel equivalents at 96dpi: 47.5mm=179px, 90mm=340px */
+  /* ── BACK LABEL: 47.5mm × 90mm (BarTender TSC TE244 stock, after 1.3mm liner each side)
+   * 47.5mm × (96/25.4) = 179px  |  90mm × (96/25.4) = 340px
+   * Body is locked to exactly 179×340px so browser sends exactly 1 label page.
+   * All font sizes are 'em' relative to .L base — scaler only adjusts .L font-size. */
   const css = [
     '@page{size:47.5mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html{width:179px;height:340px;margin:0;padding:0;overflow:hidden}',
-    'body{width:179px;height:340px;margin:0;padding:0;background:#fff;font-family:Arial,sans-serif;overflow:hidden}',
-    '.L{width:179px;height:340px;padding:8px 10px;display:flex;flex-direction:column;color:#000;font-size:10pt;box-sizing:border-box}',
-    '#inL{width:100%;display:flex;flex-direction:column}',
-    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.5em;',
-      'text-align:center;line-height:0.9;text-transform:uppercase;',
-      'letter-spacing:-0.03em;margin-bottom:0.2em;word-break:break-word}',
-    '.ca{font-size:0.6em;text-align:center;font-weight:600;margin-bottom:0.4em}',
-    'hr{border:none;border-top:0.5pt solid #888;margin:0.3em 0}',
-    '.se{font-size:0.75em;font-weight:700;margin-bottom:0.1em}',
-    '.in{font-size:0.55em;line-height:1.3;margin-bottom:0.4em}',
-    '.nt{font-size:0.7em;font-weight:900;text-align:center;text-transform:uppercase;',
-      'font-family:"Arial Black",Arial,sans-serif}',
-    '.ns{font-size:0.5em;text-align:center;font-style:italic;font-weight:600;margin-bottom:0.2em}',
-    '.nb{border:0.7pt solid #000;padding:0.4em;font-size:0.48em;line-height:1.35;margin-bottom:0.5em}',
-    '.r{font-size:0.7em;font-weight:700;line-height:1.4;font-family:Arial,sans-serif}',
-    '.mrp{font-size:1.0em;font-weight:900;line-height:1.2;margin-top:0.1em;',
-      'font-family:"Arial Black",Arial,sans-serif}',
-    '.tx{font-size:0.48em;font-weight:600}',
-    '.pg{font-size:0.58em;font-weight:700}'
+    'html,body{width:179px;height:340px;margin:0;padding:0;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
+    /* .L is the single full-label container; font-size here is the master scale knob */
+    '.L{width:179px;height:340px;padding:8px 10px 6px 10px;display:flex;flex-direction:column;',
+      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden}',
+    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
+      'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
+    '.ca{font-size:0.6em;text-align:center;font-weight:600}',
+    'hr{border:none;border-top:0.5pt solid #666;margin:0}',
+    '.se{font-size:0.72em;font-weight:700}',
+    '.in{font-size:0.54em;line-height:1.25}',
+    '.nt{font-size:0.68em;font-weight:900;text-align:center;font-family:"Arial Black",Arial,sans-serif;text-transform:uppercase}',
+    '.ns{font-size:0.5em;text-align:center;font-style:italic;font-weight:600}',
+    '.nb{border:0.7pt solid #000;padding:2px 3px;font-size:0.48em;line-height:1.3}',
+    '.r{font-size:0.68em;font-weight:700;line-height:1.35}',
+    '.mrp{font-size:1.05em;font-weight:900;font-family:"Arial Black",Arial,sans-serif}',
+    '.tx{font-size:0.46em;font-weight:600}',
+    '.pg{font-size:0.56em;font-weight:700}'
   ].join('');
 
-  /* JS scaler for entire back label: auto-adjusts base font size to fill height */
+  /* Scaler: starts at 9pt base, steps UP until content JUST fits 340px, then steps back 1.
+   * Uses body.scrollHeight (most reliable cross-browser) vs fixed 340px limit.
+   * NO window.close() — it cancels the print dialog. */
   const fitScript2 = '<scr'+'ipt>window.onload=function(){'+
     'var L=document.querySelector(".L"),'+
-        'inL=document.getElementById("inL"),'+
-        'mH=L.offsetHeight-15,'+ /* usable height ≈ 90mm - 4mm padding */
-        'fs=10,i=0;'+
-    'while(inL.scrollHeight<=mH && fs<25 && i++<150){'+
+        'limit=338,'+ /* 340px total - 2px safety margin */
+        'fs=9,i=0;'+
+    /* Scale UP while content fits */
+    'while(document.body.scrollHeight<=limit && fs<22 && i++<130){'+
       'fs+=0.2; L.style.fontSize=fs+"pt";'+
     '}'+
-    'i=0;'+
-    'while(inL.scrollHeight>mH && fs>4 && i++<150){'+
-      'fs-=0.2; L.style.fontSize=fs+"pt";'+
-    '}'+
-    'inL.style.height="100%";'+
-    'inL.style.justifyContent="space-between";'+
+    /* Pull back 1 step so content never overflows */
+    'if(document.body.scrollHeight>limit){ fs-=0.2; L.style.fontSize=fs+"pt"; }'+
     'setTimeout(function(){window.print();},600);'+
   '};<\/scr'+'ipt>';
 
   const body =
     '<div class="L">'+
-    '<div id="inL">'+
-    '<div class="ti" id="ti-el">'+p.n.toUpperCase()+'</div>'+
+    '<div class="ti">'+p.n.toUpperCase()+'</div>'+
     '<div class="ca">Category - '+(p.c||'—')+'</div>'+
     '<hr>'+
     '<div class="se">INGREDIENTS :-</div>'+
@@ -612,9 +606,9 @@ function pB() {
     '<div class="mrp">MRP : ₹ '+mrp+'/-</div>'+
     '<div class="tx">(INCL. OF ALL TAXES)</div>'+
     '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
-    '</div></div>';
+    '</div>';
 
-  const win2 = window.open('', '_back_print', 'width=189,height=340');
+  const win2 = window.open('', '_back_print', 'width=179,height=340');
   win2.document.open();
   win2.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head>'+
