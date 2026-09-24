@@ -580,7 +580,7 @@ function pB() {
       'while(L.scrollHeight<=bH && fs<22 && i++<130){'+
         'fs+=0.2; L.style.fontSize=fs+"pt";'+
       '}'+
-      'if(L.scrollHeight>bH){ fs-=0.2; L.style.fontSize=fs+"pt"; }'+
+      'while(L.scrollHeight>bH && fs>4 && i++<200){ fs-=0.2; L.style.fontSize=fs+"pt"; }'+
       'setTimeout(function(){window.print();},600);'+
     '};'+
   '<\/scr'+'ipt>';
