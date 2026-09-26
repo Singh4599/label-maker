@@ -480,55 +480,36 @@ function filterByCategory() {
 }
 
 
-function getCopies() {
-  const el = document.getElementById('print-copies') || document.getElementById('print-copies-m');
-  const n = parseInt(el && el.value, 10);
-  return (n && n > 0) ? Math.min(n, 50) : 1;
-}
-
 function pF() {
   let pname;
   if (ST.mode === 'manual') { pname = gv('m-name'); }
   else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = ST.prod.n; }
   if (!pname) { showToast('No product name entered', 'error'); return; }
   const name = pname.toUpperCase();
-  const copies = getCopies();
 
   /* ── FRONT LABEL: 61.5mm × 25mm (TSC TE244)
-   * Each copy is a separate page. Chrome copies = 1 always.
-   * Printer gets N pages, each = 1 label. No blank pages. */
+   * STRICTLY 1 page. For copies: use system dialog (Ctrl+Shift+P).
+   * Chrome multi-page breaks TSC driver — never send >1 page. */
   const css = [
     '@page{size:61.5mm 25mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:61.5mm;margin:0;padding:0;overflow:hidden;background:#fff}',
-    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;page-break-after:always}',
-    '.w:last-child{page-break-after:avoid}',
-    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:23pt;',
+    'html,body{width:61.5mm;height:25mm;margin:0;padding:0;overflow:hidden;background:#fff}',
+    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden}',
+    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;',
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;',
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}'
   ].join('');
 
-  /* Build N identical label divs */
-  let pages = '';
-  for (let c = 0; c < copies; c++) {
-    pages += '<div class="w"><div class="n" id="pn'+c+'">'+name+'</div></div>';
-  }
-
-  /* Scaler: start BIG (60pt), shrink until text fits label.
-   * Calculate once on first copy, apply same size to all. */
+  /* Scaler: start BIG (60pt), shrink until text fits. */
   const headScript = '<scr'+'ipt>'+
     'window.onload=function(){'+
-      'var els=document.querySelectorAll(".n");'+
-      'if(!els.length)return;'+
-      'var el=els[0],w=el.parentElement,'+
+      'var el=document.getElementById("pn"),'+
+          'w=el.parentElement,'+
           'mW=w.offsetWidth-4,mH=w.offsetHeight-2,'+
           'fs=60,i=0;'+
       'el.style.fontSize=fs+"pt";'+
       'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<200){'+
         'el.style.fontSize=(fs-=0.5)+"pt";'+
-      '}'+
-      'for(var j=1;j<els.length;j++){'+
-        'els[j].style.fontSize=fs+"pt";'+
       '}'+
       'setTimeout(function(){window.print();},500);'+
     '};'+
@@ -538,7 +519,7 @@ function pF() {
   win.document.open();
   win.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+headScript+'</head>'+
-    '<body>'+pages+'</body></html>'
+    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>'
   );
   win.document.close();
 }
@@ -565,14 +546,14 @@ function pB() {
   const ns = getNutrition(p);
 
   /* ── BACK LABEL: 47.5mm × 90mm (TSC TE244)
-   * Each copy is a separate page. Chrome copies = 1 always. */
+   * STRICTLY 1 page. For copies: use system dialog (Ctrl+Shift+P).
+   * Chrome multi-page breaks TSC driver — never send >1 page. */
   const css = [
     '@page{size:47.5mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:47.5mm;margin:0;padding:0;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
+    'html,body{width:47.5mm;height:90mm;margin:0;padding:0;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
     '.L{width:47.5mm;height:90mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
-      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;page-break-after:always}',
-    '.L:last-child{page-break-after:avoid}',
+      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
       'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
     '.ca{font-size:0.6em;text-align:center;font-weight:600}',
@@ -588,9 +569,8 @@ function pB() {
     '.pg{font-size:0.56em;font-weight:700}'
   ].join('');
 
-  /* Build N identical back-label pages */
-  const copies = getCopies();
-  const oneLabel =
+  const body =
+    '<div class="L">'+
     '<div class="ti">'+p.n.toUpperCase()+'</div>'+
     '<div class="ca">Category - '+(p.c||'—')+'</div>'+
     '<hr>'+
@@ -605,33 +585,21 @@ function pB() {
     '<div class="r">BEST BEFORE : '+bb+'</div>'+
     '<div class="mrp">MRP : ₹ '+mrp+'/-</div>'+
     '<div class="tx">(INCL. OF ALL TAXES)</div>'+
-    '<div class="pg">FOR 1g = Rs '+pg+'</div>';
+    '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
+    '</div>';
 
-  let pages = '';
-  for (let c = 0; c < copies; c++) {
-    pages += '<div class="L">'+oneLabel+'</div>';
-  }
-
-  /* Scaler: calculate font on FIRST .L, apply to ALL copies.
-   * Separate counters for grow/shrink. Extra 0.4pt safety margin. */
+  /* Scaler: grow font to fill 90mm, pull back with safety margin */
   const headScript2 = '<scr'+'ipt>'+
     'window.onload=function(){'+
-      'var Ls=document.querySelectorAll(".L");'+
-      'if(!Ls.length)return;'+
-      /* Calculate optimal font on first copy */
-      'var L=Ls[0],bH=L.offsetHeight,fs=9,g=0,s=0;'+
+      'var L=document.querySelector(".L"),'+
+          'bH=L.offsetHeight,fs=9,g=0,s=0;'+
       'while(L.scrollHeight<=bH && fs<22 && g++<150){'+
         'fs+=0.2; L.style.fontSize=fs+"pt";'+
       '}'+
       'while(L.scrollHeight>bH && fs>4 && s++<150){'+
         'fs-=0.2; L.style.fontSize=fs+"pt";'+
       '}'+
-      /* Extra safety: pull back 0.4pt more to guarantee no overflow */
       'fs=Math.max(4,fs-0.4); L.style.fontSize=fs+"pt";'+
-      /* Apply same font size to all other copies */
-      'for(var j=1;j<Ls.length;j++){'+
-        'Ls[j].style.fontSize=fs+"pt";'+
-      '}'+
       'setTimeout(function(){window.print();},600);'+
     '};'+
   '<\/scr'+'ipt>';
@@ -640,7 +608,7 @@ function pB() {
   win2.document.open();
   win2.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+headScript2+'</head>'+
-    '<body>'+pages+'</body></html>'
+    '<body>'+body+'</body></html>'
   );
   win2.document.close();
 }
