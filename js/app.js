@@ -480,16 +480,38 @@ function filterByCategory() {
 }
 
 
+/* ── Print Queue: sequential single-page prints for TSC TE244 ──
+ * Each copy = new window + new print job (1 page only).
+ * afterprint closes window after 1.5s delay → ends TSC session cleanly.
+ * Then next copy opens fresh window. */
+window._printQueue = null;
+
+function getCopies() {
+  const el = document.getElementById('print-copies') || document.getElementById('print-copies-m');
+  const n = parseInt(el && el.value, 10);
+  return (n && n > 0) ? Math.min(n, 50) : 1;
+}
+
+function _runNextPrint() {
+  const q = window._printQueue;
+  if (!q || q.done >= q.total) { window._printQueue = null; return; }
+  q.done++;
+  const win = window.open('', 'lp_'+Date.now(), q.winSize);
+  win.document.open();
+  win.document.write(q.html);
+  win.document.close();
+}
+
 function pF() {
   let pname;
   if (ST.mode === 'manual') { pname = gv('m-name'); }
   else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = ST.prod.n; }
   if (!pname) { showToast('No product name entered', 'error'); return; }
   const name = pname.toUpperCase();
+  const copies = getCopies();
 
   /* ── FRONT LABEL: 61.5mm × 25mm (TSC TE244)
-   * STRICTLY 1 page. For copies: use system dialog (Ctrl+Shift+P).
-   * Chrome multi-page breaks TSC driver — never send >1 page. */
+   * Always 1 page per window. afterprint closes window → ends session. */
   const css = [
     '@page{size:61.5mm 25mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
@@ -500,8 +522,7 @@ function pF() {
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}'
   ].join('');
 
-  /* Scaler: start BIG (60pt), shrink until text fits. */
-  const headScript = '<scr'+'ipt>'+
+  const printJS = '<scr'+'ipt>'+
     'window.onload=function(){'+
       'var el=document.getElementById("pn"),'+
           'w=el.parentElement,'+
@@ -511,17 +532,23 @@ function pF() {
       'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<200){'+
         'el.style.fontSize=(fs-=0.5)+"pt";'+
       '}'+
+      /* afterprint: close window after delay → ends TSC session → no error */
+      'window.addEventListener("afterprint",function(){'+
+        'setTimeout(function(){'+
+          'try{window.opener._runNextPrint();}catch(e){}'+
+          'window.close();'+
+        '},1500);'+
+      '});'+
       'setTimeout(function(){window.print();},500);'+
     '};'+
   '<\/scr'+'ipt>';
 
-  const win = window.open('', 'fp_'+Date.now(), 'width=250,height=120');
-  win.document.open();
-  win.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+headScript+'</head>'+
-    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>'
-  );
-  win.document.close();
+  const html =
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+printJS+'</head>'+
+    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>';
+
+  window._printQueue = { html: html, total: copies, done: 0, winSize: 'width=250,height=120' };
+  _runNextPrint();
 }
 
 function pB() {
@@ -546,8 +573,7 @@ function pB() {
   const ns = getNutrition(p);
 
   /* ── BACK LABEL: 47.5mm × 90mm (TSC TE244)
-   * STRICTLY 1 page. For copies: use system dialog (Ctrl+Shift+P).
-   * Chrome multi-page breaks TSC driver — never send >1 page. */
+   * Always 1 page per window. afterprint closes window → ends session. */
   const css = [
     '@page{size:47.5mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
@@ -569,7 +595,7 @@ function pB() {
     '.pg{font-size:0.56em;font-weight:700}'
   ].join('');
 
-  const body =
+  const bodyHTML =
     '<div class="L">'+
     '<div class="ti">'+p.n.toUpperCase()+'</div>'+
     '<div class="ca">Category - '+(p.c||'—')+'</div>'+
@@ -588,8 +614,7 @@ function pB() {
     '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
     '</div>';
 
-  /* Scaler: grow font to fill 90mm, pull back with safety margin */
-  const headScript2 = '<scr'+'ipt>'+
+  const printJS2 = '<scr'+'ipt>'+
     'window.onload=function(){'+
       'var L=document.querySelector(".L"),'+
           'bH=L.offsetHeight,fs=9,g=0,s=0;'+
@@ -600,17 +625,23 @@ function pB() {
         'fs-=0.2; L.style.fontSize=fs+"pt";'+
       '}'+
       'fs=Math.max(4,fs-0.4); L.style.fontSize=fs+"pt";'+
+      'window.addEventListener("afterprint",function(){'+
+        'setTimeout(function(){'+
+          'try{window.opener._runNextPrint();}catch(e){}'+
+          'window.close();'+
+        '},1500);'+
+      '});'+
       'setTimeout(function(){window.print();},600);'+
     '};'+
   '<\/scr'+'ipt>';
 
-  const win2 = window.open('', 'bp_'+Date.now(), 'width=200,height=380');
-  win2.document.open();
-  win2.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+headScript2+'</head>'+
-    '<body>'+body+'</body></html>'
-  );
-  win2.document.close();
+  const copies = getCopies();
+  const html =
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+printJS2+'</head>'+
+    '<body>'+bodyHTML+'</body></html>';
+
+  window._printQueue = { html: html, total: copies, done: 0, winSize: 'width=200,height=380' };
+  _runNextPrint();
 }
 
 function openPrint(css, body) {
