@@ -480,26 +480,11 @@ function filterByCategory() {
 }
 
 
-/* ── Print Queue: sequential single-page prints for TSC TE244 ──
- * Each copy = new window + new print job (1 page only).
- * afterprint closes window after 1.5s delay → ends TSC session cleanly.
- * Then next copy opens fresh window. */
-window._printQueue = null;
-
+/* ── Copies helper ── */
 function getCopies() {
   const el = document.getElementById('print-copies') || document.getElementById('print-copies-m');
   const n = parseInt(el && el.value, 10);
   return (n && n > 0) ? Math.min(n, 50) : 1;
-}
-
-function _runNextPrint() {
-  const q = window._printQueue;
-  if (!q || q.done >= q.total) { window._printQueue = null; return; }
-  q.done++;
-  const win = window.open('', 'lp_'+Date.now(), q.winSize);
-  win.document.open();
-  win.document.write(q.html);
-  win.document.close();
 }
 
 function pF() {
@@ -511,7 +496,8 @@ function pF() {
   const copies = getCopies();
 
   /* ── FRONT LABEL: 61.5mm × 25mm (TSC TE244)
-   * Always 1 page per window. afterprint closes window → ends session. */
+   * 1 page only. No afterprint (breaks system dialog).
+   * Copies: passed to system dialog instruction. */
   const css = [
     '@page{size:61.5mm 25mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
@@ -519,7 +505,10 @@ function pF() {
     '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden}',
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;',
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;',
-      'letter-spacing:-0.5pt;width:100%;word-break:break-word}'
+      'letter-spacing:-0.5pt;width:100%;word-break:break-word}',
+    '@media screen{.tip{position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;',
+      'font-size:11px;padding:6px 10px;text-align:center;font-family:Arial;z-index:9999}}',
+    '@media print{.tip{display:none}}'
   ].join('');
 
   const printJS = '<scr'+'ipt>'+
@@ -532,23 +521,21 @@ function pF() {
       'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<200){'+
         'el.style.fontSize=(fs-=0.5)+"pt";'+
       '}'+
-      /* afterprint: close window after delay → ends TSC session → no error */
-      'window.addEventListener("afterprint",function(){'+
-        'setTimeout(function(){'+
-          'try{window.opener._runNextPrint();}catch(e){}'+
-          'window.close();'+
-        '},1500);'+
-      '});'+
       'setTimeout(function(){window.print();},500);'+
     '};'+
   '<\/scr'+'ipt>';
 
-  const html =
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+printJS+'</head>'+
-    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>';
+  const tip = copies > 1
+    ? '<div class="tip">⚙ Set copies to '+copies+' in system dialog (Ctrl+Shift+P) → then Print</div>'
+    : '<div class="tip">⚙ Use system dialog (Ctrl+Shift+P) to select printer & paper size</div>';
 
-  window._printQueue = { html: html, total: copies, done: 0, winSize: 'width=250,height=120' };
-  _runNextPrint();
+  const win = window.open('', 'fp_'+Date.now(), 'width=250,height=150');
+  win.document.open();
+  win.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+printJS+'</head>'+
+    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div>'+tip+'</body></html>'
+  );
+  win.document.close();
 }
 
 function pB() {
@@ -625,23 +612,26 @@ function pB() {
         'fs-=0.2; L.style.fontSize=fs+"pt";'+
       '}'+
       'fs=Math.max(4,fs-0.4); L.style.fontSize=fs+"pt";'+
-      'window.addEventListener("afterprint",function(){'+
-        'setTimeout(function(){'+
-          'try{window.opener._runNextPrint();}catch(e){}'+
-          'window.close();'+
-        '},1500);'+
-      '});'+
       'setTimeout(function(){window.print();},600);'+
     '};'+
   '<\/scr'+'ipt>';
 
   const copies = getCopies();
-  const html =
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+printJS2+'</head>'+
-    '<body>'+bodyHTML+'</body></html>';
+  const tip = copies > 1
+    ? '<div class="tip">⚙ Set copies to '+copies+' in system dialog (Ctrl+Shift+P) → then Print</div>'
+    : '<div class="tip">⚙ Use system dialog (Ctrl+Shift+P) to select printer & paper size</div>';
 
-  window._printQueue = { html: html, total: copies, done: 0, winSize: 'width=200,height=380' };
-  _runNextPrint();
+  const tipCSS = '@media screen{.tip{position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;'+
+    'font-size:11px;padding:6px 10px;text-align:center;font-family:Arial;z-index:9999}}'+
+    '@media print{.tip{display:none}}';
+
+  const win2 = window.open('', 'bp_'+Date.now(), 'width=200,height=400');
+  win2.document.open();
+  win2.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+tipCSS+'</style>'+printJS2+'</head>'+
+    '<body>'+bodyHTML+tip+'</body></html>'
+  );
+  win2.document.close();
 }
 
 function openPrint(css, body) {
