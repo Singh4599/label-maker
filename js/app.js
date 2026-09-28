@@ -495,28 +495,20 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
-  /* ── FRONT LABEL: 61.5mm × 25mm (TSC TE244)
-   * 1 page only. No afterprint (breaks system dialog).
-   * Copies: passed to system dialog instruction. */
-  const css = [
-    '@page{size:61.5mm 25mm;margin:0}',
-    '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:61.5mm;height:25mm;margin:0;padding:0;overflow:hidden;background:#fff}',
-    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden}',
-    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;',
-      'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;',
-      'letter-spacing:-0.5pt;width:100%;word-break:break-word}',
-    '@media screen{.tip{position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;',
-      'font-size:11px;padding:6px 10px;text-align:center;font-family:Arial;z-index:9999}}',
-    '@media print{.tip{display:none}}'
-  ].join('');
+  /* ── FRONT LABEL: 61.5mm × 25mm — BAREBONES (nothing extra in body) */
+  const css =
+    '@page{size:61.5mm 25mm;margin:0}'+
+    '*{margin:0;padding:0;box-sizing:border-box}'+
+    'html,body{width:61.5mm;height:25mm;margin:0;padding:0;overflow:hidden;background:#fff}'+
+    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden}'+
+    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;'+
+      'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;'+
+      'letter-spacing:-0.5pt;width:100%;word-break:break-word}';
 
-  const printJS = '<scr'+'ipt>'+
+  const js = '<scr'+'ipt>'+
     'window.onload=function(){'+
-      'var el=document.getElementById("pn"),'+
-          'w=el.parentElement,'+
-          'mW=w.offsetWidth-4,mH=w.offsetHeight-2,'+
-          'fs=60,i=0;'+
+      'var el=document.getElementById("pn"),w=el.parentElement,'+
+          'mW=w.offsetWidth-4,mH=w.offsetHeight-2,fs=60,i=0;'+
       'el.style.fontSize=fs+"pt";'+
       'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<200){'+
         'el.style.fontSize=(fs-=0.5)+"pt";'+
@@ -525,15 +517,12 @@ function pF() {
     '};'+
   '<\/scr'+'ipt>';
 
-  const tip = copies > 1
-    ? '<div class="tip">⚙ Set copies to '+copies+' in system dialog (Ctrl+Shift+P) → then Print</div>'
-    : '<div class="tip">⚙ Use system dialog (Ctrl+Shift+P) to select printer & paper size</div>';
-
-  const win = window.open('', 'fp_'+Date.now(), 'width=250,height=150');
+  const title = copies > 1 ? 'Front — Set '+copies+' copies in dialog' : 'Front Label';
+  const win = window.open('', 'fp_'+Date.now(), 'width=250,height=120');
   win.document.open();
   win.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style>'+printJS+'</head>'+
-    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div>'+tip+'</body></html>'
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title><style>'+css+'</style>'+js+'</head>'+
+    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>'
   );
   win.document.close();
 }
@@ -616,20 +605,12 @@ function pB() {
     '};'+
   '<\/scr'+'ipt>';
 
-  const copies = getCopies();
-  const tip = copies > 1
-    ? '<div class="tip">⚙ Set copies to '+copies+' in system dialog (Ctrl+Shift+P) → then Print</div>'
-    : '<div class="tip">⚙ Use system dialog (Ctrl+Shift+P) to select printer & paper size</div>';
-
-  const tipCSS = '@media screen{.tip{position:fixed;bottom:0;left:0;right:0;background:#222;color:#fff;'+
-    'font-size:11px;padding:6px 10px;text-align:center;font-family:Arial;z-index:9999}}'+
-    '@media print{.tip{display:none}}';
-
-  const win2 = window.open('', 'bp_'+Date.now(), 'width=200,height=400');
+  const title = copies > 1 ? 'Back — Set '+copies+' copies in dialog' : 'Back Label';
+  const win2 = window.open('', 'bp_'+Date.now(), 'width=200,height=380');
   win2.document.open();
   win2.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+tipCSS+'</style>'+printJS2+'</head>'+
-    '<body>'+bodyHTML+tip+'</body></html>'
+    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title><style>'+css+'</style>'+printJS2+'</head>'+
+    '<body>'+bodyHTML+'</body></html>'
   );
   win2.document.close();
 }
