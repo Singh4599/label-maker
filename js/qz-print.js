@@ -12,7 +12,9 @@ const QZP = {
   backPrinter: localStorage.getItem('backPrinter') || '',
   gap: parseFloat(localStorage.getItem('labelGap') || '3'),
   printers: [],
-  _retrying: false   // prevent multiple simultaneous retries
+  _retrying: false,   // prevent multiple simultaneous retries
+  _frontCal: false,   // front printer calibrated this session?
+  _backCal: false     // back printer calibrated this session?
 };
 
 /* ─── Init on page load ─── */
@@ -286,6 +288,23 @@ function _qzPixelConfig(printerName, widthMM, heightMM) {
   });
 }
 
+/* ─── Auto-calibrate once per session (1 label waste, then error-free forever) ─── */
+async function _ensureCalibrated(printer, which) {
+  const key = which === 'front' ? '_frontCal' : '_backCal';
+  if (QZP[key]) return; // already calibrated this session
+  try {
+    console.log(`[QZ] Auto-calibrating ${which} printer: ${printer}`);
+    const cfg = qz.configs.create(printer);
+    await qz.print(cfg, [{ type: 'raw', format: 'plain', data: 'GAPDETECT\r\n' }]);
+    QZP[key] = true;
+    // Wait for printer to finish calibration
+    await new Promise(r => setTimeout(r, 2000));
+    console.log(`[QZ] ${which} printer calibrated ✓`);
+  } catch (e) {
+    console.warn(`[QZ] Calibration failed for ${which}:`, e.message);
+  }
+}
+
 /* ─── Print Front via QZ (pixel/HTML) ─── */
 async function qzPrintFront(name, copies) {
   console.log('[QZ DEBUG] qz defined:', typeof qz !== 'undefined', '| connected:', QZP.connected, '| frontPrinter:', QZP.frontPrinter);
@@ -293,6 +312,7 @@ async function qzPrintFront(name, copies) {
     console.warn('[QZ] Returning false — check debug above');
     return false;
   }
+  await _ensureCalibrated(QZP.frontPrinter, 'front');
   const html   = buildFrontHTML(name);
   const config = _qzPixelConfig(QZP.frontPrinter, 65, 25);
   console.log('[FRONT HTML]\n', html);
@@ -316,6 +336,7 @@ async function qzPrintFront(name, copies) {
 /* ─── Print Back via QZ (pixel/HTML) ─── */
 async function qzPrintBack(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined' || !QZP.connected || !QZP.backPrinter) return false;
+  await _ensureCalibrated(QZP.backPrinter, 'back');
   const html   = buildBackHTML(p, v, bn, pd, bb);
   const config = _qzPixelConfig(QZP.backPrinter, 50, 90);
   console.log('[BACK HTML]\n', html);
