@@ -534,8 +534,8 @@ function pF() {
 
 function pF_Chrome(name, copies) {
   const css =
-    '@page{size:61.5mm 24mm;margin:0}'+
-    '.w{width:61.5mm;height:24mm;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff;page-break-after:avoid}'+
+    '@page{size:65mm 25mm;margin:0}'+
+    '.w{width:65mm;height:25mm;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff;page-break-after:avoid}'+
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;'+
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;'+
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}';
@@ -544,7 +544,7 @@ function pF_Chrome(name, copies) {
   pStyle.innerHTML = css;
 
   const box = document.createElement('div');
-  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:61.5mm;height:24mm;box-sizing:border-box;overflow:hidden;background:#fff;';
+  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:65mm;height:25mm;box-sizing:border-box;overflow:hidden;background:#fff;';
   box.innerHTML = '<div class="w"><div class="n">'+name+'</div></div>';
   document.body.appendChild(box);
 
@@ -609,8 +609,8 @@ function pB_Chrome(p, v, bn, pd, bb, copies) {
   const ns = getNutrition(p);
 
   const css = [
-    '@page{size:47.5mm 89mm;margin:0}',
-    '.L{width:47.5mm;height:89mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
+    '@page{size:50mm 90mm;margin:0}',
+    '.L{width:50mm;height:90mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
       'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;background:#fff;font-family:Arial,sans-serif;page-break-after:avoid}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
       'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
@@ -650,7 +650,7 @@ function pB_Chrome(p, v, bn, pd, bb, copies) {
     '</div>';
 
   const box = document.createElement('div');
-  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:47.5mm;height:89mm;overflow:hidden;background:#fff;';
+  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:50mm;height:90mm;overflow:hidden;background:#fff;';
   box.innerHTML = bodyHTML;
   document.body.appendChild(box);
 

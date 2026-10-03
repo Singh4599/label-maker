@@ -175,7 +175,7 @@ function tsplSafe(str) {
 
 /* ─── Generate FRONT label TSPL ─── */
 function buildFrontTSPL(name, copies) {
-  const w = 65, h = 24, gap = QZP.gap;
+  const w = 65, h = 25, gap = QZP.gap;
   const safeName = tsplSafe(name.toUpperCase());
   const lines = wrapText(safeName, 20); // tighter wrap for large font
   const totalLines = lines.length;
@@ -221,7 +221,7 @@ function buildFrontTSPL(name, copies) {
 
 /* ─── Generate BACK label TSPL ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
-  const w = 47.5, h = 89, gap = QZP.gap;
+  const w = 50, h = 90, gap = QZP.gap;
   const mrp = parseFloat(v.m) || 0;
   const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
 
@@ -245,7 +245,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const safeMRP = tsplSafe(`MRP : Rs.${mrp}/-`);
   const safePG  = tsplSafe(`FOR 1g = Rs ${pg}`);
 
-  // Ingredient lines (wrap to 44 chars for 47.5mm label)
+  // Ingredient lines (wrap to 44 chars for 50mm label)
   const ingrLines = wrapText(safeIngr, 44);
   // Nutrition text
   const nsText  = getNutritionShort(p);
@@ -428,7 +428,7 @@ async function testPrint() {
     showToast('Select a printer first and save!', 'error'); return;
   }
   const tspl = [
-    `SIZE 65 mm,24 mm`,
+    `SIZE 65 mm,25 mm`,
     `GAP ${QZP.gap} mm,0 mm`,
     `DIRECTION 1`,
     `CLS`,
