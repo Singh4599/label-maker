@@ -216,7 +216,8 @@ function buildFrontTSPL(name, copies) {
   return [
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
-    `DIRECTION 0`,
+    `SET DARKNESS 12`,
+    `DIRECTION 1`,
     `CLS`,
     textCmds.trim(),
     `PRINT ${copies},1`,
@@ -333,7 +334,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   return [
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
-    `DIRECTION 0`,
+    `SET DARKNESS 12`,
+    `DIRECTION 1`,
     `CLS`,
     cmds.trim(),
     `PRINT ${copies},1`,
@@ -434,7 +436,8 @@ async function testPrint() {
   const tspl = [
     `SIZE 65 mm,25 mm`,
     `GAP ${QZP.gap} mm,0 mm`,
-    `DIRECTION 0`,
+    `SET DARKNESS 12`,
+    `DIRECTION 1`,
     `CLS`,
     `TEXT 20,30,"4",0,1,2,"TEST PRINT"`,
     `TEXT 20,100,"2",0,1,1,"365 Spicery Label Studio"`,
