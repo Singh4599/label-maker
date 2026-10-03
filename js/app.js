@@ -494,7 +494,7 @@ function _renderToPDF(container, wMM, hMM, copies) {
   return html2pdf().set({
     margin: 0,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 4, useCORS: true, logging: false },
+    html2canvas: { scale: 4, useCORS: true, logging: false, backgroundColor: '#ffffff' },
     jsPDF: { unit: 'mm', format: [wMM, hMM] }
   }).from(container).toPdf().get('pdf').then(function(pdf) {
     if (copies > 1) {
@@ -520,7 +520,7 @@ function pF() {
 
   /* Hidden offscreen container: 232px × 94px ≈ 61.5mm × 25mm at 96dpi */
   const box = document.createElement('div');
-  box.style.cssText = 'position:fixed;top:-9999px;left:0;width:232px;height:94px;overflow:hidden;background:#fff;';
+  box.style.cssText = 'position:fixed;top:0;left:0;width:232px;height:94px;overflow:hidden;background:#fff;z-index:-1;pointer-events:none;';
   const w = document.createElement('div');
   w.style.cssText = 'width:232px;height:94px;display:flex;align-items:center;justify-content:center;padding:4px 8px;overflow:hidden;';
   const n = document.createElement('div');
@@ -564,7 +564,7 @@ function pB() {
 
   /* Hidden offscreen container: 180px × 340px ≈ 47.5mm × 90mm at 96dpi */
   const box = document.createElement('div');
-  box.style.cssText = 'position:fixed;top:-9999px;left:0;width:180px;height:340px;overflow:hidden;background:#fff;font-family:Arial,sans-serif;';
+  box.style.cssText = 'position:fixed;top:0;left:0;width:180px;height:340px;overflow:hidden;background:#fff;font-family:Arial,sans-serif;z-index:-1;pointer-events:none;';
 
   const L = document.createElement('div');
   L.style.cssText = 'width:180px;height:340px;padding:8px 10px 6px 10px;display:flex;flex-direction:column;' +
