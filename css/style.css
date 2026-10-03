@@ -708,4 +708,109 @@ body.sidebar-open .sidebar-overlay { display:block }
   }
 }
 
+/* ══════════════════════════════════════
+   QZ TRAY STATUS & PRINTER SETTINGS
+══════════════════════════════════════ */
 
+/* Status badge in top bar */
+.qz-status {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px; padding: 4px 10px;
+  color: #fff; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+  white-space: nowrap;
+}
+.qz-status:hover { background: rgba(255,255,255,0.22); }
+
+.qz-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #f59e0b;
+  display: inline-block; flex-shrink: 0;
+  box-shadow: 0 0 6px currentColor;
+  transition: background 0.3s;
+}
+.qz-dot.lg { width: 12px; height: 12px; }
+
+/* Modal Overlay */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); z-index: 1000;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex; }
+
+.modal-box {
+  background: var(--card); border-radius: 16px;
+  width: min(420px, 95vw);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  overflow: hidden; animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--red); color: #fff;
+  font-weight: 700; font-size: 15px;
+}
+.modal-close {
+  background: rgba(255,255,255,0.2); border: none;
+  color: #fff; width: 28px; height: 28px; border-radius: 50%;
+  cursor: pointer; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.modal-close:hover { background: rgba(255,255,255,0.35); }
+
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+.qz-info-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg); border-radius: 8px; padding: 10px 14px;
+  font-size: 13px; font-weight: 600;
+}
+
+.qz-install-tip {
+  background: #fff8e1; border: 1px solid #f59e0b;
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 12px; line-height: 1.6; color: #92400e;
+}
+.qz-install-tip a { color: var(--red); font-weight: 700; }
+
+.modal-field { display: flex; flex-direction: column; gap: 6px; }
+.modal-field label {
+  font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+}
+.modal-field select, .modal-field input {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+  color: var(--txt); font-size: 13px; font-family: var(--font);
+  transition: border-color 0.2s;
+}
+.modal-field select:focus, .modal-field input:focus {
+  outline: none; border-color: var(--red);
+}
+
+.modal-footer {
+  display: flex; gap: 10px; padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.btn-save-printers {
+  flex: 1; background: var(--red); color: #fff;
+  border: none; border-radius: 8px; padding: 10px;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-save-printers:hover { opacity: 0.88; }
+.btn-test-print {
+  background: var(--card); color: var(--txt);
+  border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 10px 16px; font-weight: 600; font-size: 13px;
+  cursor: pointer; transition: border-color 0.2s;
+}
+.btn-test-print:hover { border-color: var(--red); }

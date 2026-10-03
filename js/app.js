@@ -522,6 +522,17 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
+  // ── Try QZ Tray first (direct RAW print) ──
+  if (typeof qzPrintFront === 'function') {
+    qzPrintFront(name, copies).then(function(done) {
+      if (!done) pF_Chrome(name, copies); // fallback
+    }).catch(function() { pF_Chrome(name, copies); });
+    return;
+  }
+  pF_Chrome(name, copies);
+}
+
+function pF_Chrome(name, copies) {
   const css =
     '@page{size:61.5mm 24mm;margin:0}'+
     '.w{width:61.5mm;height:24mm;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff;page-break-after:avoid}'+
@@ -581,10 +592,21 @@ function pB() {
     p = ST.prod; v = ST.db.v[p.n][ST.vi];
     bn = gv('bn'); pd = fmtDate(gv('pd')); bb = getBBValue('bb-sel','bb');
   }
+  const copies = getCopies();
+
+  // ── Try QZ Tray first (direct RAW print) ──
+  if (typeof qzPrintBack === 'function') {
+    qzPrintBack(p, v, bn, pd, bb, copies).then(function(done) {
+      if (!done) pB_Chrome(p, v, bn, pd, bb, copies); // fallback
+    }).catch(function() { pB_Chrome(p, v, bn, pd, bb, copies); });
+    return;
+  }
+  pB_Chrome(p, v, bn, pd, bb, copies);
+}
+
+function pB_Chrome(p, v, bn, pd, bb, copies) {
   const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
   const ns = getNutrition(p);
-
-  const copies = getCopies();
 
   const css = [
     '@page{size:47.5mm 89mm;margin:0}',

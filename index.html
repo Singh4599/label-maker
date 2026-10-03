@@ -7,6 +7,7 @@
   <meta name="description" content="365 Spicery internal label maker — FSSAI-compliant labels in seconds">
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <script src="js/qz-tray.js"></script>
 </head>
 <body>
 
@@ -31,6 +32,12 @@
         <div class="top-date" id="dt-date"></div>
         <div class="top-time" id="dt-time"></div>
       </div>
+      <!-- QZ Printer Status -->
+      <button class="qz-status" id="qz-status-btn" onclick="openPrinterSettings()" title="Printer Settings">
+        <span class="qz-dot" id="qz-dot"></span>
+        <span id="qz-status-text">Connecting...</span>
+        <span style="font-size:10px;opacity:0.7">⚙️</span>
+      </button>
       <div class="top-avatar">DS</div>
     </div>
   </header>
@@ -383,7 +390,48 @@
   <div id="print-zone"></div>
   <style id="dynamic-print-style"></style>
 
+  <!-- ══ PRINTER SETTINGS MODAL ══ -->
+  <div class="modal-overlay" id="printer-modal" onclick="closePrinterSettings(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span>🖨️ Printer Settings</span>
+        <button onclick="closePrinterSettings()" class="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- QZ Status -->
+        <div class="qz-info-row" id="qz-info-row">
+          <span class="qz-dot lg" id="qz-modal-dot"></span>
+          <span id="qz-modal-status">Checking QZ Tray...</span>
+        </div>
+        <div class="qz-install-tip" id="qz-install-tip" style="display:none">
+          ⚠️ QZ Tray is not running.<br>
+          <a href="https://qz.io/download" target="_blank">Download QZ Tray →</a>
+          Install karein, phir yeh page refresh karein.<br>
+          <small>Tab tak purana Chrome print method use hoga (backup mode).</small>
+        </div>
+
+        <div class="modal-field">
+          <label>Front Label Printer <small>(65×25mm)</small></label>
+          <select id="front-printer-sel"><option value="">-- Select Printer --</option></select>
+        </div>
+        <div class="modal-field">
+          <label>Back Label Printer <small>(50×90mm)</small></label>
+          <select id="back-printer-sel"><option value="">-- Select Printer --</option></select>
+        </div>
+        <div class="modal-field">
+          <label>Label Gap (mm)</label>
+          <input type="number" id="label-gap" value="3" min="0" max="10" step="0.5" style="width:80px">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-save-printers" onclick="savePrinterSettings()">💾 Save Settings</button>
+        <button class="btn-test-print" onclick="testPrint()">🧪 Test Print</button>
+      </div>
+    </div>
+  </div>
+
 <script src="js/data.js"></script>
+<script src="js/qz-print.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
