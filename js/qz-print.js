@@ -419,7 +419,7 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
   }
 }
 
-/* ─── Test print (front printer, 65x24mm) ─── */
+/* ─── Test print (front printer, 65x25mm) ─── */
 async function testPrint() {
   if (typeof qz === 'undefined' || !QZP.connected) {
     showToast('QZ Tray not connected!', 'error'); return;
