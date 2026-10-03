@@ -498,34 +498,36 @@ function pF() {
   const css =
     '@page{size:61.5mm 25mm;margin:0}'+
     '*{margin:0;padding:0;box-sizing:border-box}'+
-    'html,body{width:61.5mm;height:25mm;overflow:hidden;background:#fff}'+
-    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden}'+
+    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff}'+
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;'+
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;'+
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}';
 
-  const js = '<scr'+'ipt>'+
-    'window.onload=function(){'+
-      'var el=document.getElementById("pn"),w=el.parentElement,'+
-          'mW=w.offsetWidth-4,mH=w.offsetHeight-2,fs=60,i=0;'+
-      'el.style.fontSize=fs+"pt";'+
-      'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<200){'+
-        'el.style.fontSize=(fs-=0.5)+"pt";'+
-      '}'+
-      'setTimeout(function(){window.print();},500);'+
-    '};'+
-  '<\/scr'+'ipt>';
+  let pStyle = document.getElementById('dynamic-print-style');
+  pStyle.innerHTML = css;
 
-  const copiesNote = copies > 1 ? copies+' COPIES' : '';
-  const win = window.open('', 'fp_'+Date.now(), 'width=250,height=120');
-  win.document.open();
-  win.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
-    '<title>Front Label '+copiesNote+'</title>'+
-    '<style>'+css+'</style>'+js+'</head>'+
-    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>'
-  );
-  win.document.close();
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:61.5mm;height:25mm;overflow:hidden;background:#fff;';
+  box.innerHTML = '<div class="w"><div class="n" id="pn">'+name+'</div></div>';
+  document.body.appendChild(box);
+
+  const el = document.getElementById('pn');
+  const w = el.parentElement;
+  const mW = w.offsetWidth - 4;
+  const mH = w.offsetHeight - 2;
+  let fs = 60, i = 0;
+  
+  el.style.fontSize = fs + "pt";
+  while ((el.scrollWidth > mW || el.scrollHeight > mH) && fs > 4 && i++ < 200) {
+    el.style.fontSize = (fs -= 0.5) + "pt";
+  }
+
+  const printZone = document.getElementById('print-zone');
+  printZone.innerHTML = '';
+  printZone.appendChild(w);
+  document.body.removeChild(box);
+
+  setTimeout(function(){ window.print(); }, 100);
 }
 
 function pB() {
@@ -554,9 +556,8 @@ function pB() {
   const css = [
     '@page{size:47.5mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:47.5mm;height:90mm;margin:0;padding:0;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
     '.L{width:47.5mm;height:90mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
-      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden}',
+      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
       'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
     '.ca{font-size:0.6em;text-align:center;font-weight:600}',
@@ -572,8 +573,11 @@ function pB() {
     '.pg{font-size:0.56em;font-weight:700}'
   ].join('');
 
+  let pStyle = document.getElementById('dynamic-print-style');
+  pStyle.innerHTML = css;
+
   const bodyHTML =
-    '<div class="L">'+
+    '<div class="L" id="pbn">'+
     '<div class="ti">'+p.n.toUpperCase()+'</div>'+
     '<div class="ca">Category - '+(p.c||'—')+'</div>'+
     '<hr>'+
@@ -591,24 +595,27 @@ function pB() {
     '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
     '</div>';
 
-  const js2 = '<scr'+'ipt>'+
-    'window.onload=function(){'+
-      'var L=document.querySelector(".L"),bH=L.offsetHeight,fs=9,g=0,s=0;'+
-      'while(L.scrollHeight<=bH&&fs<22&&g++<150){fs+=0.2;L.style.fontSize=fs+"pt";}'+
-      'while(L.scrollHeight>bH&&fs>4&&s++<150){fs-=0.2;L.style.fontSize=fs+"pt";}'+
-      'fs=Math.max(4,fs-0.4);L.style.fontSize=fs+"pt";'+
-      'setTimeout(function(){window.print();},600);'+
-    '};'+
-  '<\/scr'+'ipt>';
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:47.5mm;height:90mm;overflow:hidden;background:#fff;';
+  box.innerHTML = bodyHTML;
+  document.body.appendChild(box);
 
-  const copiesNote = copies > 1 ? copies+' COPIES' : '';
-  const win2 = window.open('', 'bp_'+Date.now(), 'width=200,height=380');
-  win2.document.open();
-  win2.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">'+
-    '<title>Back Label '+copiesNote+'</title>'+
-    '<style>'+css+'</style>'+js2+'</head>'+
-    '<body>'+bodyHTML+'</body></html>'
-  );
-  win2.document.close();
+  const L = document.getElementById('pbn');
+  let fs = 9, g = 0, s = 0;
+  const bH = L.offsetHeight;
+  while (L.scrollHeight <= bH && fs < 22 && g++ < 150) {
+    fs += 0.2; L.style.fontSize = fs + 'pt';
+  }
+  while (L.scrollHeight > bH && fs > 4 && s++ < 150) {
+    fs -= 0.2; L.style.fontSize = fs + 'pt';
+  }
+  fs = Math.max(4, fs - 0.4);
+  L.style.fontSize = fs + 'pt';
+
+  const printZone = document.getElementById('print-zone');
+  printZone.innerHTML = '';
+  printZone.appendChild(L);
+  document.body.removeChild(box);
+
+  setTimeout(function(){ window.print(); }, 100);
 }

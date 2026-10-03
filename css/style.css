@@ -670,4 +670,36 @@ body.sidebar-open .sidebar-overlay { display:block }
   .pack-btn { font-size:11px; padding:8px 10px }
 }
 
+/* ══════════════════════════════════════
+   PRINT ZONE (Main Window Printing)
+══════════════════════════════════════ */
+@media screen {
+  #print-zone { display: none !important; }
+}
+
+@media print {
+  /* Completely hide all UI */
+  .top-bar, .app-wrap, .sidebar, .sidebar-overlay, .mobile-print-tip { 
+    display: none !important; 
+  }
+  
+  /* Reset body/html for clean printing */
+  html, body { 
+    background: #fff !important; 
+    margin: 0 !important; 
+    padding: 0 !important; 
+    height: auto !important; 
+    overflow: visible !important; 
+    width: 100% !important;
+  }
+  
+  /* Show only the print zone */
+  #print-zone { 
+    display: block !important; 
+    background: #fff;
+    margin: 0; 
+    padding: 0;
+  }
+}
+
 
