@@ -363,6 +363,9 @@ function renderBack() {
   requestAnimationFrame(fitBackTitle);
 }
 
+/* Alias — HTML uses oninput="manualRender()" */
+function manualRender() { renderManual(); }
+
 function renderManual() {
   const fp = $('fp'), bp = $('bp');
   const mn = gv('m-name');
