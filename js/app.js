@@ -490,10 +490,26 @@ function filterByCategory() {
 
 /* ── Copies helper ── */
 function getCopies() {
-  const el = document.getElementById('print-copies') || document.getElementById('print-copies-m');
+  const d = document.getElementById('print-copies');
+  const m = document.getElementById('print-copies-m');
+  // Use whichever is visible; if both visible, prefer desktop
+  let el = d;
+  if (d && !d.offsetParent && m && m.offsetParent) el = m;
+  else if (m && !d) el = m;
   const n = parseInt(el && el.value, 10);
   return (n && n > 0) ? Math.min(n, 50) : 1;
 }
+
+// Keep both copies inputs in sync
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'print-copies') {
+    var m = document.getElementById('print-copies-m');
+    if (m) m.value = e.target.value;
+  } else if (e.target.id === 'print-copies-m') {
+    var d = document.getElementById('print-copies');
+    if (d) d.value = e.target.value;
+  }
+});
 
 function pF() {
   let pname;
