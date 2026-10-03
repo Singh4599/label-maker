@@ -11,40 +11,57 @@ const QZP = {
   frontPrinter: localStorage.getItem('frontPrinter') || '',
   backPrinter: localStorage.getItem('backPrinter') || '',
   gap: parseFloat(localStorage.getItem('labelGap') || '3'),
-  printers: []
+  printers: [],
+  _retrying: false   // prevent multiple simultaneous retries
 };
 
 /* ─── Init on page load ─── */
 window.addEventListener('DOMContentLoaded', () => {
-  qzConnect();
   loadSavedSettings();
+  // Only attempt QZ if the library actually loaded
+  if (typeof qz !== 'undefined') {
+    qzConnect();
+  } else {
+    setQZStatus('disconnected');
+  }
 });
 
 /* ─── Connect to QZ Tray ─── */
 async function qzConnect() {
+  if (typeof qz === 'undefined') { setQZStatus('disconnected'); return; }
+  if (QZP._retrying) return;         // prevent double-connect
+  QZP._retrying = true;
   setQZStatus('connecting');
   try {
-    // Use unsigned cert for local connection (free QZ Tray)
+    // Free unsigned mode (no SSL certificate needed for local QZ Tray)
     qz.security.setCertificatePromise(() => Promise.resolve(''));
     qz.security.setSignatureAlgorithm('SHA512');
     qz.security.setSignaturePromise(() => Promise.resolve(''));
 
-    await qz.websocket.connect({ retries: 3, delay: 1 });
+    // Disconnect first if already connected (prevents stale connection errors)
+    if (qz.websocket.isActive()) {
+      await qz.websocket.disconnect();
+    }
+
+    await qz.websocket.connect({ retries: 2, delay: 1 });
     QZP.connected = true;
     setQZStatus('connected');
     await refreshPrinters();
   } catch (err) {
     QZP.connected = false;
     setQZStatus('disconnected');
-    console.warn('[QZ] Not connected:', err.message);
+    console.warn('[QZ] Not connected — fallback to Chrome print:', err.message);
+  } finally {
+    QZP._retrying = false;
   }
 }
 
 /* ─── Refresh printer list ─── */
 async function refreshPrinters() {
-  if (!QZP.connected) return;
+  if (!QZP.connected || typeof qz === 'undefined') return;
   try {
-    QZP.printers = await qz.printers.find();
+    const list = await qz.printers.find();
+    QZP.printers = Array.isArray(list) ? list : [list];
     populatePrinterDropdowns(QZP.printers);
   } catch (e) {
     console.warn('[QZ] Could not fetch printers:', e);
@@ -67,10 +84,10 @@ function setQZStatus(state) {
   };
   const s = states[state] || states.disconnected;
 
-  if (dot) { dot.style.background = s.color; }
-  if (txt) { txt.textContent = s.label; }
-  if (modalDot) { modalDot.style.background = s.color; }
-  if (modalTxt) { modalTxt.textContent = s.label; }
+  if (dot)       dot.style.background = s.color;
+  if (txt)       txt.textContent = s.label;
+  if (modalDot)  modalDot.style.background = s.color;
+  if (modalTxt)  modalTxt.textContent = s.label;
   if (installTip) {
     installTip.style.display = state === 'disconnected' ? 'block' : 'none';
   }
@@ -80,16 +97,19 @@ function setQZStatus(state) {
 function openPrinterSettings() {
   const modal = document.getElementById('printer-modal');
   if (modal) modal.classList.add('active');
+
   if (QZP.connected) {
-    refreshPrinters();
-  } else {
-    qzConnect(); // retry
+    refreshPrinters();        // just refresh list
+  } else if (!QZP._retrying) {
+    qzConnect();              // retry ONLY if not already retrying
   }
 }
 
 function closePrinterSettings(e) {
+  // Called from button (no e) OR from overlay click (e passed)
   if (e && e.target !== document.getElementById('printer-modal')) return;
-  document.getElementById('printer-modal').classList.remove('active');
+  const modal = document.getElementById('printer-modal');
+  if (modal) modal.classList.remove('active');
 }
 
 /* ─── Populate dropdowns ─── */
@@ -98,15 +118,12 @@ function populatePrinterDropdowns(printers) {
   const bSel = document.getElementById('back-printer-sel');
   if (!fSel || !bSel) return;
 
-  const opts = printers.map(p =>
-    `<option value="${p}"${p === QZP.frontPrinter ? ' selected' : ''}>${p}</option>`
+  const makeOpts = (savedVal) => printers.map(p =>
+    `<option value="${p}"${p === savedVal ? ' selected' : ''}>${p}</option>`
   ).join('');
 
-  fSel.innerHTML = '<option value="">-- Select Printer --</option>' + opts;
-  bSel.innerHTML = '<option value="">-- Select Printer --</option>' +
-    printers.map(p =>
-      `<option value="${p}"${p === QZP.backPrinter ? ' selected' : ''}>${p}</option>`
-    ).join('');
+  fSel.innerHTML = '<option value="">-- Select Printer --</option>' + makeOpts(QZP.frontPrinter);
+  bSel.innerHTML = '<option value="">-- Select Printer --</option>' + makeOpts(QZP.backPrinter);
 }
 
 /* ─── Load saved settings into modal ─── */
@@ -117,56 +134,77 @@ function loadSavedSettings() {
 
 /* ─── Save printer settings ─── */
 function savePrinterSettings() {
-  const fp = document.getElementById('front-printer-sel').value;
-  const bp = document.getElementById('back-printer-sel').value;
-  const gp = parseFloat(document.getElementById('label-gap').value) || 3;
+  const fpEl = document.getElementById('front-printer-sel');
+  const bpEl = document.getElementById('back-printer-sel');
+  const gpEl = document.getElementById('label-gap');
+
+  if (!fpEl || !bpEl || !gpEl) {
+    showToast('Settings elements not found', 'error'); return;
+  }
+
+  const fp = fpEl.value || '';
+  const bp = bpEl.value || '';
+  const gp = Math.max(0, Math.min(10, parseFloat(gpEl.value) || 3));
 
   QZP.frontPrinter = fp;
-  QZP.backPrinter = bp;
-  QZP.gap = gp;
+  QZP.backPrinter  = bp;
+  QZP.gap          = gp;
 
   localStorage.setItem('frontPrinter', fp);
-  localStorage.setItem('backPrinter', bp);
-  localStorage.setItem('labelGap', gp);
+  localStorage.setItem('backPrinter',  bp);
+  localStorage.setItem('labelGap',     gp);
 
-  document.getElementById('printer-modal').classList.remove('active');
+  closePrinterSettings();
   showToast('✓ Printer settings saved!', 'success');
 }
 
 /* ═══════════════════════════════════════════════════════════════
    TSPL COMMAND GENERATORS
-   TSC TE244 uses TSPL (Thermal Standard Printer Language)
+   TSC TE244 — 203 DPI — TSPL2 language
+   IMPORTANT: ALL text must be ASCII only — no ₹, —, or Unicode
 ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Sanitize text for TSPL (ASCII only) ─── */
+function tsplSafe(str) {
+  return (str || '')
+    .replace(/—/g, '-')           // em-dash → hyphen
+    .replace(/₹/g, 'Rs.')         // rupee → Rs.
+    .replace(/[^\x00-\x7F]/g, '') // strip any remaining non-ASCII
+    .replace(/"/g, "'");          // double quotes break TSPL TEXT command
+}
 
 /* ─── Generate FRONT label TSPL ─── */
 function buildFrontTSPL(name, copies) {
   const w = 65, h = 24, gap = QZP.gap;
-  const lines = wrapText(name.toUpperCase(), 30); // wrap long names
+  const safeName = tsplSafe(name.toUpperCase());
+  const lines = wrapText(safeName, 20); // tighter wrap for large font
   const totalLines = lines.length;
 
-  // Calculate font and Y positions
-  // TSPL TEXT: TEXT x,y,"font",rotation,xmul,ymul,"text"
-  // Font "3" = 16x24pt, "4" = 24x32pt. We use x/y multipliers for scaling
-  let yStart, font, xm, ym;
+  // Font selection: "4" = 24x32 dots, "3" = 16x24 dots (before multipliers)
+  let font, xm, ym, yStart;
   if (totalLines === 1) {
     font = '4'; xm = 3; ym = 3;
-    yStart = Math.round((h * 11.8 / 2) - (32 * 3 / 2)); // vertically center
+    yStart = Math.max(4, Math.round((h * 8) / 2 - (32 * ym) / 2));
   } else if (totalLines === 2) {
     font = '4'; xm = 2; ym = 2;
-    yStart = Math.round((h * 11.8) / 2 - (32 * 2 * totalLines / 2));
+    const totalH = (32 * ym + 8) * totalLines;
+    yStart = Math.max(4, Math.round((h * 8) / 2 - totalH / 2));
   } else {
     font = '3'; xm = 2; ym = 2;
-    yStart = Math.round((h * 11.8) / 2 - (24 * 2 * totalLines / 2));
+    const totalH = (24 * ym + 6) * totalLines;
+    yStart = Math.max(4, Math.round((h * 8) / 2 - totalH / 2));
   }
 
+  const lineHeight = ((font === '4' ? 32 : 24) * ym) + (font === '4' ? 8 : 6);
+  const charW = (font === '4' ? 24 : 16) * xm;
+  const W = w * 8; // label width in dots
+
   let textCmds = '';
-  const lineHeight = (font === '4' ? 32 : 24) * ym + 8;
-  lines.forEach((line, i) => {
+  lines.forEach((lineText, i) => {
     const yPos = Math.max(4, yStart + i * lineHeight);
-    // Center-align: calc x offset
-    const textW = line.length * (font === '4' ? 24 : 16) * xm;
-    const xPos = Math.max(4, Math.round((w * 11.8 - textW) / 2));
-    textCmds += `TEXT ${xPos},${yPos},"${font}",0,${xm},${ym},"${line}"\n`;
+    const textW = lineText.length * charW;
+    const xPos = Math.max(4, Math.round((W - textW) / 2));
+    textCmds += `TEXT ${xPos},${yPos},"${font}",0,${xm},${ym},"${lineText}"\n`;
   });
 
   return [
@@ -187,93 +225,105 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const mrp = parseFloat(v.m) || 0;
   const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
 
-  // TSPL dots = mm * 8 (203 DPI = 8 dots/mm)
-  // All x,y in dots
+  // Dot conversion: 203 DPI = 8 dots/mm
   const d = (mm) => Math.round(mm * 8);
-  const W = d(w); // total width in dots
+  const W = d(w); // total label width in dots
 
-  // Helper: centered text x
-  const cx = (text, charW) => Math.max(0, Math.round((W - text.length * charW) / 2));
+  // Center-align helper
+  const cx = (text, charPxW) => Math.max(0, Math.round((W - text.length * charPxW) / 2));
 
-  // Wrap ingredients to fit label width
-  const ingrLines = wrapText(`(In Descending Order By Weight) ${p.i || '—'}`, 48);
-  const nsText = getNutritionShort(p);
-  const nsLines = wrapText(nsText, 52);
+  // Sanitize all text
+  const safeName = tsplSafe(p.n.toUpperCase());
+  const safeCat  = tsplSafe(`Category - ${p.c || '-'}`);
+  const safeIngr = tsplSafe(`(In Descending Order By Weight) ${p.i || '-'}`);
+  const safeDetails = [
+    tsplSafe(`NET WEIGHT : ${v.d} (${v.oz})`),
+    tsplSafe(`BATCH NO : ${bn || '-'}`),
+    tsplSafe(`DATE OF PACKING : ${pd}`),
+    tsplSafe(`BEST BEFORE : ${bb}`)
+  ];
+  const safeMRP = tsplSafe(`MRP : Rs.${mrp}/-`);
+  const safePG  = tsplSafe(`FOR 1g = Rs ${pg}`);
 
-  let y = d(1.5); // start Y
-  const lh = (mm) => d(mm); // line height helper
+  // Ingredient lines (wrap to 44 chars for 47.5mm label)
+  const ingrLines = wrapText(safeIngr, 44);
+  // Nutrition text
+  const nsText  = getNutritionShort(p);
+  const nsLines = wrapText(nsText, 48);
 
+  let y = d(1.5);
   let cmds = '';
-  const line = (text, yPos, font, xm, ym, xOverride) => {
-    const charW = (font === '3' ? 16 : (font === '2' ? 8 : 16)) * xm;
-    const x = xOverride !== undefined ? xOverride : cx(text, charW);
-    cmds += `TEXT ${Math.max(0,x)},${yPos},"${font}",0,${xm},${ym},"${text}"\n`;
-  };
-  const hline = (y) => { cmds += `BAR 0,${y},${W},3\n`; };
 
-  // Product name — large, centered
-  const nameLines = wrapText(p.n.toUpperCase(), 22);
-  const nameFont = nameLines.length > 1 ? '4' : '4';
+  // Helper: add text command
+  const txt = (text, yPos, font, xm, ym, xForce) => {
+    const charPxW = (font === '4' ? 24 : font === '3' ? 16 : 8) * xm;
+    const x = (xForce !== undefined) ? xForce : cx(text, charPxW);
+    cmds += `TEXT ${Math.max(0, x)},${yPos},"${font}",0,${xm},${ym},"${text}"\n`;
+  };
+  // Helper: horizontal bar
+  const hbar = (yPos) => { cmds += `BAR 0,${yPos},${W},3\n`; };
+
+  // ── Product name (large, centered) ──
+  const nameLines = wrapText(safeName, 20);
   const nameXm = nameLines.length > 1 ? 1 : 2;
   const nameYm = nameLines.length > 1 ? 1 : 2;
+  const nameLH  = (32 * nameYm) + 6;
   nameLines.forEach((nl) => {
-    line(nl, y, nameFont, nameXm, nameYm);
-    y += lh(nameLines.length > 1 ? 5 : 6);
+    txt(nl, y, '4', nameXm, nameYm);
+    y += nameLH;
   });
+  y += d(0.5);
 
-  // Category
-  line(`Category - ${p.c || '—'}`, y, '2', 1, 1);
-  y += lh(3.5);
+  // ── Category ──
+  txt(safeCat, y, '2', 1, 1);
+  y += d(4);
 
-  hline(y); y += lh(2);
+  // ── Separator ──
+  hbar(y); y += d(2.5);
 
-  // Ingredients
-  cmds += `TEXT ${d(1)},${y},"2",0,1,1,"INGREDIENTS :-"\n`;
-  y += lh(3);
+  // ── Ingredients ──
+  txt('INGREDIENTS :-', y, '2', 1, 1, d(1));
+  y += d(3);
   ingrLines.forEach(il => {
     cmds += `TEXT ${d(1)},${y},"2",0,1,1,"${il}"\n`;
-    y += lh(3);
+    y += d(3);
   });
+  y += d(1);
 
-  y += lh(0.5);
+  // ── Nutrition header ──
+  txt('NUTRITIONAL INFORMATION', y, '2', 1, 1);
+  y += d(4);
+  txt('Approx. Composition per 100 g', y, '2', 1, 1);
+  y += d(3.5);
 
-  // Nutritional header
-  line('NUTRITIONAL INFORMATION', y, '2', 1, 1);
-  y += lh(3.5);
-  line('Approximate Composition per 100 g', y, '2', 1, 1);
-  y += lh(3);
-
-  // Nutrition box
-  cmds += `BOX ${d(0.5)},${y},${W - d(0.5)},${y + d(nsLines.length * 3 + 2)},3\n`;
-  y += lh(1);
+  // ── Nutrition box ──
+  const boxH = d(nsLines.length * 3 + 2.5);
+  cmds += `BOX ${d(0.5)},${y},${W - d(0.5)},${y + boxH},3\n`;
+  y += d(1);
   nsLines.forEach(nl => {
     cmds += `TEXT ${d(1.5)},${y},"2",0,1,1,"${nl}"\n`;
-    y += lh(3);
+    y += d(3);
   });
-  y += lh(1.5);
+  y += d(2);
 
-  hline(y); y += lh(2);
+  // ── Separator ──
+  hbar(y); y += d(2.5);
 
-  // Details
-  const details = [
-    `NET WEIGHT : ${v.d} (${v.oz})`,
-    `BATCH NO : ${bn || '—'}`,
-    `DATE OF PACKING : ${pd}`,
-    `BEST BEFORE : ${bb}`
-  ];
-  details.forEach(det => {
+  // ── Details (net weight, batch, dates) ──
+  safeDetails.forEach(det => {
     cmds += `TEXT ${d(1)},${y},"2",0,1,1,"${det}"\n`;
-    y += lh(3.5);
+    y += d(3.5);
   });
 
-  hline(y); y += lh(2);
+  // ── Separator ──
+  hbar(y); y += d(2.5);
 
-  // MRP
-  line(`MRP : Rs.${mrp}/-`, y, '3', 1, 2);
-  y += lh(5.5);
-  line('(INCL. OF ALL TAXES)', y, '2', 1, 1);
-  y += lh(3.5);
-  line(`FOR 1g = Rs ${pg}`, y, '2', 1, 1);
+  // ── MRP (large) ──
+  txt(safeMRP, y, '3', 1, 2);
+  y += d(6);
+  txt('(INCL. OF ALL TAXES)', y, '2', 1, 1);
+  y += d(4);
+  txt(safePG, y, '2', 1, 1);
 
   return [
     `SIZE ${w} mm,${h} mm`,
@@ -287,48 +337,51 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   ].join('\n');
 }
 
-/* ─── Wrap text into lines ─── */
+/* ─── Wrap text into lines (ASCII safe) ─── */
 function wrapText(text, maxChars) {
   text = (text || '').trim();
+  if (!text) return ['-'];
   if (text.length <= maxChars) return [text];
   const words = text.split(' ');
   const lines = [];
   let cur = '';
   words.forEach(w => {
-    if ((cur + ' ' + w).trim().length > maxChars) {
-      if (cur) lines.push(cur.trim());
-      cur = w;
+    const test = cur ? cur + ' ' + w : w;
+    if (test.length > maxChars) {
+      if (cur) lines.push(cur);
+      // If single word > maxChars, hard-split it
+      cur = w.length > maxChars ? w.substring(0, maxChars) : w;
     } else {
-      cur = (cur + ' ' + w).trim();
+      cur = test;
     }
   });
-  if (cur) lines.push(cur.trim());
+  if (cur) lines.push(cur);
   return lines.length ? lines : [text.substring(0, maxChars)];
 }
 
-/* ─── Short nutrition string for TSPL (compact) ─── */
+/* ─── Short nutrition string for TSPL (ASCII, compact) ─── */
 function getNutritionShort(p) {
   return [
     `Energy:${p.e||0}kcal`, `Protein:${p.p||0}g`,
-    `Carbs:${p.cb||0}g`, `Sugars:${p.ts||0}g`,
-    `Fat:${p.tf||0}g`, `Sat.Fat:${p.sf||0}g`,
-    `Trans Fat:${p.tr||0}g`, `Cholesterol:${p.ch||0}mg`,
+    `Carbs:${p.cb||0}g`,    `Sugars:${p.ts||0}g`,
+    `Fat:${p.tf||0}g`,      `Sat.Fat:${p.sf||0}g`,
+    `Trans Fat:${p.tr||0}g`,`Cholesterol:${p.ch||0}mg`,
     `Sodium:${p.so||0}mg`
   ].join(', ');
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   MAIN PRINT FUNCTIONS — Called by pF() and pB() in app.js
-   These OVERRIDE the Chrome print with QZ RAW print
-   Falls back to Chrome print if QZ not connected
+   MAIN PRINT FUNCTIONS
+   Called by pF() and pB() in app.js
+   Returns true if QZ print succeeded, false = use Chrome fallback
 ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Print Front via QZ or fallback ─── */
+/* ─── Print Front via QZ ─── */
 async function qzPrintFront(name, copies) {
-  if (!QZP.connected || !QZP.frontPrinter) return false; // use fallback
+  if (typeof qz === 'undefined' || !QZP.connected || !QZP.frontPrinter) return false;
 
   const tspl = buildFrontTSPL(name, copies);
-  console.log('[TSPL FRONT]\n', tspl); // debug
+  console.log('[TSPL FRONT]\n', tspl);
 
   try {
     setQZStatus('printing');
@@ -339,17 +392,17 @@ async function qzPrintFront(name, copies) {
     return true;
   } catch (err) {
     setQZStatus('connected');
-    showToast('Print error: ' + err.message, 'error');
+    showToast('QZ Print error: ' + err.message + ' — switching to Chrome print', 'error');
     return false;
   }
 }
 
-/* ─── Print Back via QZ or fallback ─── */
+/* ─── Print Back via QZ ─── */
 async function qzPrintBack(p, v, bn, pd, bb, copies) {
-  if (!QZP.connected || !QZP.backPrinter) return false; // use fallback
+  if (typeof qz === 'undefined' || !QZP.connected || !QZP.backPrinter) return false;
 
   const tspl = buildBackTSPL(p, v, bn, pd, bb, copies);
-  console.log('[TSPL BACK]\n', tspl); // debug
+  console.log('[TSPL BACK]\n', tspl);
 
   try {
     setQZStatus('printing');
@@ -360,27 +413,28 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
     return true;
   } catch (err) {
     setQZStatus('connected');
-    showToast('Print error: ' + err.message, 'error');
+    showToast('QZ Print error: ' + err.message + ' — switching to Chrome print', 'error');
     return false;
   }
 }
 
-/* ─── Test print ─── */
+/* ─── Test print (front printer, 65x24mm) ─── */
 async function testPrint() {
-  if (!QZP.connected) {
+  if (typeof qz === 'undefined' || !QZP.connected) {
     showToast('QZ Tray not connected!', 'error'); return;
   }
   const printer = QZP.frontPrinter || QZP.backPrinter;
   if (!printer) {
-    showToast('Select a printer first!', 'error'); return;
+    showToast('Select a printer first and save!', 'error'); return;
   }
   const tspl = [
-    `SIZE 65 mm,25 mm`,
+    `SIZE 65 mm,24 mm`,
     `GAP ${QZP.gap} mm,0 mm`,
     `DIRECTION 1`,
     `CLS`,
-    `TEXT 40,20,"4",0,1,1,"TEST PRINT"`,
-    `TEXT 40,70,"2",0,1,1,"365 Spicery Label Studio"`,
+    `TEXT 20,30,"4",0,1,2,"TEST PRINT"`,
+    `TEXT 20,100,"2",0,1,1,"365 Spicery Label Studio"`,
+    `TEXT 20,130,"2",0,1,1,"Printer: ${tsplSafe(printer)}"`,
     `PRINT 1,1`
   ].join('\n');
   try {
