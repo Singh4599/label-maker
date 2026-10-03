@@ -679,26 +679,33 @@ body.sidebar-open .sidebar-overlay { display:block }
 
 @media print {
   /* Completely hide all UI */
-  .top-bar, .app-wrap, .sidebar, .sidebar-overlay, .mobile-print-tip, .toast-container { 
+  .top-bar, .app-wrap, .sidebar, .sidebar-overlay, .mobile-print-tip, .toast-container, #dynamic-print-style { 
     display: none !important; 
   }
   
-  /* Reset body/html for clean printing */
+  /* Reset body/html — CRITICAL: height must be 0 to prevent blank second page */
   html, body { 
     background: #fff !important; 
     margin: 0 !important; 
     padding: 0 !important; 
-    height: auto !important; 
-    overflow: visible !important; 
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important; 
     width: 100% !important;
   }
   
-  /* Show only the print zone */
+  /* Show only the print zone — no overflow allowed */
   #print-zone { 
     display: block !important; 
     background: #fff;
     margin: 0; 
     padding: 0;
+    overflow: hidden !important;
+  }
+  
+  /* Prevent trailing blank page */
+  #print-zone > *:last-child {
+    page-break-after: avoid !important;
   }
 }
 

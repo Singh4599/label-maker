@@ -498,7 +498,8 @@ function pF() {
   const css =
     '@page{size:61.5mm 25mm;margin:0}'+
     '*{margin:0;padding:0;box-sizing:border-box}'+
-    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff}'+
+    'html,body{height:0!important;min-height:0!important;overflow:hidden!important}'+
+    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff;page-break-after:avoid}'+
     '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;'+
       'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;'+
       'letter-spacing:-0.5pt;width:100%;word-break:break-word}';
@@ -563,8 +564,9 @@ function pB() {
   const css = [
     '@page{size:47.5mm 90mm;margin:0}',
     '*{margin:0;padding:0;box-sizing:border-box}',
+    'html,body{height:0!important;min-height:0!important;overflow:hidden!important}',
     '.L{width:47.5mm;height:90mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
-      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
+      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;background:#fff;font-family:Arial,sans-serif;page-break-after:avoid}',
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
       'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
     '.ca{font-size:0.6em;text-align:center;font-weight:600}',
