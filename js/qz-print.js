@@ -276,25 +276,29 @@ function buildBackHTML(p, v, bn, pd, bb) {
    Use original TSC printers (NOT Generic RAW) — driver manages gap
 ═══════════════════════════════════════════════════════════════ */
 
-function _qzPixelConfig(printerName, widthMM, heightMM, copies) {
+function _qzPixelConfig(printerName, widthMM, heightMM) {
   return qz.configs.create(printerName, {
     size     : { width: widthMM / 25.4, height: heightMM / 25.4 }, // inches
     units    : 'in',
     margins  : 0,
     colorType: 'blackwhite',
-    copies   : copies || 1
+    copies   : 1  // always 1 — we loop for multiple copies
   });
 }
 
 /* ─── Print Front via QZ (pixel/HTML) ─── */
 async function qzPrintFront(name, copies) {
   if (typeof qz === 'undefined' || !QZP.connected || !QZP.frontPrinter) return false;
-  const html = buildFrontHTML(name);
+  const html   = buildFrontHTML(name);
+  const config = _qzPixelConfig(QZP.frontPrinter, 65, 25);
   console.log('[FRONT HTML]\n', html);
   try {
     setQZStatus('printing');
-    const config = _qzPixelConfig(QZP.frontPrinter, 65, 25, copies);
-    await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+    // Send each copy as a separate job — prevents multi-copy gap detection error
+    for (let i = 0; i < copies; i++) {
+      await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+      if (i < copies - 1) await new Promise(r => setTimeout(r, 800)); // brief pause between copies
+    }
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Front Printer!`, 'success');
     return true;
@@ -308,12 +312,15 @@ async function qzPrintFront(name, copies) {
 /* ─── Print Back via QZ (pixel/HTML) ─── */
 async function qzPrintBack(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined' || !QZP.connected || !QZP.backPrinter) return false;
-  const html = buildBackHTML(p, v, bn, pd, bb);
+  const html   = buildBackHTML(p, v, bn, pd, bb);
+  const config = _qzPixelConfig(QZP.backPrinter, 50, 90);
   console.log('[BACK HTML]\n', html);
   try {
     setQZStatus('printing');
-    const config = _qzPixelConfig(QZP.backPrinter, 50, 90, copies);
-    await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+    for (let i = 0; i < copies; i++) {
+      await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+      if (i < copies - 1) await new Promise(r => setTimeout(r, 1200)); // longer pause for back label
+    }
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Back Printer!`, 'success');
     return true;
