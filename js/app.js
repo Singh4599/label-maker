@@ -524,7 +524,14 @@ function pF() {
 
   const printZone = document.getElementById('print-zone');
   printZone.innerHTML = '';
-  printZone.appendChild(w);
+  
+  // Duplicate for copies
+  for (let c = 0; c < copies; c++) {
+    const clone = w.cloneNode(true);
+    if (c < copies - 1) clone.style.pageBreakAfter = 'always';
+    printZone.appendChild(clone);
+  }
+  
   document.body.removeChild(box);
 
   setTimeout(function(){ window.print(); }, 100);
@@ -614,7 +621,14 @@ function pB() {
 
   const printZone = document.getElementById('print-zone');
   printZone.innerHTML = '';
-  printZone.appendChild(L);
+  
+  // Duplicate for copies
+  for (let c = 0; c < copies; c++) {
+    const clone = L.cloneNode(true);
+    if (c < copies - 1) clone.style.pageBreakAfter = 'always';
+    printZone.appendChild(clone);
+  }
+  
   document.body.removeChild(box);
 
   setTimeout(function(){ window.print(); }, 100);
