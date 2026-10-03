@@ -206,7 +206,8 @@ function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
 /* ─── Build FRONT label TSPL (65x25mm) ─── */
 function buildFrontTSPL(name, copies) {
-  const W = 65, H = 25, gap = QZP.gap || 3;
+  const W = 65, H = 25;
+  const gap = parseFloat(localStorage.getItem('frontGap') || '2'); // front labels usually 2mm gap
   const n = tsplSafe(name.toUpperCase());
   let font, xm, ym, maxCh;
   if (n.length <= 7)       { font='4'; xm=3; ym=3; maxCh=7;  }
