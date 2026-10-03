@@ -33,10 +33,11 @@ async function qzConnect() {
   QZP._retrying = true;
   setQZStatus('connecting');
   try {
-    // Free unsigned mode (no SSL certificate needed for local QZ Tray)
-    qz.security.setCertificatePromise(() => Promise.resolve(''));
-    qz.security.setSignatureAlgorithm('SHA512');
-    qz.security.setSignaturePromise(() => Promise.resolve(''));
+    // Free unsigned mode
+    qz.security.setCertificatePromise((resolve, reject) => resolve());
+    qz.security.setSignaturePromise((toSign) => {
+      return (resolve, reject) => resolve();
+    });
 
     // Disconnect first if already connected (prevents stale connection errors)
     if (qz.websocket.isActive()) {
