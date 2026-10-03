@@ -214,7 +214,6 @@ function buildFrontTSPL(name, copies) {
   });
 
   return [
-    `GAPDETECT`,
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
     `SET DARKNESS 12`,
@@ -333,7 +332,6 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   txt(safePG, y, '2', 1, 1);
 
   return [
-    `GAPDETECT`,
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
     `SET DARKNESS 12`,
@@ -454,5 +452,23 @@ async function testPrint() {
     showToast('✓ Test print sent!', 'success');
   } catch (e) {
     showToast('Test print failed: ' + e.message, 'error');
+  }
+}
+
+/* ─── Calibrate printer (one-time, on label roll change) ─── */
+async function calibratePrinter() {
+  if (typeof qz === 'undefined' || !QZP.connected) {
+    showToast('QZ Tray not connected!', 'error'); return;
+  }
+  const printer = QZP.frontPrinter || QZP.backPrinter;
+  if (!printer) {
+    showToast('Select a printer first and save!', 'error'); return;
+  }
+  try {
+    const config = qz.configs.create(printer);
+    await qz.print(config, [{ type: 'raw', format: 'plain', data: 'GAPDETECT\r\n' }]);
+    showToast('✓ Printer calibrated! Gap sensor set.', 'success');
+  } catch (e) {
+    showToast('Calibration failed: ' + e.message, 'error');
   }
 }
