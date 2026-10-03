@@ -160,19 +160,22 @@ function savePrinterSettings() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   HTML LABEL BUILDERS
-   Rendered by QZ Tray → Sent as pixel job to TSC driver
-   Driver handles gap detection & calibration (same as Bartender)
-   Sizes: Front = 65×25mm, Back = 50×90mm
+   TSPL LABEL BUILDERS
+   TSC TE244 — 203 DPI — TSPL2
+   Printer: Generic/Text Only (RAW passthrough)
+   FORMFEED at end = no post-print error (Bartender does same)
 ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Sanitize text for HTML display ─── */
-function htmlSafe(str) {
+/* ─── Sanitize for TSPL (ASCII only, no double quotes) ─── */
+function tsplSafe(str) {
   return (str || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/—/g, '-').replace(/₹/g, 'Rs.').replace(/\u20B9/g, 'Rs.')
+    .replace(/[^\x00-\x7F]/g, '').replace(/"/g, "'");
+}
+
+/* ─── Sanitize for HTML (Chrome fallback) ─── */
+function htmlSafe(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* ─── Word-wrap helper ─── */
@@ -184,11 +187,9 @@ function wrapText(text, maxChars) {
   const lines = [];
   let cur = '';
   words.forEach(w => {
-    const test = cur ? cur + ' ' + w : w;
-    if (test.length > maxChars) {
-      if (cur) lines.push(cur);
-      cur = w.length > maxChars ? w.substring(0, maxChars) : w;
-    } else { cur = test; }
+    const t = cur ? cur + ' ' + w : w;
+    if (t.length > maxChars) { if (cur) lines.push(cur); cur = w.length > maxChars ? w.substring(0, maxChars) : w; }
+    else cur = t;
   });
   if (cur) lines.push(cur);
   return lines.length ? lines : [text.substring(0, maxChars)];
@@ -197,120 +198,146 @@ function wrapText(text, maxChars) {
 /* ─── Nutrition string ─── */
 function getNutritionShort(p) {
   return [
-    `Energy: ${p.e||0} kcal`, `Protein: ${p.p||0}g`,
-    `Carbs: ${p.cb||0}g`,    `Sugars: ${p.ts||0}g`,
-    `Fat: ${p.tf||0}g`,      `Sat. Fat: ${p.sf||0}g`,
-    `Trans Fat: ${p.tr||0}g`,`Cholesterol: ${p.ch||0}mg`,
-    `Sodium: ${p.so||0}mg`
-  ].join(' | ');
+    `Energy:${p.e||0}kcal`, `Protein:${p.p||0}g`, `Carbs:${p.cb||0}g`,
+    `Sugars:${p.ts||0}g`, `Fat:${p.tf||0}g`, `SatFat:${p.sf||0}g`,
+    `Trans:${p.tr||0}g`, `Chol:${p.ch||0}mg`, `Na:${p.so||0}mg`
+  ].join('|');
 }
 
-/* ─── Build FRONT label HTML (65×25mm) ─── */
-function buildFrontHTML(name) {
-  const n = htmlSafe(name.toUpperCase());
-  const fontSize = n.length <= 8 ? '18pt' : n.length <= 14 ? '13pt' : '9pt';
-  return `<!DOCTYPE html><html><head><style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{width:65mm;height:25mm;display:flex;align-items:center;
-         justify-content:center;background:#fff;overflow:hidden;padding:1mm;}
-    .name{font-family:"Arial Black",Arial,sans-serif;font-size:${fontSize};
-          font-weight:900;text-align:center;line-height:1.15;
-          text-transform:uppercase;word-break:break-word;}
-  </style></head><body><div class="name">${n}</div></body></html>`;
+/* ─── Build FRONT label TSPL (65x25mm) ─── */
+function buildFrontTSPL(name, copies) {
+  const W = 65, H = 25, gap = QZP.gap || 3;
+  const n = tsplSafe(name.toUpperCase());
+
+  // Adaptive font: font4 xm3=big, font4 xm2=medium, font3 xm2=small
+  let font, xm, ym, maxCh;
+  if (n.length <= 7)       { font='4'; xm=3; ym=3; maxCh=7;  }
+  else if (n.length <= 10) { font='4'; xm=2; ym=2; maxCh=10; }
+  else                     { font='3'; xm=2; ym=2; maxCh=16; }
+
+  const lines    = wrapText(n, maxCh);
+  const fontH    = (font === '4' ? 32 : 24) * ym;
+  const lineStep = fontH + 8;
+  const totalH   = lines.length * lineStep - 8;
+  const yStart   = Math.max(4, Math.round((H * 8 - totalH) / 2));
+
+  let textCmds = '';
+  lines.forEach((ln, i) => {
+    const charW = (font === '4' ? 24 : 16) * xm;
+    const tW    = ln.length * charW;
+    const x     = Math.max(4, Math.round((W * 8 - tW) / 2));
+    const y     = yStart + i * lineStep;
+    textCmds   += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+  });
+
+  return [
+    `SIZE ${W} mm,${H} mm`,
+    `GAP ${gap} mm,0 mm`,
+    `SET DARKNESS 12`,
+    `DIRECTION 1`,
+    `CLS`,
+    textCmds.trim(),
+    `PRINT ${copies},1`,
+    `FORMFEED`,
+    ``
+  ].join('\r\n');
 }
 
-/* ─── Build BACK label HTML (50×90mm) ─── */
-function buildBackHTML(p, v, bn, pd, bb) {
-  const mrp    = parseFloat(v.m) || 0;
-  const pg     = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-  const name   = htmlSafe(p.n.toUpperCase());
-  const cat    = htmlSafe(p.c || '-');
-  const ingr   = htmlSafe(p.i || '-');
-  const nw     = htmlSafe(`${v.d} (${v.oz})`);
-  const batch  = htmlSafe(bn || '-');
-  const nutri  = htmlSafe(getNutritionShort(p));
+/* ─── Build BACK label TSPL (50x90mm) ─── */
+function buildBackTSPL(p, v, bn, pd, bb, copies) {
+  const W = 50, H = 90, gap = QZP.gap || 3;
+  const mrp  = parseFloat(v.m) || 0;
+  const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
+  const name = tsplSafe(p.n.toUpperCase());
+  const cat  = tsplSafe(p.c || '-');
+  const ingr = tsplSafe(p.i || '-');
+  const nw   = tsplSafe(`${v.d} (${v.oz})`);
+  const bno  = tsplSafe(bn || '-');
+  const nutri= tsplSafe(getNutritionShort(p));
 
-  return `<!DOCTYPE html><html><head><style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{width:50mm;height:90mm;background:#fff;overflow:hidden;
-         font-family:Arial,sans-serif;font-size:5.5pt;padding:0.8mm;}
-    .name{font-family:"Arial Black",Arial,sans-serif;font-size:9.5pt;
-          font-weight:900;text-align:center;text-transform:uppercase;
-          margin-bottom:0.4mm;line-height:1.1;}
-    .cat{font-size:5pt;text-align:center;margin-bottom:0.8mm;}
-    hr{border:none;border-top:0.5pt solid #000;margin:0.5mm 0;}
-    .hdr{font-weight:700;font-size:6pt;}
-    .ingr{font-size:5pt;margin-bottom:0.8mm;line-height:1.3;}
-    .nutr-box{border:0.5pt solid #000;padding:0.5mm;
-              font-size:5pt;margin:0.5mm 0;line-height:1.4;}
-    .det{font-size:5.2pt;line-height:1.5;}
-    .mrp{font-family:"Arial Black",Arial,sans-serif;font-size:9pt;
-         font-weight:900;text-align:center;margin-top:0.5mm;}
-    .tax{font-size:4.5pt;text-align:center;}
-    .pg{font-size:5pt;text-align:center;}
-  </style></head><body>
-    <div class="name">${name}</div>
-    <div class="cat">Category - ${cat}</div>
-    <hr>
-    <div class="hdr">INGREDIENTS :-</div>
-    <div class="ingr">(In Descending Order By Weight) ${ingr}</div>
-    <div class="hdr">NUTRITIONAL INFORMATION</div>
-    <div style="font-size:4.8pt;margin-bottom:0.3mm;">Approx. Composition per 100g</div>
-    <div class="nutr-box">${nutri}</div>
-    <hr>
-    <div class="det">
-      NET WEIGHT : ${nw}<br>
-      BATCH NO : ${batch}<br>
-      DATE OF PACKING : ${htmlSafe(pd)}<br>
-      BEST BEFORE : ${htmlSafe(bb)}
-    </div>
-    <hr>
-    <div class="mrp">MRP : &#8377;${mrp}/-</div>
-    <div class="tax">(INCL. OF ALL TAXES)</div>
-    <div class="pg">FOR 1g = &#8377; ${pg}</div>
-  </body></html>`;
+  // Layout at 203 DPI: W=400 dots, H=720 dots
+  // Font sizes: font 2 xm1=16x10 per char, font 3 xm1=24x16, font 4 xm1=32x24
+  const lm = 4; // left margin dots
+
+  // Product name — font3 xm2 (big)
+  const nLines = wrapText(name, 12);
+  let y = 8;
+  let cmds = '';
+
+  // Name
+  nLines.forEach(ln => {
+    const nW = ln.length * 16 * 2;
+    const nx = Math.max(lm, Math.round((W * 8 - nW) / 2));
+    cmds += `TEXT ${nx},${y},"3",0,2,2,"${ln}"\r\n`;
+    y += 56;
+  });
+
+  // Category
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"Category: ${cat}"\r\n`; y += 24;
+  cmds += `BAR ${lm},${y},${W*8-lm*2},2\r\n`; y += 8;
+
+  // Ingredients header
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS (Desc. order by wt):"\r\n`; y += 20;
+  const iLines = wrapText(ingr, 38);
+  iLines.slice(0, 4).forEach(ln => {
+    cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 16;
+  });
+  y += 4;
+
+  // Nutritional info header
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"NUTRITIONAL INFO (per 100g):"\r\n`; y += 20;
+  cmds += `BOX ${lm},${y},${W*8-lm},${y+32},1\r\n`;
+  cmds += `TEXT ${lm+4},${y+4},"1",0,1,1,"${nutri}"\r\n`; y += 40;
+
+  // Details
+  cmds += `BAR ${lm},${y},${W*8-lm*2},2\r\n`; y += 8;
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"NET WEIGHT: ${nw}"\r\n`; y += 16;
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"BATCH NO: ${bno}"\r\n`; y += 16;
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"PACKING DATE: ${tsplSafe(pd)}"\r\n`; y += 16;
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"BEST BEFORE: ${tsplSafe(bb)}"\r\n`; y += 20;
+
+  // MRP
+  cmds += `BAR ${lm},${y},${W*8-lm*2},2\r\n`; y += 8;
+  const mrpStr = `MRP: Rs.${mrp}/- (Incl. all taxes)`;
+  const pgStr  = `For 1g = Rs.${pg}`;
+  cmds += `TEXT ${lm},${y},"3",0,1,2,"${mrpStr}"\r\n`; y += 48;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"${pgStr}"\r\n`;
+
+  return [
+    `SIZE ${W} mm,${H} mm`,
+    `GAP ${gap} mm,0 mm`,
+    `SET DARKNESS 12`,
+    `DIRECTION 1`,
+    `CLS`,
+    cmds.trim(),
+    `PRINT ${copies},1`,
+    `FORMFEED`,
+    ``
+  ].join('\r\n');
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   MAIN PRINT FUNCTIONS — pixel/HTML mode via TSC driver
-   Use original TSC printers (NOT Generic RAW) — driver manages gap
+   MAIN PRINT FUNCTIONS — Raw TSPL via Generic/Text Only driver
+   FORMFEED = printer advances cleanly to next label (no error)
 ═══════════════════════════════════════════════════════════════ */
 
-function _qzPixelConfig(printerName, widthMM, heightMM) {
-  return qz.configs.create(printerName, {
-    size     : { width: widthMM / 25.4, height: heightMM / 25.4 }, // inches
-    units    : 'in',
-    margins  : 0,
-    colorType: 'blackwhite',
-    copies   : 1  // always 1 — we loop for multiple copies
-  });
+function _qzRawConfig(printerName) {
+  return qz.configs.create(printerName);
 }
 
-function _qzPixelConfig(printerName) {
-  return qz.configs.create(printerName, {
-    units    : 'in',
-    margins  : 0,
-    colorType: 'blackwhite',
-    copies   : 1
-  });
-}
-
-/* ─── Print Front via QZ (pixel/HTML) ─── */
+/* ─── Print Front via QZ (TSPL RAW) ─── */
 async function qzPrintFront(name, copies) {
-  console.log('[QZ DEBUG] qz defined:', typeof qz !== 'undefined', '| connected:', QZP.connected, '| frontPrinter:', QZP.frontPrinter);
+  console.log('[QZ DEBUG] connected:', QZP.connected, '| frontPrinter:', QZP.frontPrinter);
   if (typeof qz === 'undefined' || !QZP.connected || !QZP.frontPrinter) {
-    console.warn('[QZ] Returning false');
+    console.warn('[QZ] Returning false — not connected or no printer selected');
     return false;
   }
-  const html   = buildFrontHTML(name);
-  const config = _qzPixelConfig(QZP.frontPrinter);
-  console.log('[FRONT HTML]\n', html);
+  const tspl = buildFrontTSPL(name, copies);
+  console.log('[FRONT TSPL]\n', tspl);
   try {
     setQZStatus('printing');
-    for (let i = 0; i < copies; i++) {
-      await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
-      if (i < copies - 1) await new Promise(r => setTimeout(r, 800));
-    }
+    const config = _qzRawConfig(QZP.frontPrinter);
+    await qz.print(config, [{ type: 'raw', format: 'plain', data: tspl }]);
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Front Printer!`, 'success');
     return true;
@@ -321,18 +348,15 @@ async function qzPrintFront(name, copies) {
   }
 }
 
-/* ─── Print Back via QZ (pixel/HTML) ─── */
+/* ─── Print Back via QZ (TSPL RAW) ─── */
 async function qzPrintBack(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined' || !QZP.connected || !QZP.backPrinter) return false;
-  const html   = buildBackHTML(p, v, bn, pd, bb);
-  const config = _qzPixelConfig(QZP.backPrinter);
-  console.log('[BACK HTML]\n', html);
+  const tspl = buildBackTSPL(p, v, bn, pd, bb, copies);
+  console.log('[BACK TSPL]\n', tspl);
   try {
     setQZStatus('printing');
-    for (let i = 0; i < copies; i++) {
-      await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
-      if (i < copies - 1) await new Promise(r => setTimeout(r, 1200));
-    }
+    const config = _qzRawConfig(QZP.backPrinter);
+    await qz.print(config, [{ type: 'raw', format: 'plain', data: tspl }]);
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Back Printer!`, 'success');
     return true;
@@ -343,7 +367,7 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
   }
 }
 
-/* ─── Test print (front printer, 65×25mm, HTML mode) ─── */
+/* ─── Test print ─── */
 async function testPrint() {
   if (typeof qz === 'undefined' || !QZP.connected) {
     showToast('QZ Tray not connected!', 'error'); return;
@@ -352,26 +376,23 @@ async function testPrint() {
   if (!printer) {
     showToast('Select a printer first and save!', 'error'); return;
   }
-  const html = `<!DOCTYPE html><html><head><style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{width:65mm;height:25mm;display:flex;flex-direction:column;
-         align-items:center;justify-content:center;background:#fff;
-         font-family:Arial,sans-serif;padding:1mm;}
-    h1{font-size:14pt;font-weight:900;}
-    p{font-size:6pt;margin-top:1mm;}
-  </style></head><body>
-    <h1>TEST PRINT</h1>
-    <p>365 Spicery Label Studio</p>
-    <p>${htmlSafe(printer)}</p>
-  </body></html>`;
+  const tspl = [
+    `SIZE 65 mm,25 mm`,
+    `GAP ${QZP.gap || 3} mm,0 mm`,
+    `SET DARKNESS 12`,
+    `DIRECTION 1`,
+    `CLS`,
+    `TEXT 10,60,"4",0,2,2,"TEST PRINT"`,
+    `TEXT 10,140,"2",0,1,1,"365 Spicery Label Studio"`,
+    `PRINT 1,1`,
+    `FORMFEED`,
+    ``
+  ].join('\r\n');
   try {
-    const config = _qzPixelConfig(printer, 65, 25, 1);
-    await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+    const config = _qzRawConfig(printer);
+    await qz.print(config, [{ type: 'raw', format: 'plain', data: tspl }]);
     showToast('✓ Test print sent!', 'success');
   } catch (e) {
     showToast('Test print failed: ' + e.message, 'error');
   }
 }
-
-
-
