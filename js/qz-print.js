@@ -195,14 +195,14 @@ function wrapText(text, maxChars) {
   return lines.length ? lines : [text.substring(0, maxChars)];
 }
 
-/* ─── Nutrition string ─── */
-function getNutritionShort(p) {
+/* ─── Nutrition — returns 2 short lines for TSPL ─── */
+function getNutriLines(p) {
   return [
-    `Energy:${p.e||0}kcal`, `Protein:${p.p||0}g`, `Carbs:${p.cb||0}g`,
-    `Sugars:${p.ts||0}g`, `Fat:${p.tf||0}g`, `SatFat:${p.sf||0}g`,
-    `Trans:${p.tr||0}g`, `Chol:${p.ch||0}mg`, `Na:${p.so||0}mg`
-  ].join('|');
+    `En:${p.e||0}kcal Prot:${p.p||0}g Carbs:${p.cb||0}g Sug:${p.ts||0}g`,
+    `Fat:${p.tf||0}g SatFat:${p.sf||0}g Trans:${p.tr||0}g Chol:${p.ch||0}mg Na:${p.so||0}mg`
+  ];
 }
+function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
 /* ─── Build FRONT label TSPL (65x25mm) ─── */
 function buildFrontTSPL(name, copies) {
@@ -234,11 +234,10 @@ function buildFrontTSPL(name, copies) {
     `SIZE ${W} mm,${H} mm`,
     `GAP ${gap} mm,0 mm`,
     `SET DARKNESS 12`,
-    `DIRECTION 1`,
+    `DIRECTION 0`,
     `CLS`,
     textCmds.trim(),
     `PRINT ${copies},1`,
-    `FORMFEED`,
     ``
   ].join('\r\n');
 }
@@ -284,10 +283,12 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   });
   y += 4;
 
-  // Nutritional info header
+  // Nutritional info — 2 wrapped lines
+  const nutLines = getNutriLines(p);
   cmds += `TEXT ${lm},${y},"2",0,1,1,"NUTRITIONAL INFO (per 100g):"\r\n`; y += 20;
-  cmds += `BOX ${lm},${y},${W*8-lm},${y+32},1\r\n`;
-  cmds += `TEXT ${lm+4},${y+4},"1",0,1,1,"${nutri}"\r\n`; y += 40;
+  cmds += `BOX ${lm},${y},${W*8-lm},${y+40},1\r\n`;
+  cmds += `TEXT ${lm+4},${y+4},"1",0,1,1,"${tsplSafe(nutLines[0])}"\r\n`;
+  cmds += `TEXT ${lm+4},${y+20},"1",0,1,1,"${tsplSafe(nutLines[1])}"\r\n`; y += 48;
 
   // Details
   cmds += `BAR ${lm},${y},${W*8-lm*2},2\r\n`; y += 8;
@@ -298,7 +299,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   // MRP
   cmds += `BAR ${lm},${y},${W*8-lm*2},2\r\n`; y += 8;
-  const mrpStr = `MRP: Rs.${mrp}/- (Incl. all taxes)`;
+  const mrpStr = `MRP: Rs.${mrp}/- (All taxes incl.)`;
   const pgStr  = `For 1g = Rs.${pg}`;
   cmds += `TEXT ${lm},${y},"3",0,1,2,"${mrpStr}"\r\n`; y += 48;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"${pgStr}"\r\n`;
@@ -311,7 +312,6 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     `CLS`,
     cmds.trim(),
     `PRINT ${copies},1`,
-    `FORMFEED`,
     ``
   ].join('\r\n');
 }
