@@ -160,19 +160,218 @@ function savePrinterSettings() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TSPL COMMAND GENERATORS
-   TSC TE244 — 203 DPI — TSPL2 language
-   IMPORTANT: ALL text must be ASCII only — no ₹, —, or Unicode
+   HTML LABEL BUILDERS
+   Rendered by QZ Tray → Sent as pixel job to TSC driver
+   Driver handles gap detection & calibration (same as Bartender)
+   Sizes: Front = 65×25mm, Back = 50×90mm
 ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Sanitize text for TSPL (ASCII only) ─── */
-function tsplSafe(str) {
+/* ─── Sanitize text for HTML display ─── */
+function htmlSafe(str) {
   return (str || '')
-    .replace(/—/g, '-')           // em-dash → hyphen
-    .replace(/₹/g, 'Rs.')         // rupee → Rs.
-    .replace(/[^\x00-\x7F]/g, '') // strip any remaining non-ASCII
-    .replace(/"/g, "'");          // double quotes break TSPL TEXT command
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
+
+/* ─── Word-wrap helper ─── */
+function wrapText(text, maxChars) {
+  text = (text || '').trim();
+  if (!text) return ['-'];
+  if (text.length <= maxChars) return [text];
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  words.forEach(w => {
+    const test = cur ? cur + ' ' + w : w;
+    if (test.length > maxChars) {
+      if (cur) lines.push(cur);
+      cur = w.length > maxChars ? w.substring(0, maxChars) : w;
+    } else { cur = test; }
+  });
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [text.substring(0, maxChars)];
+}
+
+/* ─── Nutrition string ─── */
+function getNutritionShort(p) {
+  return [
+    `Energy: ${p.e||0} kcal`, `Protein: ${p.p||0}g`,
+    `Carbs: ${p.cb||0}g`,    `Sugars: ${p.ts||0}g`,
+    `Fat: ${p.tf||0}g`,      `Sat. Fat: ${p.sf||0}g`,
+    `Trans Fat: ${p.tr||0}g`,`Cholesterol: ${p.ch||0}mg`,
+    `Sodium: ${p.so||0}mg`
+  ].join(' | ');
+}
+
+/* ─── Build FRONT label HTML (65×25mm) ─── */
+function buildFrontHTML(name) {
+  const n = htmlSafe(name.toUpperCase());
+  const fontSize = n.length <= 8 ? '18pt' : n.length <= 14 ? '13pt' : '9pt';
+  return `<!DOCTYPE html><html><head><style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{width:65mm;height:25mm;display:flex;align-items:center;
+         justify-content:center;background:#fff;overflow:hidden;padding:1mm;}
+    .name{font-family:"Arial Black",Arial,sans-serif;font-size:${fontSize};
+          font-weight:900;text-align:center;line-height:1.15;
+          text-transform:uppercase;word-break:break-word;}
+  </style></head><body><div class="name">${n}</div></body></html>`;
+}
+
+/* ─── Build BACK label HTML (50×90mm) ─── */
+function buildBackHTML(p, v, bn, pd, bb) {
+  const mrp    = parseFloat(v.m) || 0;
+  const pg     = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
+  const name   = htmlSafe(p.n.toUpperCase());
+  const cat    = htmlSafe(p.c || '-');
+  const ingr   = htmlSafe(p.i || '-');
+  const nw     = htmlSafe(`${v.d} (${v.oz})`);
+  const batch  = htmlSafe(bn || '-');
+  const nutri  = htmlSafe(getNutritionShort(p));
+
+  return `<!DOCTYPE html><html><head><style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{width:50mm;height:90mm;background:#fff;overflow:hidden;
+         font-family:Arial,sans-serif;font-size:5.5pt;padding:0.8mm;}
+    .name{font-family:"Arial Black",Arial,sans-serif;font-size:9.5pt;
+          font-weight:900;text-align:center;text-transform:uppercase;
+          margin-bottom:0.4mm;line-height:1.1;}
+    .cat{font-size:5pt;text-align:center;margin-bottom:0.8mm;}
+    hr{border:none;border-top:0.5pt solid #000;margin:0.5mm 0;}
+    .hdr{font-weight:700;font-size:6pt;}
+    .ingr{font-size:5pt;margin-bottom:0.8mm;line-height:1.3;}
+    .nutr-box{border:0.5pt solid #000;padding:0.5mm;
+              font-size:5pt;margin:0.5mm 0;line-height:1.4;}
+    .det{font-size:5.2pt;line-height:1.5;}
+    .mrp{font-family:"Arial Black",Arial,sans-serif;font-size:9pt;
+         font-weight:900;text-align:center;margin-top:0.5mm;}
+    .tax{font-size:4.5pt;text-align:center;}
+    .pg{font-size:5pt;text-align:center;}
+  </style></head><body>
+    <div class="name">${name}</div>
+    <div class="cat">Category - ${cat}</div>
+    <hr>
+    <div class="hdr">INGREDIENTS :-</div>
+    <div class="ingr">(In Descending Order By Weight) ${ingr}</div>
+    <div class="hdr">NUTRITIONAL INFORMATION</div>
+    <div style="font-size:4.8pt;margin-bottom:0.3mm;">Approx. Composition per 100g</div>
+    <div class="nutr-box">${nutri}</div>
+    <hr>
+    <div class="det">
+      NET WEIGHT : ${nw}<br>
+      BATCH NO : ${batch}<br>
+      DATE OF PACKING : ${htmlSafe(pd)}<br>
+      BEST BEFORE : ${htmlSafe(bb)}
+    </div>
+    <hr>
+    <div class="mrp">MRP : &#8377;${mrp}/-</div>
+    <div class="tax">(INCL. OF ALL TAXES)</div>
+    <div class="pg">FOR 1g = &#8377; ${pg}</div>
+  </body></html>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN PRINT FUNCTIONS — pixel/HTML mode via TSC driver
+   Use original TSC printers (NOT Generic RAW) — driver manages gap
+═══════════════════════════════════════════════════════════════ */
+
+function _qzPixelConfig(printerName, widthMM, heightMM, copies) {
+  return qz.configs.create(printerName, {
+    size     : { width: widthMM / 25.4, height: heightMM / 25.4 }, // inches
+    units    : 'in',
+    margins  : 0,
+    colorType: 'blackwhite',
+    copies   : copies || 1
+  });
+}
+
+/* ─── Print Front via QZ (pixel/HTML) ─── */
+async function qzPrintFront(name, copies) {
+  if (typeof qz === 'undefined' || !QZP.connected || !QZP.frontPrinter) return false;
+  const html = buildFrontHTML(name);
+  console.log('[FRONT HTML]\n', html);
+  try {
+    setQZStatus('printing');
+    const config = _qzPixelConfig(QZP.frontPrinter, 65, 25, copies);
+    await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+    setQZStatus('connected');
+    showToast(`✓ ${copies} label(s) sent to Front Printer!`, 'success');
+    return true;
+  } catch (err) {
+    setQZStatus('connected');
+    showToast('QZ Print error: ' + err.message + ' — switching to Chrome print', 'error');
+    return false;
+  }
+}
+
+/* ─── Print Back via QZ (pixel/HTML) ─── */
+async function qzPrintBack(p, v, bn, pd, bb, copies) {
+  if (typeof qz === 'undefined' || !QZP.connected || !QZP.backPrinter) return false;
+  const html = buildBackHTML(p, v, bn, pd, bb);
+  console.log('[BACK HTML]\n', html);
+  try {
+    setQZStatus('printing');
+    const config = _qzPixelConfig(QZP.backPrinter, 50, 90, copies);
+    await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+    setQZStatus('connected');
+    showToast(`✓ ${copies} label(s) sent to Back Printer!`, 'success');
+    return true;
+  } catch (err) {
+    setQZStatus('connected');
+    showToast('QZ Print error: ' + err.message + ' — switching to Chrome print', 'error');
+    return false;
+  }
+}
+
+/* ─── Test print (front printer, 65×25mm, HTML mode) ─── */
+async function testPrint() {
+  if (typeof qz === 'undefined' || !QZP.connected) {
+    showToast('QZ Tray not connected!', 'error'); return;
+  }
+  const printer = QZP.frontPrinter || QZP.backPrinter;
+  if (!printer) {
+    showToast('Select a printer first and save!', 'error'); return;
+  }
+  const html = `<!DOCTYPE html><html><head><style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{width:65mm;height:25mm;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;background:#fff;
+         font-family:Arial,sans-serif;padding:1mm;}
+    h1{font-size:14pt;font-weight:900;}
+    p{font-size:6pt;margin-top:1mm;}
+  </style></head><body>
+    <h1>TEST PRINT</h1>
+    <p>365 Spicery Label Studio</p>
+    <p>${htmlSafe(printer)}</p>
+  </body></html>`;
+  try {
+    const config = _qzPixelConfig(printer, 65, 25, 1);
+    await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
+    showToast('✓ Test print sent!', 'success');
+  } catch (e) {
+    showToast('Test print failed: ' + e.message, 'error');
+  }
+}
+
+/* ─── Calibrate printer (one-time, on label roll change) ─── */
+async function calibratePrinter() {
+  if (typeof qz === 'undefined' || !QZP.connected) {
+    showToast('QZ Tray not connected!', 'error'); return;
+  }
+  const printer = QZP.frontPrinter || QZP.backPrinter;
+  if (!printer) {
+    showToast('Select a printer first and save!', 'error'); return;
+  }
+  try {
+    const config = qz.configs.create(printer);
+    await qz.print(config, [{ type: 'raw', format: 'plain', data: 'GAPDETECT\r\n' }]);
+    showToast('✓ Printer calibrated! Gap sensor set.', 'success');
+  } catch (e) {
+    showToast('Calibration failed: ' + e.message, 'error');
+  }
+}
+
 
 /* ─── Generate FRONT label TSPL ─── */
 function buildFrontTSPL(name, copies) {
