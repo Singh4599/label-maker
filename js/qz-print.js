@@ -214,6 +214,7 @@ function buildFrontTSPL(name, copies) {
   });
 
   return [
+    `GAPDETECT`,
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
     `SET DARKNESS 12`,
@@ -332,6 +333,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   txt(safePG, y, '2', 1, 1);
 
   return [
+    `GAPDETECT`,
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
     `SET DARKNESS 12`,
@@ -434,6 +436,7 @@ async function testPrint() {
     showToast('Select a printer first and save!', 'error'); return;
   }
   const tspl = [
+    `GAPDETECT`,
     `SIZE 65 mm,25 mm`,
     `GAP ${QZP.gap} mm,0 mm`,
     `SET DARKNESS 12`,
