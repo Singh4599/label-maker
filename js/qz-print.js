@@ -177,34 +177,39 @@ function tsplSafe(str) {
 /* ─── Generate FRONT label TSPL ─── */
 function buildFrontTSPL(name, copies) {
   const w = 65, h = 25, gap = QZP.gap;
+  const W = w * 8; // 520 dots
   const safeName = tsplSafe(name.toUpperCase());
-  const lines = wrapText(safeName, 20); // tighter wrap for large font
-  const totalLines = lines.length;
 
-  // Font selection: "4" = 24x32 dots, "3" = 16x24 dots (before multipliers)
-  let font, xm, ym, yStart;
-  if (totalLines === 1) {
-    font = '4'; xm = 3; ym = 3;
-    yStart = Math.max(4, Math.round((h * 8) / 2 - (32 * ym) / 2));
-  } else if (totalLines === 2) {
-    font = '4'; xm = 2; ym = 2;
-    const totalH = (32 * ym + 8) * totalLines;
-    yStart = Math.max(4, Math.round((h * 8) / 2 - totalH / 2));
+  // Font '4' at xm=3: charW=72 → max chars = floor(520/72) = 7
+  // Font '4' at xm=2: charW=48 → max chars = floor(520/48) = 10
+  // Font '3' at xm=2: charW=32 → max chars = floor(520/32) = 16
+  let font, xm, ym, lines;
+
+  const l7  = wrapText(safeName, 7);
+  const l10 = wrapText(safeName, 10);
+  const l16 = wrapText(safeName, 16);
+
+  if (l7.length <= 1) {
+    font = '4'; xm = 3; ym = 3; lines = l7;
+  } else if (l10.length <= 2) {
+    font = '4'; xm = 2; ym = 2; lines = l10;
   } else {
-    font = '3'; xm = 2; ym = 2;
-    const totalH = (24 * ym + 6) * totalLines;
-    yStart = Math.max(4, Math.round((h * 8) / 2 - totalH / 2));
+    font = '3'; xm = 2; ym = 2; lines = l16;
   }
 
-  const lineHeight = ((font === '4' ? 32 : 24) * ym) + (font === '4' ? 8 : 6);
-  const charW = (font === '4' ? 24 : 16) * xm;
-  const W = w * 8; // label width in dots
+  const totalLines = lines.length;
+  const charW  = (font === '4' ? 24 : 16) * xm;
+  const fontH  = font === '4' ? 32 : 24;
+  const gap2   = font === '4' ? 8 : 6;
+  const lineHeight = fontH * ym + gap2;
+  const totalH = lineHeight * totalLines;
+  const yStart = Math.max(4, Math.round((h * 8) / 2 - totalH / 2));
 
   let textCmds = '';
   lines.forEach((lineText, i) => {
-    const yPos = Math.max(4, yStart + i * lineHeight);
+    const yPos  = Math.max(4, yStart + i * lineHeight);
     const textW = lineText.length * charW;
-    const xPos = Math.max(4, Math.round((W - textW) / 2));
+    const xPos  = Math.max(4, Math.round((W - textW) / 2));
     textCmds += `TEXT ${xPos},${yPos},"${font}",0,${xm},${ym},"${lineText}"\r\n`;
   });
 
