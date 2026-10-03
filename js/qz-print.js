@@ -216,12 +216,11 @@ function buildFrontTSPL(name, copies) {
   return [
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
-    `DIRECTION 1`,
-    `REFERENCE 0,0`,
-    `OFFSET 0 mm`,
+    `DIRECTION 0`,
     `CLS`,
     textCmds.trim(),
-    `PRINT ${copies},1`
+    `PRINT ${copies},1`,
+    ``
   ].join('\r\n');
 }
 
@@ -334,12 +333,11 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   return [
     `SIZE ${w} mm,${h} mm`,
     `GAP ${gap} mm,0 mm`,
-    `DIRECTION 1`,
-    `REFERENCE 0,0`,
-    `OFFSET 0 mm`,
+    `DIRECTION 0`,
     `CLS`,
     cmds.trim(),
-    `PRINT ${copies},1`
+    `PRINT ${copies},1`,
+    ``
   ].join('\r\n');
 }
 
@@ -436,12 +434,13 @@ async function testPrint() {
   const tspl = [
     `SIZE 65 mm,25 mm`,
     `GAP ${QZP.gap} mm,0 mm`,
-    `DIRECTION 1`,
+    `DIRECTION 0`,
     `CLS`,
     `TEXT 20,30,"4",0,1,2,"TEST PRINT"`,
     `TEXT 20,100,"2",0,1,1,"365 Spicery Label Studio"`,
     `TEXT 20,130,"2",0,1,1,"Printer: ${tsplSafe(printer)}"`,
-    `PRINT 1,1`
+    `PRINT 1,1`,
+    ``
   ].join('\r\n');
   try {
     const config = qz.configs.create(printer);
