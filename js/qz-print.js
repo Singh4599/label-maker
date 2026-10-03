@@ -288,7 +288,11 @@ function _qzPixelConfig(printerName, widthMM, heightMM) {
 
 /* ─── Print Front via QZ (pixel/HTML) ─── */
 async function qzPrintFront(name, copies) {
-  if (typeof qz === 'undefined' || !QZP.connected || !QZP.frontPrinter) return false;
+  console.log('[QZ DEBUG] qz defined:', typeof qz !== 'undefined', '| connected:', QZP.connected, '| frontPrinter:', QZP.frontPrinter);
+  if (typeof qz === 'undefined' || !QZP.connected || !QZP.frontPrinter) {
+    console.warn('[QZ] Returning false — check debug above');
+    return false;
+  }
   const html   = buildFrontHTML(name);
   const config = _qzPixelConfig(QZP.frontPrinter, 65, 25);
   console.log('[FRONT HTML]\n', html);
