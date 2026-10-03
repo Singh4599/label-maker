@@ -205,7 +205,7 @@ function buildFrontTSPL(name, copies) {
     const yPos = Math.max(4, yStart + i * lineHeight);
     const textW = lineText.length * charW;
     const xPos = Math.max(4, Math.round((W - textW) / 2));
-    textCmds += `TEXT ${xPos},${yPos},"${font}",0,${xm},${ym},"${lineText}"\n`;
+    textCmds += `TEXT ${xPos},${yPos},"${font}",0,${xm},${ym},"${lineText}"\r\n`;
   });
 
   return [
@@ -217,7 +217,7 @@ function buildFrontTSPL(name, copies) {
     `CLS`,
     textCmds.trim(),
     `PRINT ${copies},1`
-  ].join('\n');
+  ].join('\r\n');
 }
 
 /* ─── Generate BACK label TSPL ─── */
@@ -259,10 +259,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const txt = (text, yPos, font, xm, ym, xForce) => {
     const charPxW = (font === '4' ? 24 : font === '3' ? 16 : 8) * xm;
     const x = (xForce !== undefined) ? xForce : cx(text, charPxW);
-    cmds += `TEXT ${Math.max(0, x)},${yPos},"${font}",0,${xm},${ym},"${text}"\n`;
+    cmds += `TEXT ${Math.max(0, x)},${yPos},"${font}",0,${xm},${ym},"${text}"\r\n`;
   };
   // Helper: horizontal bar
-  const hbar = (yPos) => { cmds += `BAR 0,${yPos},${W},3\n`; };
+  const hbar = (yPos) => { cmds += `BAR 0,${yPos},${W},3\r\n`; };
 
   // ── Product name (large, centered) ──
   const nameLines = wrapText(safeName, 20);
@@ -286,7 +286,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   txt('INGREDIENTS :-', y, '2', 1, 1, d(1));
   y += d(3);
   ingrLines.forEach(il => {
-    cmds += `TEXT ${d(1)},${y},"2",0,1,1,"${il}"\n`;
+    cmds += `TEXT ${d(1)},${y},"2",0,1,1,"${il}"\r\n`;
     y += d(3);
   });
   y += d(1);
@@ -299,10 +299,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   // ── Nutrition box ──
   const boxH = d(nsLines.length * 3 + 2.5);
-  cmds += `BOX ${d(0.5)},${y},${W - d(0.5)},${y + boxH},3\n`;
+  cmds += `BOX ${d(0.5)},${y},${W - d(0.5)},${y + boxH},3\r\n`;
   y += d(1);
   nsLines.forEach(nl => {
-    cmds += `TEXT ${d(1.5)},${y},"2",0,1,1,"${nl}"\n`;
+    cmds += `TEXT ${d(1.5)},${y},"2",0,1,1,"${nl}"\r\n`;
     y += d(3);
   });
   y += d(2);
@@ -312,7 +312,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   // ── Details (net weight, batch, dates) ──
   safeDetails.forEach(det => {
-    cmds += `TEXT ${d(1)},${y},"2",0,1,1,"${det}"\n`;
+    cmds += `TEXT ${d(1)},${y},"2",0,1,1,"${det}"\r\n`;
     y += d(3.5);
   });
 
@@ -335,7 +335,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     `CLS`,
     cmds.trim(),
     `PRINT ${copies},1`
-  ].join('\n');
+  ].join('\r\n');
 }
 
 /* ─── Wrap text into lines (ASCII safe) ─── */
