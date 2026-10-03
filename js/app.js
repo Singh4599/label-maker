@@ -487,6 +487,29 @@ function getCopies() {
   return (n && n > 0) ? Math.min(n, 50) : 1;
 }
 
+/* ── PDF Print: renders label HTML → PDF with exact page dimensions ──
+ * PDF embeds paper size → Chrome auto-uses it → no manual selection. */
+function _renderToPDF(container, wMM, hMM, copies) {
+  showToast('Generating PDF...', 'info');
+  return html2pdf().set({
+    margin: 0,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 4, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: [wMM, hMM] }
+  }).from(container).toPdf().get('pdf').then(function(pdf) {
+    if (copies > 1) {
+      var pg1 = pdf.internal.pages[1];
+      for (var c = 1; c < copies; c++) {
+        pdf.addPage([wMM, hMM]);
+        pdf.internal.pages[pdf.internal.getNumberOfPages()] = JSON.parse(JSON.stringify(pg1));
+      }
+    }
+    var blob = pdf.output('blob');
+    window.open(URL.createObjectURL(blob), '_blank');
+    showToast(copies + ' label' + (copies > 1 ? 's' : '') + ' PDF ready — just Print!', 'success');
+  });
+}
+
 function pF() {
   let pname;
   if (ST.mode === 'manual') { pname = gv('m-name'); }
@@ -495,36 +518,25 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
-  /* ── FRONT LABEL: 61.5mm × 25mm — BAREBONES (nothing extra in body) */
-  const css =
-    '@page{size:61.5mm 25mm;margin:0}'+
-    '*{margin:0;padding:0;box-sizing:border-box}'+
-    'html,body{width:61.5mm;height:25mm;margin:0;padding:0;overflow:hidden;background:#fff}'+
-    '.w{width:61.5mm;height:25mm;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden}'+
-    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;'+
-      'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;'+
-      'letter-spacing:-0.5pt;width:100%;word-break:break-word}';
+  /* Hidden offscreen container: 232px × 94px ≈ 61.5mm × 25mm at 96dpi */
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;top:-9999px;left:0;width:232px;height:94px;overflow:hidden;background:#fff;';
+  const w = document.createElement('div');
+  w.style.cssText = 'width:232px;height:94px;display:flex;align-items:center;justify-content:center;padding:4px 8px;overflow:hidden;';
+  const n = document.createElement('div');
+  n.style.cssText = 'font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;' +
+    'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;letter-spacing:-0.5pt;width:100%;word-break:break-word;';
+  n.textContent = name;
+  w.appendChild(n); box.appendChild(w); document.body.appendChild(box);
 
-  const js = '<scr'+'ipt>'+
-    'window.onload=function(){'+
-      'var el=document.getElementById("pn"),w=el.parentElement,'+
-          'mW=w.offsetWidth-4,mH=w.offsetHeight-2,fs=60,i=0;'+
-      'el.style.fontSize=fs+"pt";'+
-      'while((el.scrollWidth>mW||el.scrollHeight>mH)&&fs>4&&i++<200){'+
-        'el.style.fontSize=(fs-=0.5)+"pt";'+
-      '}'+
-      'setTimeout(function(){window.print();},500);'+
-    '};'+
-  '<\/scr'+'ipt>';
+  /* Scale font to fit */
+  let fs = 60, it = 0;
+  const mW = w.offsetWidth - 4, mH = w.offsetHeight - 2;
+  while ((n.scrollWidth > mW || n.scrollHeight > mH) && fs > 4 && it++ < 200) {
+    n.style.fontSize = (fs -= 0.5) + 'pt';
+  }
 
-  const title = copies > 1 ? 'Front — Set '+copies+' copies in dialog' : 'Front Label';
-  const win = window.open('', 'fp_'+Date.now(), 'width=250,height=120');
-  win.document.open();
-  win.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title><style>'+css+'</style>'+js+'</head>'+
-    '<body><div class="w"><div class="n" id="pn">'+name+'</div></div></body></html>'
-  );
-  win.document.close();
+  _renderToPDF(box, 61.5, 25, copies).finally(function() { document.body.removeChild(box); });
 }
 
 function pB() {
@@ -548,76 +560,47 @@ function pB() {
   const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
   const ns = getNutrition(p);
 
-  /* ── BACK LABEL: 47.5mm × 90mm (TSC TE244)
-   * Always 1 page per window. afterprint closes window → ends session. */
-  const css = [
-    '@page{size:47.5mm 90mm;margin:0}',
-    '*{margin:0;padding:0;box-sizing:border-box}',
-    'html,body{width:47.5mm;height:90mm;margin:0;padding:0;overflow:hidden;background:#fff;font-family:Arial,sans-serif}',
-    '.L{width:47.5mm;height:90mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
-      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden}',
-    '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
-      'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
-    '.ca{font-size:0.6em;text-align:center;font-weight:600}',
-    'hr{border:none;border-top:0.5pt solid #666;margin:0}',
-    '.se{font-size:0.72em;font-weight:700}',
-    '.in{font-size:0.54em;line-height:1.25}',
-    '.nt{font-size:0.68em;font-weight:900;text-align:center;font-family:"Arial Black",Arial,sans-serif;text-transform:uppercase}',
-    '.ns{font-size:0.5em;text-align:center;font-style:italic;font-weight:600}',
-    '.nb{border:0.7pt solid #000;padding:0.5mm 1mm;font-size:0.48em;line-height:1.3}',
-    '.r{font-size:0.68em;font-weight:700;line-height:1.35}',
-    '.mrp{font-size:1.05em;font-weight:900;font-family:"Arial Black",Arial,sans-serif}',
-    '.tx{font-size:0.46em;font-weight:600}',
-    '.pg{font-size:0.56em;font-weight:700}'
-  ].join('');
+  const copies = getCopies();
 
-  const bodyHTML =
-    '<div class="L">'+
-    '<div class="ti">'+p.n.toUpperCase()+'</div>'+
-    '<div class="ca">Category - '+(p.c||'—')+'</div>'+
-    '<hr>'+
-    '<div class="se">INGREDIENTS :-</div>'+
-    '<div class="in">(In Descending Order By Weight) '+(p.i||'—')+'</div>'+
-    '<div class="nt">NUTRITIONAL INFORMATION</div>'+
-    '<div class="ns">Approximate Composition per 100 g</div>'+
-    '<div class="nb">'+ns+'</div>'+
-    '<div class="r">NET WEIGHT : '+v.d+' ('+v.oz+')</div>'+
-    '<div class="r">BATCH NO : '+(bn||'—')+'</div>'+
-    '<div class="r">DATE OF PACKING : '+pd+'</div>'+
-    '<div class="r">BEST BEFORE : '+bb+'</div>'+
-    '<div class="mrp">MRP : ₹ '+mrp+'/-</div>'+
-    '<div class="tx">(INCL. OF ALL TAXES)</div>'+
-    '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
-    '</div>';
+  /* Hidden offscreen container: 180px × 340px ≈ 47.5mm × 90mm at 96dpi */
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;top:-9999px;left:0;width:180px;height:340px;overflow:hidden;background:#fff;font-family:Arial,sans-serif;';
 
-  const printJS2 = '<scr'+'ipt>'+
-    'window.onload=function(){'+
-      'var L=document.querySelector(".L"),'+
-          'bH=L.offsetHeight,fs=9,g=0,s=0;'+
-      'while(L.scrollHeight<=bH && fs<22 && g++<150){'+
-        'fs+=0.2; L.style.fontSize=fs+"pt";'+
-      '}'+
-      'while(L.scrollHeight>bH && fs>4 && s++<150){'+
-        'fs-=0.2; L.style.fontSize=fs+"pt";'+
-      '}'+
-      'fs=Math.max(4,fs-0.4); L.style.fontSize=fs+"pt";'+
-      'setTimeout(function(){window.print();},600);'+
-    '};'+
-  '<\/scr'+'ipt>';
+  const L = document.createElement('div');
+  L.style.cssText = 'width:180px;height:340px;padding:8px 10px 6px 10px;display:flex;flex-direction:column;' +
+    'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;';
+  L.innerHTML =
+    '<div style="font-family:\'Arial Black\',Arial,sans-serif;font-weight:900;font-size:1.45em;text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word">' + p.n.toUpperCase() + '</div>' +
+    '<div style="font-size:0.6em;text-align:center;font-weight:600">Category - ' + (p.c||'—') + '</div>' +
+    '<hr style="border:none;border-top:0.5pt solid #666;margin:0">' +
+    '<div style="font-size:0.72em;font-weight:700">INGREDIENTS :-</div>' +
+    '<div style="font-size:0.54em;line-height:1.25">(In Descending Order By Weight) ' + (p.i||'—') + '</div>' +
+    '<div style="font-size:0.68em;font-weight:900;text-align:center;font-family:\'Arial Black\',Arial,sans-serif;text-transform:uppercase">NUTRITIONAL INFORMATION</div>' +
+    '<div style="font-size:0.5em;text-align:center;font-style:italic;font-weight:600">Approximate Composition per 100 g</div>' +
+    '<div style="border:0.7pt solid #000;padding:2px 4px;font-size:0.48em;line-height:1.3">' + ns + '</div>' +
+    '<div style="font-size:0.68em;font-weight:700;line-height:1.35">NET WEIGHT : ' + v.d + ' (' + v.oz + ')</div>' +
+    '<div style="font-size:0.68em;font-weight:700;line-height:1.35">BATCH NO : ' + (bn||'—') + '</div>' +
+    '<div style="font-size:0.68em;font-weight:700;line-height:1.35">DATE OF PACKING : ' + pd + '</div>' +
+    '<div style="font-size:0.68em;font-weight:700;line-height:1.35">BEST BEFORE : ' + bb + '</div>' +
+    '<div style="font-size:1.05em;font-weight:900;font-family:\'Arial Black\',Arial,sans-serif">MRP : ₹ ' + mrp + '/-</div>' +
+    '<div style="font-size:0.46em;font-weight:600">(INCL. OF ALL TAXES)</div>' +
+    '<div style="font-size:0.56em;font-weight:700">FOR 1g = Rs ' + pg + '</div>';
 
-  const title = copies > 1 ? 'Back — Set '+copies+' copies in dialog' : 'Back Label';
-  const win2 = window.open('', 'bp_'+Date.now(), 'width=200,height=380');
-  win2.document.open();
-  win2.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title><style>'+css+'</style>'+printJS2+'</head>'+
-    '<body>'+bodyHTML+'</body></html>'
-  );
-  win2.document.close();
-}
+  box.appendChild(L);
+  document.body.appendChild(box);
 
-function openPrint(css, body) {
-  const w = window.open('', '_blank', 'width=520,height=640');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${body}</body></html>`);
-  w.document.close();
-  setTimeout(() => w.print(), 700);
+  /* Scale font to fill 340px height */
+  let fs = 9, g = 0, s = 0;
+  const bH = L.offsetHeight;
+  while (L.scrollHeight <= bH && fs < 22 && g++ < 150) {
+    fs += 0.2; L.style.fontSize = fs + 'pt';
+  }
+  while (L.scrollHeight > bH && fs > 4 && s++ < 150) {
+    fs -= 0.2; L.style.fontSize = fs + 'pt';
+  }
+  fs = Math.max(4, fs - 0.4);
+  L.style.fontSize = fs + 'pt';
+
+  /* Generate PDF: 47.5mm × 90mm */
+  _renderToPDF(box, 47.5, 90, copies).finally(function() { document.body.removeChild(box); });
 }
