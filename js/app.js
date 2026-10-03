@@ -508,10 +508,10 @@ function pF() {
 
   const box = document.createElement('div');
   box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:61.5mm;height:25mm;overflow:hidden;background:#fff;';
-  box.innerHTML = '<div class="w"><div class="n" id="pn">'+name+'</div></div>';
+  box.innerHTML = '<div class="w"><div class="n">'+name+'</div></div>';
   document.body.appendChild(box);
 
-  const el = document.getElementById('pn');
+  const el = box.querySelector('.n');
   const w = el.parentElement;
   const mW = w.offsetWidth - 4;
   const mH = w.offsetHeight - 2;
@@ -577,7 +577,7 @@ function pB() {
   pStyle.innerHTML = css;
 
   const bodyHTML =
-    '<div class="L" id="pbn">'+
+    '<div class="L">'+
     '<div class="ti">'+p.n.toUpperCase()+'</div>'+
     '<div class="ca">Category - '+(p.c||'—')+'</div>'+
     '<hr>'+
@@ -600,7 +600,7 @@ function pB() {
   box.innerHTML = bodyHTML;
   document.body.appendChild(box);
 
-  const L = document.getElementById('pbn');
+  const L = box.querySelector('.L');
   let fs = 9, g = 0, s = 0;
   const bH = L.offsetHeight;
   while (L.scrollHeight <= bH && fs < 22 && g++ < 150) {
