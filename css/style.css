@@ -679,7 +679,7 @@ body.sidebar-open .sidebar-overlay { display:block }
 
 @media print {
   /* Completely hide all UI */
-  .top-bar, .app-wrap, .sidebar, .sidebar-overlay, .mobile-print-tip, .toast-container, #dynamic-print-style { 
+  .top-bar, .app-wrap, .sidebar, .sidebar-overlay, .mobile-print-tip, .toast-container { 
     display: none !important; 
   }
   
