@@ -679,7 +679,8 @@ body.sidebar-open .sidebar-overlay { display:block }
 
 @media print {
   /* Hide ALL UI elements — only #print-zone survives */
-  .top-bar, .app-wrap, .sidebar, .sidebar-overlay, .mobile-print-tip, #toast-container { 
+  .top-bar, .app-wrap, .sidebar, .sidebar-overlay, 
+  .mobile-print-tip, #toast-container, .modal-overlay { 
     display: none !important; 
   }
   
@@ -727,8 +728,8 @@ body.sidebar-open .sidebar-overlay { display:block }
   width: 8px; height: 8px; border-radius: 50%;
   background: #f59e0b;
   display: inline-block; flex-shrink: 0;
-  box-shadow: 0 0 6px currentColor;
-  transition: background 0.3s;
+  transition: background 0.3s, filter 0.3s;
+  filter: drop-shadow(0 0 4px #f59e0b);
 }
 .qz-dot.lg { width: 12px; height: 12px; }
 
