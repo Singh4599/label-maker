@@ -678,32 +678,29 @@ body.sidebar-open .sidebar-overlay { display:block }
 }
 
 @media print {
-  /* Completely hide all UI */
+  /* Hide ALL UI elements — only #print-zone survives */
   .top-bar, .app-wrap, .sidebar, .sidebar-overlay, .mobile-print-tip, #toast-container { 
     display: none !important; 
   }
   
-  /* Reset body/html — CRITICAL: height must be 0 to prevent blank second page */
+  /* Clean body — no height hack needed because all UI is display:none,
+     so body auto-height = only the label content = fits in 1 page */
   html, body { 
-    background: #fff !important; 
     margin: 0 !important; 
     padding: 0 !important; 
-    height: 0 !important;
-    min-height: 0 !important;
-    overflow: hidden !important; 
+    background: #fff !important;
     width: 100% !important;
   }
   
-  /* Show only the print zone — no overflow allowed */
+  /* Show only the print zone */
   #print-zone { 
     display: block !important; 
-    background: #fff;
     margin: 0; 
     padding: 0;
-    overflow: hidden !important;
+    background: #fff;
   }
   
-  /* Prevent trailing blank page */
+  /* CRITICAL: Last label must NOT create a trailing blank page */
   #print-zone > *:last-child {
     page-break-after: avoid !important;
   }
