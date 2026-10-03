@@ -690,6 +690,8 @@ body.sidebar-open .sidebar-overlay { display:block }
     padding: 0 !important; 
     background: #fff !important;
     width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
   
   /* Show only the print zone */
