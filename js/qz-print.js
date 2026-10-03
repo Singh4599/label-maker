@@ -12,9 +12,7 @@ const QZP = {
   backPrinter: localStorage.getItem('backPrinter') || '',
   gap: parseFloat(localStorage.getItem('labelGap') || '3'),
   printers: [],
-  _retrying: false,   // prevent multiple simultaneous retries
-  _frontCal: false,   // front printer calibrated this session?
-  _backCal: false     // back printer calibrated this session?
+  _retrying: false   // prevent multiple simultaneous retries
 };
 
 /* ─── Init on page load ─── */
@@ -288,40 +286,30 @@ function _qzPixelConfig(printerName, widthMM, heightMM) {
   });
 }
 
-/* ─── Auto-calibrate once per session (1 label waste, then error-free forever) ─── */
-async function _ensureCalibrated(printer, which) {
-  const key = which === 'front' ? '_frontCal' : '_backCal';
-  if (QZP[key]) return; // already calibrated this session
-  try {
-    console.log(`[QZ] Auto-calibrating ${which} printer: ${printer}`);
-    const cfg = qz.configs.create(printer);
-    await qz.print(cfg, [{ type: 'raw', format: 'plain', data: 'GAPDETECT\r\n' }]);
-    QZP[key] = true;
-    // Wait for printer to finish calibration
-    await new Promise(r => setTimeout(r, 2000));
-    console.log(`[QZ] ${which} printer calibrated ✓`);
-  } catch (e) {
-    console.warn(`[QZ] Calibration failed for ${which}:`, e.message);
-  }
+function _qzPixelConfig(printerName) {
+  return qz.configs.create(printerName, {
+    units    : 'in',
+    margins  : 0,
+    colorType: 'blackwhite',
+    copies   : 1
+  });
 }
 
 /* ─── Print Front via QZ (pixel/HTML) ─── */
 async function qzPrintFront(name, copies) {
   console.log('[QZ DEBUG] qz defined:', typeof qz !== 'undefined', '| connected:', QZP.connected, '| frontPrinter:', QZP.frontPrinter);
   if (typeof qz === 'undefined' || !QZP.connected || !QZP.frontPrinter) {
-    console.warn('[QZ] Returning false — check debug above');
+    console.warn('[QZ] Returning false');
     return false;
   }
-  await _ensureCalibrated(QZP.frontPrinter, 'front');
   const html   = buildFrontHTML(name);
-  const config = _qzPixelConfig(QZP.frontPrinter, 65, 25);
+  const config = _qzPixelConfig(QZP.frontPrinter);
   console.log('[FRONT HTML]\n', html);
   try {
     setQZStatus('printing');
-    // Send each copy as a separate job — prevents multi-copy gap detection error
     for (let i = 0; i < copies; i++) {
       await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
-      if (i < copies - 1) await new Promise(r => setTimeout(r, 800)); // brief pause between copies
+      if (i < copies - 1) await new Promise(r => setTimeout(r, 800));
     }
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Front Printer!`, 'success');
@@ -336,15 +324,14 @@ async function qzPrintFront(name, copies) {
 /* ─── Print Back via QZ (pixel/HTML) ─── */
 async function qzPrintBack(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined' || !QZP.connected || !QZP.backPrinter) return false;
-  await _ensureCalibrated(QZP.backPrinter, 'back');
   const html   = buildBackHTML(p, v, bn, pd, bb);
-  const config = _qzPixelConfig(QZP.backPrinter, 50, 90);
+  const config = _qzPixelConfig(QZP.backPrinter);
   console.log('[BACK HTML]\n', html);
   try {
     setQZStatus('printing');
     for (let i = 0; i < copies; i++) {
       await qz.print(config, [{ type: 'pixel', format: 'html', flavor: 'plain', data: html }]);
-      if (i < copies - 1) await new Promise(r => setTimeout(r, 1200)); // longer pause for back label
+      if (i < copies - 1) await new Promise(r => setTimeout(r, 1200));
     }
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Back Printer!`, 'success');
@@ -386,21 +373,5 @@ async function testPrint() {
   }
 }
 
-/* ─── Calibrate printer (one-time, on label roll change) ─── */
-async function calibratePrinter() {
-  if (typeof qz === 'undefined' || !QZP.connected) {
-    showToast('QZ Tray not connected!', 'error'); return;
-  }
-  const printer = QZP.frontPrinter || QZP.backPrinter;
-  if (!printer) {
-    showToast('Select a printer first and save!', 'error'); return;
-  }
-  try {
-    const config = qz.configs.create(printer);
-    await qz.print(config, [{ type: 'raw', format: 'plain', data: 'GAPDETECT\r\n' }]);
-    showToast('✓ Printer calibrated! Gap sensor set.', 'success');
-  } catch (e) {
-    showToast('Calibration failed: ' + e.message, 'error');
-  }
-}
+
 
