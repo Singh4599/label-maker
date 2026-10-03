@@ -437,7 +437,7 @@ async function testPrint() {
     `TEXT 20,100,"2",0,1,1,"365 Spicery Label Studio"`,
     `TEXT 20,130,"2",0,1,1,"Printer: ${tsplSafe(printer)}"`,
     `PRINT 1,1`
-  ].join('\n');
+  ].join('\r\n');
   try {
     const config = qz.configs.create(printer);
     await qz.print(config, [{ type: 'raw', format: 'plain', data: tspl }]);
