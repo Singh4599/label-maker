@@ -29,24 +29,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-/* ─── Calibrate printer on connect — absorbs first-job gap detection error ─── */
-async function _calibratePrinter(printer, widthMM, heightMM, gapMM) {
-  if (!printer || typeof qz === 'undefined') return;
-  try {
-    // SIZE + GAP tells printer the label dimensions
-    // GAPDETECT makes it auto-detect gap position (feeds 2-3 labels)
-    // After this, printer is calibrated and won't error on actual prints
-    const calibration = [
-      `SIZE ${widthMM} mm,${heightMM} mm`,
-      `GAP ${gapMM} mm,0 mm`,
-      `GAPDETECT`,
-      ``
-    ].join('\r\n');
-    await qz.print(qz.configs.create(printer), [{ type: 'raw', format: 'plain', data: calibration }]);
-    console.log(`[QZ] Calibrated: ${printer} ${widthMM}x${heightMM}mm gap=${gapMM}mm`);
-  } catch(e) { console.warn('[QZ] Calibration warn (expected):', e.message); }
-}
-
 /* ─── Ensure connected + auto-reconnect if dropped ─── */
 async function _ensureConnected() {
   if (typeof qz === 'undefined') return false;
@@ -72,13 +54,6 @@ async function qzConnect() {
     QZP.connected = true;
     setQZStatus('connected');
     await refreshPrinters();
-    // Calibrate both printers silently (absorbs first-job error on page load)
-    if (QZP.frontPrinter) {
-      await _calibratePrinter(QZP.frontPrinter, 65, 25, 4);
-    }
-    if (QZP.backPrinter) {
-      await _calibratePrinter(QZP.backPrinter, 50, 90, 6);
-    }
   } catch (err) {
     QZP.connected = false;
     setQZStatus('disconnected');
@@ -264,16 +239,7 @@ function buildFrontTSPL(name, copies) {
   return [
     `SIZE ${W} mm,${H} mm`,
     `GAP ${gap} mm,0 mm`,
-    `REFERENCE 0,0`,
-    `SPEED 4.0`,
-    `DENSITY 12`,
-    `SET PEEL OFF`,
-    `SET CUTTER OFF`,
-    `SET PARTIAL_CUTTER OFF`,
-    `SET TEAR ON`,
     `DIRECTION 1`,
-    `SHIFT 0`,
-    `OFFSET 0 mm`,
     `CLS`,
     textCmds.trim(),
     `PRINT ${copies},1`,
@@ -330,16 +296,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   return [
     `SIZE ${W} mm,${H} mm`,
     `GAP ${gap} mm,0 mm`,
-    `REFERENCE 0,0`,
-    `SPEED 4.0`,
-    `DENSITY 12`,
-    `SET PEEL OFF`,
-    `SET CUTTER OFF`,
-    `SET PARTIAL_CUTTER OFF`,
-    `SET TEAR ON`,
     `DIRECTION 1`,
-    `SHIFT 0`,
-    `OFFSET 0 mm`,
     `CLS`,
     cmds.trim(),
     `PRINT ${copies},1`,
@@ -353,7 +310,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 ═══════════════════════════════════════════════════════════════ */
 
 function _qzRawConfig(printerName) {
-  return qz.configs.create(printerName);
+  return qz.configs.create(printerName, { altPrinting: true });
 }
 
 /* ─── Print Front via QZ (TSPL RAW, auto-reconnect) ─── */
