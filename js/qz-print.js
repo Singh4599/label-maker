@@ -14,8 +14,8 @@ const QZP = {
   frontGap: parseFloat(localStorage.getItem('frontGap')  || '2'),
   backGap:  parseFloat(localStorage.getItem('backGap')   || '3'),
   printers: [],
-  _retrying: false,
-  _setupDone: { front: false, back: false }  // setup sent this session?
+  printers: [],
+  _retrying: false
 };
 
 /* ─── Init on page load ─── */
@@ -29,29 +29,12 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-/* ─── Send SIZE+GAP setup to printer (no print, just stores calibration) ─── */
-async function _setupPrinter(printer, widthMM, heightMM, gapMM) {
-  if (!printer || typeof qz === 'undefined') return;
-  try {
-    const setup = [
-      `SIZE ${widthMM} mm,${heightMM} mm`,
-      `GAP ${gapMM} mm,0 mm`,
-      `SET DARKNESS 12`,
-      `DIRECTION 1`,
-      ``
-    ].join('\r\n');
-    await qz.print(qz.configs.create(printer), [{ type: 'raw', format: 'plain', data: setup }]);
-    console.log(`[QZ] Setup done: ${printer} ${widthMM}x${heightMM}mm gap=${gapMM}mm`);
-  } catch(e) { console.warn('[QZ] Setup warn:', e.message); }
-}
-
-/* ─── Ensure connected + setup, auto-reconnect if dropped ─── */
+/* ─── Ensure connected + auto-reconnect if dropped ─── */
 async function _ensureConnected() {
   if (typeof qz === 'undefined') return false;
   const active = qz.websocket.isActive();
   if (!QZP.connected || !active) {
     console.log('[QZ] Auto-reconnecting...');
-    QZP._setupDone = { front: false, back: false };
     await qzConnect();
   }
   return QZP.connected;
@@ -71,15 +54,6 @@ async function qzConnect() {
     QZP.connected = true;
     setQZStatus('connected');
     await refreshPrinters();
-    // Setup both printers on connect (stores calibration in printer — no paper wasted)
-    if (QZP.frontPrinter && !QZP._setupDone.front) {
-      await _setupPrinter(QZP.frontPrinter, 65, 25, QZP.frontGap);
-      QZP._setupDone.front = true;
-    }
-    if (QZP.backPrinter && !QZP._setupDone.back) {
-      await _setupPrinter(QZP.backPrinter, 50, 90, QZP.backGap);
-      QZP._setupDone.back = true;
-    }
   } catch (err) {
     QZP.connected = false;
     setQZStatus('disconnected');
@@ -190,8 +164,6 @@ function savePrinterSettings() {
   localStorage.setItem('backGap',      gp); // sync back gap to main gap
   QZP.frontGap = gp;
   QZP.backGap  = gp;
-  // Reset setup flags so new printers get configured on next print
-  QZP._setupDone = { front: false, back: false };
 
   closePrinterSettings();
   showToast('✓ Printer settings saved!', 'success');
@@ -265,8 +237,18 @@ function buildFrontTSPL(name, copies) {
     textCmds   += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
   });
   return [
-    `SET DARKNESS 12`,
+    `SIZE ${W} mm,${H} mm`,
+    `GAP ${gap} mm,0 mm`,
+    `REFERENCE 0,0`,
+    `SPEED 4.0`,
+    `DENSITY 12`,
+    `SET PEEL OFF`,
+    `SET CUTTER OFF`,
+    `SET PARTIAL_CUTTER OFF`,
+    `SET TEAR ON`,
     `DIRECTION 1`,
+    `SHIFT 0`,
+    `OFFSET 0 mm`,
     `CLS`,
     textCmds.trim(),
     `PRINT ${copies},1`,
@@ -321,8 +303,18 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `TEXT ${lm},${y},"1",0,1,1,"FOR 1g = Rs.${pg}"\r\n`;
 
   return [
-    `SET DARKNESS 12`,
+    `SIZE ${W} mm,${H} mm`,
+    `GAP ${gap} mm,0 mm`,
+    `REFERENCE 0,0`,
+    `SPEED 4.0`,
+    `DENSITY 12`,
+    `SET PEEL OFF`,
+    `SET CUTTER OFF`,
+    `SET PARTIAL_CUTTER OFF`,
+    `SET TEAR ON`,
     `DIRECTION 1`,
+    `SHIFT 0`,
+    `OFFSET 0 mm`,
     `CLS`,
     cmds.trim(),
     `PRINT ${copies},1`,
@@ -350,12 +342,7 @@ async function qzPrintFront(name, copies) {
   }
   if (!QZP.frontPrinter) { console.warn('[QZ] No front printer selected'); return false; }
 
-  // Re-setup if not done this session (handles power-cycle case)
-  if (!QZP._setupDone.front) {
-    await _setupPrinter(QZP.frontPrinter, 65, 25, QZP.frontGap);
-    QZP._setupDone.front = true;
-    await new Promise(r => setTimeout(r, 300)); // let printer process setup
-  }
+  if (!QZP.frontPrinter) { console.warn('[QZ] No front printer selected'); return false; }
 
   const tspl = buildFrontTSPL(name, copies);
   console.log('[FRONT TSPL]\n', tspl);
@@ -368,7 +355,6 @@ async function qzPrintFront(name, copies) {
   } catch (err) {
     QZP.connected = qz.websocket.isActive();
     setQZStatus(QZP.connected ? 'connected' : 'disconnected');
-    QZP._setupDone.front = false; // re-setup on next attempt
     showToast('Print error: ' + err.message, 'error');
     return false;
   }
@@ -381,12 +367,6 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
   if (!await _ensureConnected()) return false;
   if (!QZP.backPrinter) return false;
 
-  if (!QZP._setupDone.back) {
-    await _setupPrinter(QZP.backPrinter, 50, 90, QZP.backGap);
-    QZP._setupDone.back = true;
-    await new Promise(r => setTimeout(r, 300));
-  }
-
   const tspl = buildBackTSPL(p, v, bn, pd, bb, copies);
   console.log('[BACK TSPL]\n', tspl);
   try {
@@ -398,7 +378,6 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
   } catch (err) {
     QZP.connected = qz.websocket.isActive();
     setQZStatus(QZP.connected ? 'connected' : 'disconnected');
-    QZP._setupDone.back = false; // re-setup on next attempt
     showToast('Print error: ' + err.message, 'error');
     return false;
   }
