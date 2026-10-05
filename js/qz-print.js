@@ -217,7 +217,7 @@ function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 /* ─── Build FRONT label TSPL (65x25mm) ─── */
 function buildFrontTSPL(name, copies) {
   const W = 65, H = 25;
-  const gap = parseFloat(localStorage.getItem('frontGap') || '2'); // front labels usually 2mm gap
+  const gap = 4; // Hardcoded from client measurement (4mm)
   const n = tsplSafe(name.toUpperCase());
   let font, xm, ym, maxCh;
   if (n.length <= 7)       { font='4'; xm=3; ym=3; maxCh=7;  }
@@ -258,7 +258,7 @@ function buildFrontTSPL(name, copies) {
 
 /* ─── Build BACK label TSPL (50x90mm) — matches Bartender layout ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
-  const W = 50, H = 90, gap = QZP.gap || 3;
+  const W = 50, H = 90, gap = 6; // Hardcoded from client measurement (6mm)
   const dw = W * 8, lm = 6, re = W * 8 - lm;
   const mrp  = parseFloat(v.m) || 0;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
