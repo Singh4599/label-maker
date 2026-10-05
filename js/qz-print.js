@@ -29,6 +29,24 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+/* ─── Calibrate printer on connect — absorbs first-job gap detection error ─── */
+async function _calibratePrinter(printer, widthMM, heightMM, gapMM) {
+  if (!printer || typeof qz === 'undefined') return;
+  try {
+    // SIZE + GAP tells printer the label dimensions
+    // GAPDETECT makes it auto-detect gap position (feeds 2-3 labels)
+    // After this, printer is calibrated and won't error on actual prints
+    const calibration = [
+      `SIZE ${widthMM} mm,${heightMM} mm`,
+      `GAP ${gapMM} mm,0 mm`,
+      `GAPDETECT`,
+      ``
+    ].join('\r\n');
+    await qz.print(qz.configs.create(printer), [{ type: 'raw', format: 'plain', data: calibration }]);
+    console.log(`[QZ] Calibrated: ${printer} ${widthMM}x${heightMM}mm gap=${gapMM}mm`);
+  } catch(e) { console.warn('[QZ] Calibration warn (expected):', e.message); }
+}
+
 /* ─── Ensure connected + auto-reconnect if dropped ─── */
 async function _ensureConnected() {
   if (typeof qz === 'undefined') return false;
@@ -54,6 +72,13 @@ async function qzConnect() {
     QZP.connected = true;
     setQZStatus('connected');
     await refreshPrinters();
+    // Calibrate both printers silently (absorbs first-job error on page load)
+    if (QZP.frontPrinter) {
+      await _calibratePrinter(QZP.frontPrinter, 65, 25, 4);
+    }
+    if (QZP.backPrinter) {
+      await _calibratePrinter(QZP.backPrinter, 50, 90, 6);
+    }
   } catch (err) {
     QZP.connected = false;
     setQZStatus('disconnected');
@@ -340,8 +365,6 @@ async function qzPrintFront(name, copies) {
     console.warn('[QZ] Could not connect — falling back to Chrome print');
     return false;
   }
-  if (!QZP.frontPrinter) { console.warn('[QZ] No front printer selected'); return false; }
-
   if (!QZP.frontPrinter) { console.warn('[QZ] No front printer selected'); return false; }
 
   const tspl = buildFrontTSPL(name, copies);
