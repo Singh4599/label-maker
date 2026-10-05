@@ -227,7 +227,7 @@ function buildFrontTSPL(name, copies) {
   const fontH    = (font === '4' ? 32 : 24) * ym;
   const lineStep = fontH + 8;
   const totalH   = lines.length * lineStep - 8;
-  const yStart   = Math.max(4, Math.round((H * 8 - totalH) / 2));
+  const yStart   = Math.max(16, Math.round((H * 8 - totalH) / 2)); // Shifted down for safety
   let textCmds = '';
   lines.forEach((ln, i) => {
     const charW = (font === '4' ? 24 : 16) * xm;
@@ -267,7 +267,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const ingr = tsplSafe(p.i || '-');
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
-  let y = 6, cmds = '';
+  let y = 32, cmds = ''; // Started lower to prevent top clipping
 
   // Product Name (font3 xm2 ym2 = 32px wide, 48px tall, max 11 chars/line)
   wrapText(name, 11).slice(0, 2).forEach(ln => {
@@ -281,22 +281,22 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `TEXT ${lm+4},${y+6},"1",0,1,1,"Category: ${cat}"\r\n`;
   y += 32;
 
-  // Ingredients
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 22;
-  wrapText(ingr, 42).slice(0, 5).forEach(ln => {
-    cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 14;
+  // Ingredients (Wrapped at 36 to prevent right edge clipping)
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 24;
+  wrapText(ingr, 36).slice(0, 5).forEach(ln => {
+    cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 16;
   });
-  y += 6;
+  y += 8;
 
-  // Details
-  cmds += `BAR ${lm},${y},${re - lm},1\r\n`; y += 5;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WEIGHT : ${nw}"\r\n`; y += 22;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH NO : ${bno}"\r\n`; y += 22;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"DATE OF PACKING : ${tsplSafe(pd)}"\r\n`; y += 22;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE : ${tsplSafe(bb)}"\r\n`; y += 26;
+  // Details (Shortened labels to save horizontal space)
+  cmds += `BAR ${lm},${y},${re - lm},1\r\n`; y += 8;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WT: ${nw}"\r\n`; y += 24;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH: ${bno}"\r\n`; y += 24;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"PKD: ${tsplSafe(pd)}"\r\n`; y += 24;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"EXP: ${tsplSafe(bb)}"\r\n`; y += 30;
 
   // MRP
-  cmds += `BAR ${lm},${y},${re - lm},2\r\n`; y += 8;
+  cmds += `BAR ${lm},${y},${re - lm},2\r\n`; y += 12;
   const mrpTxt = `MRP : Rs.${mrp}/-`;
   cmds += `TEXT ${Math.max(lm, Math.round((dw - mrpTxt.length * 16) / 2))},${y},"3",0,1,2,"${mrpTxt}"\r\n`; y += 52;
   cmds += `TEXT ${lm},${y},"1",0,1,1,"(INCL. OF ALL TAXES)"\r\n`; y += 15;
