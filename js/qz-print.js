@@ -227,8 +227,6 @@ function buildFrontTSPL(name, copies) {
     textCmds   += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
   });
   return [
-    `SIZE ${W} mm,${H} mm`,
-    `GAP ${gap} mm,0 mm`,
     `SET DARKNESS 12`,
     `DIRECTION 1`,
     `CLS`,
@@ -285,8 +283,6 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `TEXT ${lm},${y},"1",0,1,1,"FOR 1g = Rs.${pg}"\r\n`;
 
   return [
-    `SIZE ${W} mm,${H} mm`,
-    `GAP ${gap} mm,0 mm`,
     `SET DARKNESS 12`,
     `DIRECTION 1`,
     `CLS`,
