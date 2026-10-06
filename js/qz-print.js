@@ -139,49 +139,44 @@ function wrapText(text, maxChars) {
   const lines = []; let cur = '';
   words.forEach(w => {
     const t = cur ? cur + ' ' + w : w;
-    if (t.length > maxChars) { if (cur) lines.push(cur); cur = w.length > maxChars ? w.substring(0, maxChars) : w; }
+    // Never truncate a word — if it alone exceeds maxChars, put it on its own line anyway
+    if (t.length > maxChars) { if (cur) lines.push(cur); cur = w; }
     else cur = t;
   });
   if (cur) lines.push(cur);
-  return lines.length ? lines : [text.substring(0, maxChars)];
+  return lines.length ? lines : [text];  // no truncation fallback
 }
 function getNutriLines(p) {
+  // Short labels: max ~44 chars × 8px/char = 352px → safely fits in 388px available
   return [
-    `En:${p.e||0}kcal Prot:${p.p||0}g Carbs:${p.cb||0}g Sug:${p.ts||0}g`,
-    `Fat:${p.tf||0}g SatFat:${p.sf||0}g Trans:${p.tr||0}g Chol:${p.ch||0}mg Na:${p.so||0}mg`
+    `En:${p.e||0}kcal Pro:${p.p||0}g Carb:${p.cb||0}g Sug:${p.ts||0}g`,
+    `Fat:${p.tf||0}g Sat:${p.sf||0}g Tr:${p.tr||0}g Na:${p.so||0}mg`
   ];
 }
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
-/* ─── FRONT label TSPL (65x25mm) — max bold font, centered, no overflow ─── */
+/* ─── FRONT label TSPL (65x25mm) — bold heavy font, centered, no overflow ─── */
 function buildFrontTSPL(name, copies) {
-  const W = 65, H = 25;            // mm
+  const W = 65, H = 25;            // mm (520 × 200 dots at 8 dpi/mm)
   const n = tsplSafe(name.toUpperCase());
 
   // 4-tier font selection — biggest font that fits without overflow
-  // Font4 base: 24x32px | Font3 base: 16x24px
-  // Label: 520x200 dots (65mm x 25mm @ 8 dpi/mm)
+  // Font4 base: 24×32px | Font3 base: 16×24px
   let font, xm, ym, lines;
   if (n.length <= 7) {
-    // HUGE: Font4 xm=3 ym=3 → 72x96px/char, 1 line max
     font='4'; xm=3; ym=3; lines = wrapText(n, 7);
   } else {
-    const tryAt10 = wrapText(n, 10);   // Font4 xm=2: 48px/char → 10 per line
+    const tryAt10 = wrapText(n, 10);
     if (tryAt10.length === 1) {
-      // Single line: use ym=3 (96px tall) — BIG
-      font='4'; xm=2; ym=3; lines = tryAt10;
+      font='4'; xm=2; ym=3; lines = tryAt10;          // 1 line tall (96px)
     } else if (tryAt10.length <= 2) {
-      // 2 lines Font4 xm=2 ym=2 (64px): 2×72 = 144px ≤ 200px ✓
-      font='4'; xm=2; ym=2; lines = tryAt10;
+      font='4'; xm=2; ym=2; lines = tryAt10;          // 2 lines (144px total)
     } else {
-      // 3+ lines at Font4 — too tall. Use Font3 xm=2
-      const tryAt16 = wrapText(n, 16);  // Font3 xm=2: 32px/char → 16 per line
+      const tryAt16 = wrapText(n, 16);
       if (tryAt16.length <= 2) {
-        // 2 lines Font3 xm=2 ym=3 (72px): 2×80−8 = 152px ≤ 200px ✓  BIGGER than before!
-        font='3'; xm=2; ym=3; lines = tryAt16;
+        font='3'; xm=2; ym=3; lines = tryAt16;        // 2 lines tall (152px) – BIGGER
       } else {
-        // 3 lines Font3 xm=2 ym=2 (48px): 3×56−8 = 160px ≤ 200px ✓
-        font='3'; xm=2; ym=2; lines = tryAt16.slice(0, 3);
+        font='3'; xm=2; ym=2; lines = tryAt16.slice(0, 3);  // 3 lines (160px)
       }
     }
   }
@@ -196,7 +191,10 @@ function buildFrontTSPL(name, copies) {
     const tW    = ln.length * charW;
     const x     = Math.max(4, Math.round((W*8 - tW) / 2));
     const y     = yStart + i * lineStep;
+    // Bold double-print: offset by 1 dot to simulate Arial Black stroke weight
     cmds += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    cmds += `TEXT ${x+1},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    cmds += `TEXT ${x},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
   });
   return [
     `SET DARKNESS 12`,
@@ -208,10 +206,10 @@ function buildFrontTSPL(name, copies) {
   ].join('\r\n');
 }
 
-/* ─── BACK label TSPL (50x90mm) — full label fill + BarTender layout + nutrition ─── */
+/* ─── BACK label TSPL (50x90mm) — bold title, full fill, BarTender layout + nutrition ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const W = 50, H = 90;
-  const dw = W*8, lm = 6, re = W*8 - lm;  // 400 dots wide, margins at 6 & 394
+  const dw = W*8, lm = 6, re = W*8 - lm;  // 400 dots wide
   const LABEL_H = H * 8;                    // 720 dots tall
   const mrp  = parseFloat(v.m) || 0;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
@@ -221,20 +219,29 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
 
-  // ── Pre-calculate to fill label dynamically ──
-  const titleTry  = wrapText(name, 8);
-  const tXm       = titleTry.length <= 3 ? 3 : 2;
-  const tYm       = tXm;
-  const titleLines = tXm === 3 ? titleTry : wrapText(name, 12);
-  const numTL     = Math.min(titleLines.length, 3);
-  const titleStep = (24 * tYm) + 8;           // e.g. 80 for tYm=3
+  // ── Title: PREFER 2 lines. Try big font (tXm=3) first, fall to medium (tXm=2) ──
+  // tXm=3 → Font3 48px/char (max 8 chars/line on 400px label)
+  // tXm=2 → Font3 32px/char (max 12 chars/line)
+  const titleTry8  = wrapText(name, 8);
+  const titleTry12 = wrapText(name, 12);
+  let tXm, tYm, titleLines;
+  if (titleTry8.length <= 2) {
+    tXm=3; tYm=3; titleLines=titleTry8;          // Best: 2 lines big font
+  } else if (titleTry12.length <= 2) {
+    tXm=2; tYm=2; titleLines=titleTry12;         // 2 lines medium font
+  } else {
+    // Very long name — allow 3 lines (max), use bigger font
+    tXm=3; tYm=3; titleLines=titleTry8.slice(0, 3);
+  }
+  const numTL     = titleLines.length;
+  const titleStep = (24 * tYm) + 8;             // 80 for tYm=3, 56 for tYm=2
   const ingrLines = wrapText(ingr, 40).slice(0, 5);
   const numIL     = ingrLines.length;
 
-  // Compact height = all content with no extra spacing
+  // Compact height (all content, no extra spacing)
   const compactH = (
     10 +                          // top margin
-    numTL * titleStep + 6 +       // title lines + gap after title
+    numTL * titleStep + 6 +       // title + gap
     36 +                          // category box
     22 + numIL * 13 + 6 +        // ingredients header + lines + gap
     20 + 13 + 16 +               // nutrition header + 2 data lines
@@ -242,33 +249,37 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     10 + 68 + 14 + 14            // MRP bar + text + 2 footer lines
   );
 
-  // Distribute extra space evenly across 6 expandable gaps
-  const extra = Math.max(0, LABEL_H - compactH - 8);  // 8px bottom margin
+  // Distribute leftover space across 6 expandable gap points to fill label
+  const extra = Math.max(0, LABEL_H - compactH - 8);
   const gp    = Math.floor(extra / 6);
 
   let y = 10, cmds = '';
 
-  // ── TITLE ──
-  titleLines.slice(0, 3).forEach(ln => {
-    const tw = ln.length * 16 * tXm;          // font3 base=16px × xm
-    cmds += `TEXT ${Math.max(lm, Math.round((dw - tw) / 2))},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;
+  // ── TITLE (bold double-print for heavy stroke weight like Arial Black) ──
+  titleLines.forEach(ln => {
+    const tw = ln.length * 16 * tXm;            // Font3 base=16px × xm
+    const x  = Math.max(lm, Math.round((dw - tw) / 2));
+    cmds += `TEXT ${x},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x+1},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1x
+    cmds += `TEXT ${x},${y+1},"3",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1y
     y += titleStep;
   });
-  y += 6 + gp;                                // gap 1 (expandable)
+  y += 6 + gp;                                  // gap 1
 
-  // ── CATEGORY BOX (2px visible border) ──
+  // ── CATEGORY BOX (2px border) ──
   cmds += `BOX ${lm},${y},${re},${y+28},2\r\n`;
   cmds += `TEXT ${lm+5},${y+7},"2",0,1,1,"Category: ${cat}"\r\n`;
-  y += 36 + gp;                               // gap 2
+  y += 36 + gp;                                  // gap 2
 
   // ── INGREDIENTS ──
   cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 22;
   ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 13; });
-  y += 6 + gp;                                // gap 3
+  y += 6 + gp;                                  // gap 3
 
   // ── NUTRITIONAL INFO ──
   cmds += `TEXT ${lm},${y},"2",0,1,1,"NUTRITIONAL INFO (per 100g):"\r\n`; y += 20;
   const nutri = getNutriLines(p);
+  // tsplSafe already removes special chars; nutri lines ≤ 44 chars × 8px = 352px ≤ 388px ✓
   cmds += `TEXT ${lm},${y},"1",0,1,1,"${tsplSafe(nutri[0])}"\r\n`; y += 13;
   cmds += `TEXT ${lm},${y},"1",0,1,1,"${tsplSafe(nutri[1])}"\r\n`; y += 16 + gp;  // gap 4
 
@@ -282,7 +293,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   // ── MRP ──
   cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 10 + gp;  // gap 6
   const mrpTxt = `MRP : Rs.${mrp}/-`;
-  // Font4 xm=1 ym=2: 24x64px/char. Max MRP "MRP : Rs.9999/-" = 15chars × 24 = 360px < 388px ✓
+  // Font4 xm=1 ym=2: 24×64px per char. "MRP : Rs.9999/-" = 15 × 24 = 360px < 388px ✓
   cmds += `TEXT ${Math.max(lm, Math.round((dw - mrpTxt.length * 24) / 2))},${y},"4",0,1,2,"${mrpTxt}"\r\n`; y += 68;
   cmds += `TEXT ${lm},${y},"1",0,1,1,"(INCL. OF ALL TAXES)"\r\n`; y += 14;
   cmds += `TEXT ${lm},${y},"1",0,1,1,"FOR 1g = Rs.${pg}"\r\n`;
