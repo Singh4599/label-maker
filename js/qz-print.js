@@ -147,10 +147,10 @@ function wrapText(text, maxChars) {
   return lines.length ? lines : [text];  // no truncation fallback
 }
 function getNutriLines(p) {
-  // Short labels: max ~44 chars × 8px/char = 352px → safely fits in 388px available
+  // Font2 format: max ~28 chars × 12px = 336px ≤ 388px available ✓
   return [
-    `En:${p.e||0}kcal Pro:${p.p||0}g Carb:${p.cb||0}g Sug:${p.ts||0}g`,
-    `Fat:${p.tf||0}g Sat:${p.sf||0}g Tr:${p.tr||0}g Na:${p.so||0}mg`
+    `En:${p.e||0}kcal Pro:${p.p||0}g Carb:${p.cb||0}g`,
+    `Fat:${p.tf||0}g Sat:${p.sf||0}g Na:${p.so||0}mg`
   ];
 }
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
@@ -172,11 +172,12 @@ function buildFrontTSPL(name, copies) {
     } else if (tryAt10.length <= 2) {
       font='4'; xm=2; ym=2; lines = tryAt10;          // 2 lines (144px total)
     } else {
-      const tryAt16 = wrapText(n, 16);
-      if (tryAt16.length <= 2) {
-        font='3'; xm=2; ym=3; lines = tryAt16;        // 2 lines tall (152px) – BIGGER
+      // Font3 xm=2 actual charW ≈34px (not 32) → safe max=14 chars (14×34=476px < 520px)
+      const tryAt14 = wrapText(n, 14);
+      if (tryAt14.length <= 2) {
+        font='3'; xm=2; ym=3; lines = tryAt14;        // 2 lines tall (152px) – BIGGER
       } else {
-        font='3'; xm=2; ym=2; lines = tryAt16.slice(0, 3);  // 3 lines (160px)
+        font='3'; xm=2; ym=2; lines = tryAt14.slice(0, 3);  // 3 lines (160px)
       }
     }
   }
@@ -191,10 +192,11 @@ function buildFrontTSPL(name, copies) {
     const tW    = ln.length * charW;
     const x     = Math.max(4, Math.round((W*8 - tW) / 2));
     const y     = yStart + i * lineStep;
-    // Bold double-print: offset by 1 dot to simulate Arial Black stroke weight
+    // Bold quad-print: 4 points (x,y) (x+1,y) (x,y+1) (x+1,y+1) — simulates Arial Black weight
     cmds += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x+1},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    cmds += `TEXT ${x+1},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
   });
   return [
     `SET DARKNESS 12`,
@@ -235,17 +237,18 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   }
   const numTL     = titleLines.length;
   const titleStep = (24 * tYm) + 8;             // 80 for tYm=3, 56 for tYm=2
-  const ingrLines = wrapText(ingr, 40).slice(0, 5);
+  const ingrLines = wrapText(ingr, 32).slice(0, 5);  // Font2: 32×12px=384px ≤ 388px ✓
   const numIL     = ingrLines.length;
 
   // Compact height (all content, no extra spacing)
+  // ingr: Font2 step=22 | nutri: Font2 step=22 | y starts at 16
   const compactH = (
-    10 +                          // top margin
-    numTL * titleStep + 6 +       // title + gap
+    16 +                          // top margin
+    numTL * titleStep + 6 +       // title + gap base
     36 +                          // category box
-    22 + numIL * 13 + 6 +        // ingredients header + lines + gap
-    20 + 13 + 16 +               // nutrition header + 2 data lines
-    7 + 22 + 22 + 22 + 26 +     // separator + 4 detail lines
+    22 + numIL * 22 + 6 +        // ingr header + lines(Font2 step=22) + gap base
+    20 + 22 + 22 +               // nutrition header + 2 lines(Font2 step=22)
+    7 + 22 + 22 + 22 + 26 +     // detail separator + 4 lines
     10 + 68 + 14 + 14            // MRP bar + text + 2 footer lines
   );
 
@@ -253,7 +256,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const extra = Math.max(0, LABEL_H - compactH - 8);
   const gp    = Math.floor(extra / 6);
 
-  let y = 10, cmds = '';
+  let y = 16, cmds = '';  // y=16 prevents title chars being clipped at top edge
 
   // ── TITLE (bold double-print for heavy stroke weight like Arial Black) ──
   titleLines.forEach(ln => {
@@ -271,24 +274,24 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `TEXT ${lm+5},${y+7},"2",0,1,1,"Category: ${cat}"\r\n`;
   y += 36 + gp;                                  // gap 2
 
-  // ── INGREDIENTS ──
+  // ── INGREDIENTS (Font2: 12×20px, wrap at 32 chars = 32×12=384px ≤ 388px ✓) ──
   cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 22;
-  ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 13; });
+  ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"2",0,1,1,"${ln}"\r\n`; y += 22; });
   y += 6 + gp;                                  // gap 3
 
-  // ── NUTRITIONAL INFO ──
+  // ── NUTRITIONAL INFO (Font2: fits 28 chars per line) ──
   cmds += `TEXT ${lm},${y},"2",0,1,1,"NUTRITIONAL INFO (per 100g):"\r\n`; y += 20;
   const nutri = getNutriLines(p);
-  // tsplSafe already removes special chars; nutri lines ≤ 44 chars × 8px = 352px ≤ 388px ✓
-  cmds += `TEXT ${lm},${y},"1",0,1,1,"${tsplSafe(nutri[0])}"\r\n`; y += 13;
-  cmds += `TEXT ${lm},${y},"1",0,1,1,"${tsplSafe(nutri[1])}"\r\n`; y += 16 + gp;  // gap 4
+  // nutri lines ≤ 28 chars × 12px = 336px ≤ 388px ✓
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"${tsplSafe(nutri[0])}"\r\n`; y += 22;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"${tsplSafe(nutri[1])}"\r\n`; y += 22 + gp;  // gap 4
 
   // ── DETAILS ──
   cmds += `BAR ${lm},${y},${re-lm},1\r\n`; y += 7;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WEIGHT : ${nw}"\r\n`; y += 22;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH NO   : ${bno}"\r\n`; y += 22;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"DATE OF PKG: ${tsplSafe(pd)}"\r\n`; y += 22;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE: ${tsplSafe(bb)}"\r\n`; y += 26 + gp;  // gap 5
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE: ${tsplSafe(bb).substring(0,18)}"\r\n`; y += 26 + gp;  // gap 5
 
   // ── MRP ──
   cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 10 + gp;  // gap 6
