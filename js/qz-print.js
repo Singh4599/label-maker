@@ -222,35 +222,42 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
 
-  // ── Title: PREFER 2 lines. Actual Font3 charW ≈ 18px×xm (wider than spec) ──
-  // tXm=3 → ~54px/char (max 7 chars/line safely on 400px label)
-  // tXm=2 → ~36px/char (max 10 chars/line safely)
-  const titleTry7  = wrapText(name, 7);
-  const titleTry10 = wrapText(name, 10);
-  const titleTry15 = wrapText(name, 15);
-  let tXm, tYm, titleLines;
-  if (titleTry7.length <= 2) {
-    tXm=3; tYm=3; titleLines=titleTry7;          // Best: 2 lines big font
-  } else if (titleTry10.length <= 2) {
-    tXm=2; tYm=2; titleLines=titleTry10;         // 2 lines medium font
-  } else if (titleTry10.length <= 3) {
-    tXm=2; tYm=2; titleLines=titleTry10.slice(0,3); // 3 lines medium font (fits)
-  } else {
-    tXm=2; tYm=2; titleLines=titleTry15.slice(0,3); // 3 lines small, last resort
+  // ── Title: DYNAMIC FONT SCALING — try biggest font, fall to smaller if any line clips ──
+  // Conservative charW values (slightly over-estimated to guarantee no right-edge clipping):
+  //   Font3 xm=3: ~54px/char | Font3 xm=2: ~38px/char
+  //   Font2 xm=2: ~26px/char | Font2 xm=1: ~14px/char
+  const availW = dw - 2 * lm;  // 388 usable dots
+  const fontConfigs = [
+    { font:'3', xm:3, ym:3, cw:54, maxL:2 },   // biggest: 2 lines max
+    { font:'3', xm:2, ym:2, cw:38, maxL:3 },   // medium:  3 lines max
+    { font:'2', xm:2, ym:2, cw:26, maxL:3 },   // smaller: 3 lines max
+    { font:'2', xm:1, ym:1, cw:14, maxL:3 },   // smallest: always fits
+  ];
+  let tFont='2', tXm=1, tYm=1, tCharW=14, titleLines;
+  for (const cfg of fontConfigs) {
+    const maxCPL = Math.floor(availW / cfg.cw);
+    const wrapped = wrapText(name, maxCPL);
+    if (wrapped.length <= cfg.maxL && wrapped.every(ln => ln.length * cfg.cw <= availW)) {
+      tFont=cfg.font; tXm=cfg.xm; tYm=cfg.ym; tCharW=cfg.cw;
+      titleLines = wrapped.slice(0, cfg.maxL);
+      break;
+    }
   }
+  if (!titleLines) titleLines = wrapText(name, 27).slice(0, 3);  // absolute fallback
+
   const numTL     = titleLines.length;
-  const titleStep = (24 * tYm) + 8;             // 56 for tYm=2, 80 for tYm=3
-  const ingrLines = wrapText(ingr, 27).slice(0, 5);  // Font2 actual ~14px/char: 27×14=378px ≤ 394px ✓
+  const tFontH    = (tFont==='3' ? 24 : 20) * tYm;
+  const titleStep = tFontH + 8;
+  const ingrLines = wrapText(ingr, 27).slice(0, 5);  // Font2 ~14px/char: 27×14=378 ≤ 394 ✓
   const numIL     = ingrLines.length;
 
   // Compact height (all content, no extra spacing)
-  // ingr: Font2 step=22 | nutri: Font2 step=22 | y starts at 24
   const compactH = (
-    24 +                          // top margin (printer non-printable zone ~20 dots)
+    24 +                          // top margin (printer non-printable zone)
     numTL * titleStep + 6 +       // title + gap base
     36 +                          // category box
-    22 + numIL * 22 + 6 +        // ingr header + lines(Font2 step=22) + gap base
-    20 + 22 + 22 +               // nutrition header + 2 lines(Font2 step=22)
+    22 + numIL * 22 + 6 +        // ingr header + lines (Font2 step=22) + gap
+    20 + 22 + 22 +               // nutrition header + 2 lines (Font2 step=22)
     7 + 22 + 22 + 22 + 26 +     // detail separator + 4 lines
     10 + 68 + 14 + 14            // MRP bar + text + 2 footer lines
   );
@@ -261,13 +268,13 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   let y = 24, cmds = '';  // y=24: printer has ~20-dot non-printable top zone
 
-  // ── TITLE (bold double-print for heavy stroke weight like Arial Black) ──
+  // ── TITLE (bold double-print for heavy stroke weight) ──
   titleLines.forEach(ln => {
-    const tw = ln.length * 18 * tXm;            // Font3 actual ~18px × xm
+    const tw = ln.length * tCharW;
     const x  = Math.max(lm, Math.round((dw - tw) / 2));
-    cmds += `TEXT ${x},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x+1},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1x
-    cmds += `TEXT ${x},${y+1},"3",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1y
+    cmds += `TEXT ${x},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x+1},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1x
+    cmds += `TEXT ${x},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1y
     y += titleStep;
   });
   y += 6 + gp;                                  // gap 1
@@ -294,7 +301,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WEIGHT : ${nw}"\r\n`; y += 22;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH NO   : ${bno}"\r\n`; y += 22;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"DATE OF PKG: ${tsplSafe(pd)}"\r\n`; y += 22;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE: ${tsplSafe(bb).substring(0,18)}"\r\n`; y += 26 + gp;  // gap 5
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE: ${tsplSafe(bb).split(' (')[0]}"\r\n`; y += 26 + gp;  // gap 5
 
   // ── MRP ──
   cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 10 + gp;  // gap 6
