@@ -181,7 +181,6 @@ function buildFrontTSPL(name, copies) {
       }
     }
   }
-
   const fontH    = (font==='4' ? 32 : 24) * ym;
   const lineStep = fontH + 8;
   const totalH   = lines.length * lineStep - 8;
@@ -223,15 +222,13 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const bno  = tsplSafe(bn || '-');
 
   // ── Title: DYNAMIC FONT SCALING — try biggest font, fall to smaller if any line clips ──
-  // Conservative charW values (slightly over-estimated to guarantee no right-edge clipping):
-  //   Font3 xm=3: ~54px/char | Font3 xm=2: ~38px/char
-  //   Font2 xm=2: ~26px/char | Font2 xm=1: ~14px/char
+  // VERY conservative charW (over-estimated 30%+ to GUARANTEE no right-edge clipping):
   const availW = dw - 2 * lm;  // 388 usable dots
   const fontConfigs = [
-    { font:'3', xm:3, ym:3, cw:54, maxL:2 },   // biggest: 2 lines max
-    { font:'3', xm:2, ym:2, cw:38, maxL:3 },   // medium:  3 lines max
-    { font:'2', xm:2, ym:2, cw:26, maxL:3 },   // smaller: 3 lines max
-    { font:'2', xm:1, ym:1, cw:14, maxL:3 },   // smallest: always fits
+    { font:'3', xm:3, ym:3, cw:66, maxL:2 },   // biggest: max 5 chars/line
+    { font:'3', xm:2, ym:2, cw:44, maxL:3 },   // medium:  max 8 chars/line
+    { font:'2', xm:2, ym:2, cw:30, maxL:3 },   // smaller: max 12 chars/line
+    { font:'2', xm:1, ym:1, cw:16, maxL:3 },   // smallest: max 24 chars/line
   ];
   let tFont='2', tXm=1, tYm=1, tCharW=14, titleLines;
   for (const cfg of fontConfigs) {
@@ -248,7 +245,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const numTL     = titleLines.length;
   const tFontH    = (tFont==='3' ? 24 : 20) * tYm;
   const titleStep = tFontH + 8;
-  const ingrLines = wrapText(ingr, 27).slice(0, 5);  // Font2 ~14px/char: 27×14=378 ≤ 394 ✓
+  const ingrLines = wrapText(ingr, 27).slice(0, 6);  // Font2 ~16px/char: 27×16=432>388, safe at 24: 24×16=384
   const numIL     = ingrLines.length;
 
   // Compact height (all content, no extra spacing)
@@ -301,7 +298,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WEIGHT : ${nw}"\r\n`; y += 22;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH NO   : ${bno}"\r\n`; y += 22;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"DATE OF PKG: ${tsplSafe(pd)}"\r\n`; y += 22;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE: ${tsplSafe(bb).split(' (')[0]}"\r\n`; y += 26 + gp;  // gap 5
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE: ${tsplSafe(bb).replace(/\s*\(.*$/, '')}"\r\n`; y += 26 + gp;  // gap 5
 
   // ── MRP ──
   cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 10 + gp;  // gap 6
