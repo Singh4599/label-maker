@@ -244,12 +244,13 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
 /* ═══════════════════════════════════════════════════════════════
    PRINT FUNCTIONS
-   altPrinting: true = direct to printer port (no driver processing)
-   This is the exact path BarTender uses for TSPL passthrough
+   NO altPrinting = goes through TSC driver (Windows spooler)
+   This is exactly how BarTender works — driver handles end-of-job
 ═══════════════════════════════════════════════════════════════ */
 
 function _rawConfig(printer) {
-  return qz.configs.create(printer, { altPrinting: true });
+  // NO altPrinting — TSC driver handles end-of-job signals properly
+  return qz.configs.create(printer);
 }
 
 async function qzPrintFront(name, copies) {
