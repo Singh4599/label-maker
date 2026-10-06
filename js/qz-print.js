@@ -188,7 +188,8 @@ function buildFrontTSPL(name, copies) {
   const yStart   = Math.max(12, Math.round((H*8 - totalH) / 2));
   let cmds = '';
   lines.forEach((ln, i) => {
-    const charW = (font==='4' ? 24 : 16) * xm;
+    // Actual measured charW: Font4 base=24, Font3 base=18 (wider than spec 16)
+    const charW = (font==='4' ? 24 : 18) * xm;
     const tW    = ln.length * charW;
     const x     = Math.max(4, Math.round((W*8 - tW) / 2));
     const y     = yStart + i * lineStep;
@@ -221,29 +222,31 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
 
-  // ── Title: PREFER 2 lines. Try big font (tXm=3) first, fall to medium (tXm=2) ──
-  // tXm=3 → Font3 48px/char (max 8 chars/line on 400px label)
-  // tXm=2 → Font3 32px/char (max 12 chars/line)
-  const titleTry8  = wrapText(name, 8);
-  const titleTry12 = wrapText(name, 12);
+  // ── Title: PREFER 2 lines. Actual Font3 charW ≈ 18px×xm (wider than spec) ──
+  // tXm=3 → ~54px/char (max 7 chars/line safely on 400px label)
+  // tXm=2 → ~36px/char (max 10 chars/line safely)
+  const titleTry7  = wrapText(name, 7);
+  const titleTry10 = wrapText(name, 10);
+  const titleTry15 = wrapText(name, 15);
   let tXm, tYm, titleLines;
-  if (titleTry8.length <= 2) {
-    tXm=3; tYm=3; titleLines=titleTry8;          // Best: 2 lines big font
-  } else if (titleTry12.length <= 2) {
-    tXm=2; tYm=2; titleLines=titleTry12;         // 2 lines medium font
+  if (titleTry7.length <= 2) {
+    tXm=3; tYm=3; titleLines=titleTry7;          // Best: 2 lines big font
+  } else if (titleTry10.length <= 2) {
+    tXm=2; tYm=2; titleLines=titleTry10;         // 2 lines medium font
+  } else if (titleTry10.length <= 3) {
+    tXm=2; tYm=2; titleLines=titleTry10.slice(0,3); // 3 lines medium font (fits)
   } else {
-    // Very long name — allow 3 lines (max), use bigger font
-    tXm=3; tYm=3; titleLines=titleTry8.slice(0, 3);
+    tXm=2; tYm=2; titleLines=titleTry15.slice(0,3); // 3 lines small, last resort
   }
   const numTL     = titleLines.length;
-  const titleStep = (24 * tYm) + 8;             // 80 for tYm=3, 56 for tYm=2
-  const ingrLines = wrapText(ingr, 32).slice(0, 5);  // Font2: 32×12px=384px ≤ 388px ✓
+  const titleStep = (24 * tYm) + 8;             // 56 for tYm=2, 80 for tYm=3
+  const ingrLines = wrapText(ingr, 27).slice(0, 5);  // Font2 actual ~14px/char: 27×14=378px ≤ 394px ✓
   const numIL     = ingrLines.length;
 
   // Compact height (all content, no extra spacing)
-  // ingr: Font2 step=22 | nutri: Font2 step=22 | y starts at 16
+  // ingr: Font2 step=22 | nutri: Font2 step=22 | y starts at 24
   const compactH = (
-    16 +                          // top margin
+    24 +                          // top margin (printer non-printable zone ~20 dots)
     numTL * titleStep + 6 +       // title + gap base
     36 +                          // category box
     22 + numIL * 22 + 6 +        // ingr header + lines(Font2 step=22) + gap base
@@ -256,11 +259,11 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const extra = Math.max(0, LABEL_H - compactH - 8);
   const gp    = Math.floor(extra / 6);
 
-  let y = 16, cmds = '';  // y=16 prevents title chars being clipped at top edge
+  let y = 24, cmds = '';  // y=24: printer has ~20-dot non-printable top zone
 
   // ── TITLE (bold double-print for heavy stroke weight like Arial Black) ──
   titleLines.forEach(ln => {
-    const tw = ln.length * 16 * tXm;            // Font3 base=16px × xm
+    const tw = ln.length * 18 * tXm;            // Font3 actual ~18px × xm
     const x  = Math.max(lm, Math.round((dw - tw) / 2));
     cmds += `TEXT ${x},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;
     cmds += `TEXT ${x+1},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1x
@@ -274,7 +277,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `TEXT ${lm+5},${y+7},"2",0,1,1,"Category: ${cat}"\r\n`;
   y += 36 + gp;                                  // gap 2
 
-  // ── INGREDIENTS (Font2: 12×20px, wrap at 32 chars = 32×12=384px ≤ 388px ✓) ──
+  // ── INGREDIENTS (Font2 actual ~14px/char, wrap at 27 chars = 27×14=378px ≤ 394px ✓) ──
   cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 22;
   ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"2",0,1,1,"${ln}"\r\n`; y += 22; });
   y += 6 + gp;                                  // gap 3
