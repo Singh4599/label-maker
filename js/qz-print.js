@@ -8,8 +8,9 @@
 
 const QZP = {
   connected: false,
-  frontPrinter: localStorage.getItem('frontPrinter') || '',
-  backPrinter:  localStorage.getItem('backPrinter')  || '',
+  // HARDCODED — Front: TSC TE244 (Copy 1), Back: TSC TE244
+  frontPrinter: 'TSC TE244 (Copy 1)',
+  backPrinter:  'TSC TE244',
   printers: [],
   _retrying: false
 };
