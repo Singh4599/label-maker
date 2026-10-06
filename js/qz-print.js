@@ -2,18 +2,14 @@
 
 /* ═══════════════════════════════════════════════════════════════
    QZ TRAY INTEGRATION — 365 Spicery Label Studio
-   Handles: Connection, Printer Discovery, TSPL Generation, Printing
+   MODE: Pixel Printing (HTML → TSC Driver handles everything)
    Fallback: Chrome window.print() if QZ not available
 ═══════════════════════════════════════════════════════════════ */
 
 const QZP = {
   connected: false,
   frontPrinter: localStorage.getItem('frontPrinter') || '',
-  backPrinter: localStorage.getItem('backPrinter') || '',
-  gap:      parseFloat(localStorage.getItem('labelGap')  || '3'),
-  frontGap: parseFloat(localStorage.getItem('frontGap')  || '2'),
-  backGap:  parseFloat(localStorage.getItem('backGap')   || '3'),
-  printers: [],
+  backPrinter:  localStorage.getItem('backPrinter')  || '',
   printers: [],
   _retrying: false
 };
@@ -21,7 +17,6 @@ const QZP = {
 /* ─── Init on page load ─── */
 window.addEventListener('DOMContentLoaded', () => {
   loadSavedSettings();
-  // Only attempt QZ if the library actually loaded
   if (typeof qz !== 'undefined') {
     qzConnect();
   } else {
@@ -32,8 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
 /* ─── Ensure connected + auto-reconnect if dropped ─── */
 async function _ensureConnected() {
   if (typeof qz === 'undefined') return false;
-  const active = qz.websocket.isActive();
-  if (!QZP.connected || !active) {
+  if (!QZP.connected || !qz.websocket.isActive()) {
     console.log('[QZ] Auto-reconnecting...');
     await qzConnect();
   }
@@ -104,16 +98,14 @@ function setQZStatus(state) {
 function openPrinterSettings() {
   const modal = document.getElementById('printer-modal');
   if (modal) modal.classList.add('active');
-
   if (QZP.connected) {
-    refreshPrinters();        // just refresh list
+    refreshPrinters();
   } else if (!QZP._retrying) {
-    qzConnect();              // retry ONLY if not already retrying
+    qzConnect();
   }
 }
 
 function closePrinterSettings(e) {
-  // Called from button (no e) OR from overlay click (e passed)
   if (e && e.target !== document.getElementById('printer-modal')) return;
   const modal = document.getElementById('printer-modal');
   if (modal) modal.classList.remove('active');
@@ -136,7 +128,7 @@ function populatePrinterDropdowns(printers) {
 /* ─── Load saved settings into modal ─── */
 function loadSavedSettings() {
   const gapEl = document.getElementById('label-gap');
-  if (gapEl) gapEl.value = QZP.gap;
+  if (gapEl) gapEl.value = localStorage.getItem('labelGap') || '3';
 }
 
 /* ─── Save printer settings ─── */
@@ -149,186 +141,155 @@ function savePrinterSettings() {
     showToast('Settings elements not found', 'error'); return;
   }
 
-  const fp = fpEl.value || '';
-  const bp = bpEl.value || '';
-  const gp = Math.max(0, Math.min(10, parseFloat(gpEl.value) || 3));
+  QZP.frontPrinter = fpEl.value || '';
+  QZP.backPrinter  = bpEl.value || '';
 
-  QZP.frontPrinter = fp;
-  QZP.backPrinter  = bp;
-  QZP.gap          = gp;
-
-  localStorage.setItem('frontPrinter', fp);
-  localStorage.setItem('backPrinter',  bp);
-  localStorage.setItem('labelGap',     gp);
-  localStorage.setItem('frontGap',     gp); // sync front gap to main gap
-  localStorage.setItem('backGap',      gp); // sync back gap to main gap
-  QZP.frontGap = gp;
-  QZP.backGap  = gp;
+  localStorage.setItem('frontPrinter', QZP.frontPrinter);
+  localStorage.setItem('backPrinter',  QZP.backPrinter);
+  localStorage.setItem('labelGap',     gpEl.value);
 
   closePrinterSettings();
   showToast('✓ Printer settings saved!', 'success');
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TSPL LABEL BUILDERS
-   TSC TE244 — 203 DPI — TSPL2
-   Printer: Generic/Text Only (RAW passthrough)
-   FORMFEED at end = no post-print error (Bartender does same)
+   HTML LABEL BUILDERS (Pixel Mode — TSC driver handles printing)
+   No more TSPL. Labels are HTML rendered by QZ as images.
+   TSC driver handles: gap detection, calibration, tear-off.
 ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Sanitize for TSPL (ASCII only, no double quotes) ─── */
-function tsplSafe(str) {
-  return (str || '')
-    .replace(/—/g, '-').replace(/₹/g, 'Rs.').replace(/\u20B9/g, 'Rs.')
-    .replace(/[^\x00-\x7F]/g, '').replace(/"/g, "'");
-}
-
-/* ─── Sanitize for HTML (Chrome fallback) ─── */
+/* ─── Sanitize for HTML ─── */
 function htmlSafe(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ─── Word-wrap helper ─── */
-function wrapText(text, maxChars) {
-  text = (text || '').trim();
-  if (!text) return ['-'];
-  if (text.length <= maxChars) return [text];
-  const words = text.split(' ');
-  const lines = [];
-  let cur = '';
-  words.forEach(w => {
-    const t = cur ? cur + ' ' + w : w;
-    if (t.length > maxChars) { if (cur) lines.push(cur); cur = w.length > maxChars ? w.substring(0, maxChars) : w; }
-    else cur = t;
-  });
-  if (cur) lines.push(cur);
-  return lines.length ? lines : [text.substring(0, maxChars)];
+/* ─── Build FRONT label HTML (65mm x 25mm) ─── */
+function buildFrontHTML(name) {
+  const n = htmlSafe((name || '').toUpperCase());
+  // Adjust font size based on name length
+  let fontSize = '28pt';
+  if (n.length > 14)      fontSize = '14pt';
+  else if (n.length > 10) fontSize = '18pt';
+  else if (n.length > 7)  fontSize = '22pt';
+
+  return `<html><head><style>
+    @page { size: 65mm 25mm; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 65mm; height: 25mm;
+      display: flex; align-items: center; justify-content: center;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: bold;
+      font-size: ${fontSize};
+      text-align: center;
+      overflow: hidden;
+      padding: 1mm 2mm;
+      word-wrap: break-word;
+    }
+  </style></head><body>${n}</body></html>`;
 }
 
-/* ─── Nutrition — returns 2 short lines for TSPL ─── */
-function getNutriLines(p) {
-  return [
-    `En:${p.e||0}kcal Prot:${p.p||0}g Carbs:${p.cb||0}g Sug:${p.ts||0}g`,
-    `Fat:${p.tf||0}g SatFat:${p.sf||0}g Trans:${p.tr||0}g Chol:${p.ch||0}mg Na:${p.so||0}mg`
-  ];
-}
-function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
-
-/* ─── Build FRONT label TSPL (65x25mm) ─── */
-function buildFrontTSPL(name, copies) {
-  const W = 65, H = 25;
-  const gap = 4; // Hardcoded from client measurement (4mm)
-  const n = tsplSafe(name.toUpperCase());
-  let font, xm, ym, maxCh;
-  if (n.length <= 7)       { font='4'; xm=3; ym=3; maxCh=7;  }
-  else if (n.length <= 10) { font='4'; xm=2; ym=2; maxCh=10; }
-  else                     { font='3'; xm=2; ym=2; maxCh=16; }
-  const lines    = wrapText(n, maxCh);
-  const fontH    = (font === '4' ? 32 : 24) * ym;
-  const lineStep = fontH + 8;
-  const totalH   = lines.length * lineStep - 8;
-  const yStart   = Math.max(16, Math.round((H * 8 - totalH) / 2)); // Shifted down for safety
-  let textCmds = '';
-  lines.forEach((ln, i) => {
-    const charW = (font === '4' ? 24 : 16) * xm;
-    const tW    = ln.length * charW;
-    const x     = Math.max(4, Math.round((W * 8 - tW) / 2));
-    const y     = yStart + i * lineStep;
-    textCmds   += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-  });
-  return [
-    `SIZE ${W} mm,${H} mm`,
-    `GAP ${gap} mm,0 mm`,
-    `DIRECTION 1`,
-    `CLS`,
-    textCmds.trim(),
-    `PRINT ${copies},1`,
-    ``
-  ].join('\r\n');
-}
-
-/* ─── Build BACK label TSPL (50x90mm) — matches Bartender layout ─── */
-function buildBackTSPL(p, v, bn, pd, bb, copies) {
-  const W = 50, H = 90, gap = 6; // Hardcoded from client measurement (6mm)
-  const dw = W * 8, lm = 6, re = W * 8 - lm;
+/* ─── Build BACK label HTML (50mm x 90mm) ─── */
+function buildBackHTML(p, v, bn, pd, bb) {
+  const name = htmlSafe((p.n || '').toUpperCase());
+  const cat  = htmlSafe(p.c || '-');
+  const ingr = htmlSafe(p.i || '-');
+  const nw   = htmlSafe(`${v.d} (${v.oz})`);
+  const bno  = htmlSafe(bn || '-');
+  const pkd  = htmlSafe(pd || '-');
+  const exp  = htmlSafe(bb || '-');
   const mrp  = parseFloat(v.m) || 0;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-  const name = tsplSafe(p.n.toUpperCase());
-  const cat  = tsplSafe(p.c || '-');
-  const ingr = tsplSafe(p.i || '-');
-  const nw   = tsplSafe(`${v.d} (${v.oz})`);
-  const bno  = tsplSafe(bn || '-');
-  let y = 32, cmds = ''; // Started lower to prevent top clipping
 
-  // Product Name (font3 xm2 ym2 = 32px wide, 48px tall, max 11 chars/line)
-  wrapText(name, 11).slice(0, 2).forEach(ln => {
-    const tw = ln.length * 32;
-    cmds += `TEXT ${Math.max(lm, Math.round((dw - tw) / 2))},${y},"3",0,2,2,"${ln}"\r\n`;
-    y += 52;
-  });
-
-  // Category box
-  cmds += `BOX ${lm},${y},${re},${y+26},1\r\n`;
-  cmds += `TEXT ${lm+4},${y+6},"1",0,1,1,"Category: ${cat}"\r\n`;
-  y += 32;
-
-  // Ingredients (Wrapped at 36 to prevent right edge clipping)
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 24;
-  wrapText(ingr, 36).slice(0, 5).forEach(ln => {
-    cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 16;
-  });
-  y += 8;
-
-  // Details (Shortened labels to save horizontal space)
-  cmds += `BAR ${lm},${y},${re - lm},1\r\n`; y += 8;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WT: ${nw}"\r\n`; y += 24;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH: ${bno}"\r\n`; y += 24;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"PKD: ${tsplSafe(pd)}"\r\n`; y += 24;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"EXP: ${tsplSafe(bb)}"\r\n`; y += 30;
-
-  // MRP
-  cmds += `BAR ${lm},${y},${re - lm},2\r\n`; y += 12;
-  const mrpTxt = `MRP : Rs.${mrp}/-`;
-  cmds += `TEXT ${Math.max(lm, Math.round((dw - mrpTxt.length * 16) / 2))},${y},"3",0,1,2,"${mrpTxt}"\r\n`; y += 52;
-  cmds += `TEXT ${lm},${y},"1",0,1,1,"(INCL. OF ALL TAXES)"\r\n`; y += 15;
-  cmds += `TEXT ${lm},${y},"1",0,1,1,"FOR 1g = Rs.${pg}"\r\n`;
-
-  return [
-    `SIZE ${W} mm,${H} mm`,
-    `GAP ${gap} mm,0 mm`,
-    `DIRECTION 1`,
-    `CLS`,
-    cmds.trim(),
-    `PRINT ${copies},1`,
-    ``
-  ].join('\r\n');
+  return `<html><head><style>
+    @page { size: 50mm 90mm; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 50mm; height: 90mm;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 7pt;
+      padding: 2mm 2mm 1mm 2mm;
+      overflow: hidden;
+    }
+    .title {
+      font-size: 14pt; font-weight: bold;
+      text-align: center;
+      margin-bottom: 2mm;
+      word-wrap: break-word;
+    }
+    .cat-box {
+      border: 0.5pt solid #000;
+      padding: 1mm 2mm;
+      font-size: 7pt;
+      margin-bottom: 1.5mm;
+    }
+    .section-label { font-weight: bold; font-size: 8pt; margin-bottom: 0.5mm; }
+    .ingredients { font-size: 6.5pt; margin-bottom: 2mm; word-wrap: break-word; }
+    .details { border-top: 0.5pt solid #000; padding-top: 1mm; }
+    .detail-row { font-size: 8pt; font-weight: bold; margin-bottom: 0.5mm; }
+    .mrp-section {
+      border-top: 1pt solid #000;
+      margin-top: 1.5mm;
+      padding-top: 1mm;
+      text-align: center;
+    }
+    .mrp-value { font-size: 14pt; font-weight: bold; }
+    .mrp-sub { font-size: 6pt; }
+  </style></head><body>
+    <div class="title">${name}</div>
+    <div class="cat-box">Category: ${cat}</div>
+    <div class="section-label">INGREDIENTS :-</div>
+    <div class="ingredients">${ingr}</div>
+    <div class="details">
+      <div class="detail-row">NET WT: ${nw}</div>
+      <div class="detail-row">BATCH: ${bno}</div>
+      <div class="detail-row">PKD: ${pkd}</div>
+      <div class="detail-row">EXP: ${exp}</div>
+    </div>
+    <div class="mrp-section">
+      <div class="mrp-value">MRP : Rs.${mrp}/-</div>
+      <div class="mrp-sub">(INCL. OF ALL TAXES)</div>
+      <div class="mrp-sub">FOR 1g = Rs.${pg}</div>
+    </div>
+  </body></html>`;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   MAIN PRINT FUNCTIONS — Raw TSPL via Generic/Text Only driver
-   FORMFEED = printer advances cleanly to next label (no error)
+   PIXEL PRINT FUNCTIONS — HTML rendered through TSC driver
+   Driver handles: gap, size, calibration, tear-off positioning
 ═══════════════════════════════════════════════════════════════ */
 
-function _qzRawConfig(printerName) {
-  return qz.configs.create(printerName, { altPrinting: true });
+/* ─── Create pixel config for a printer ─── */
+function _pixelConfig(printerName, widthMM, heightMM) {
+  // Convert mm to inches (QZ uses inches for pixel mode)
+  const w = widthMM / 25.4;
+  const h = heightMM / 25.4;
+  return qz.configs.create(printerName, {
+    units: 'in',
+    size: { width: w, height: h },
+    margins: { top: 0, right: 0, bottom: 0, left: 0 },
+    colorType: 'blackwhite',
+    interpolation: 'nearest-neighbor',
+    rasterize: true,
+    scaleContent: true
+  });
 }
 
-/* ─── Print Front via QZ (TSPL RAW, auto-reconnect) ─── */
+/* ─── Print Front via QZ (Pixel HTML, auto-reconnect) ─── */
 async function qzPrintFront(name, copies) {
   if (typeof qz === 'undefined') return false;
+  if (!await _ensureConnected()) return false;
+  if (!QZP.frontPrinter) return false;
 
-  // Auto-reconnect if dropped (re-sends setup to printer)
-  if (!await _ensureConnected()) {
-    console.warn('[QZ] Could not connect — falling back to Chrome print');
-    return false;
-  }
-  if (!QZP.frontPrinter) { console.warn('[QZ] No front printer selected'); return false; }
-
-  const tspl = buildFrontTSPL(name, copies);
-  console.log('[FRONT TSPL]\n', tspl);
+  const html = buildFrontHTML(name);
+  console.log('[FRONT HTML] Generated');
   try {
     setQZStatus('printing');
-    await qz.print(_qzRawConfig(QZP.frontPrinter), [{ type: 'raw', format: 'plain', data: tspl }]);
+    const config = _pixelConfig(QZP.frontPrinter, 65, 25);
+    // Print each copy as a separate job for reliability
+    for (let i = 0; i < copies; i++) {
+      await qz.print(config, [{ type: 'pixel', format: 'html', data: html }]);
+    }
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Front Printer!`, 'success');
     return true;
@@ -340,18 +301,20 @@ async function qzPrintFront(name, copies) {
   }
 }
 
-/* ─── Print Back via QZ (TSPL RAW, auto-reconnect) ─── */
+/* ─── Print Back via QZ (Pixel HTML, auto-reconnect) ─── */
 async function qzPrintBack(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined') return false;
-
   if (!await _ensureConnected()) return false;
   if (!QZP.backPrinter) return false;
 
-  const tspl = buildBackTSPL(p, v, bn, pd, bb, copies);
-  console.log('[BACK TSPL]\n', tspl);
+  const html = buildBackHTML(p, v, bn, pd, bb);
+  console.log('[BACK HTML] Generated');
   try {
     setQZStatus('printing');
-    await qz.print(_qzRawConfig(QZP.backPrinter), [{ type: 'raw', format: 'plain', data: tspl }]);
+    const config = _pixelConfig(QZP.backPrinter, 50, 90);
+    for (let i = 0; i < copies; i++) {
+      await qz.print(config, [{ type: 'pixel', format: 'html', data: html }]);
+    }
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Back Printer!`, 'success');
     return true;
@@ -372,23 +335,44 @@ async function testPrint() {
   if (!printer) {
     showToast('Select a printer first and save!', 'error'); return;
   }
-  const tspl = [
-    `SIZE 65 mm,25 mm`,
-    `GAP ${QZP.gap || 3} mm,0 mm`,
-    `SET DARKNESS 12`,
-    `DIRECTION 1`,
-    `CLS`,
-    `TEXT 10,60,"4",0,2,2,"TEST PRINT"`,
-    `TEXT 10,140,"2",0,1,1,"365 Spicery Label Studio"`,
-    `PRINT 1,1`,
-    `FORMFEED`,
-    ``
-  ].join('\r\n');
+  const html = `<html><head><style>
+    @page { size: 65mm 25mm; margin: 0; }
+    body { width:65mm; height:25mm; display:flex; align-items:center; justify-content:center;
+           font-family:Arial; font-weight:bold; font-size:20pt; text-align:center; }
+  </style></head><body>TEST PRINT<br><span style="font-size:10pt">365 Spicery Label Studio</span></body></html>`;
   try {
-    const config = _qzRawConfig(printer);
-    await qz.print(config, [{ type: 'raw', format: 'plain', data: tspl }]);
+    const config = _pixelConfig(printer, 65, 25);
+    await qz.print(config, [{ type: 'pixel', format: 'html', data: html }]);
     showToast('✓ Test print sent!', 'success');
   } catch (e) {
     showToast('Test print failed: ' + e.message, 'error');
   }
 }
+
+/* ─── Legacy helpers (kept for Chrome fallback compatibility) ─── */
+function tsplSafe(str) {
+  return (str || '').replace(/—/g, '-').replace(/₹/g, 'Rs.').replace(/\u20B9/g, 'Rs.')
+    .replace(/[^\x00-\x7F]/g, '').replace(/"/g, "'");
+}
+function wrapText(text, maxChars) {
+  text = (text || '').trim();
+  if (!text) return ['-'];
+  if (text.length <= maxChars) return [text];
+  const words = text.split(' ');
+  const lines = [];
+  let cur = '';
+  words.forEach(w => {
+    const t = cur ? cur + ' ' + w : w;
+    if (t.length > maxChars) { if (cur) lines.push(cur); cur = w.length > maxChars ? w.substring(0, maxChars) : w; }
+    else cur = t;
+  });
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [text.substring(0, maxChars)];
+}
+function getNutriLines(p) {
+  return [
+    `En:${p.e||0}kcal Prot:${p.p||0}g Carbs:${p.cb||0}g Sug:${p.ts||0}g`,
+    `Fat:${p.tf||0}g SatFat:${p.sf||0}g Trans:${p.tr||0}g Chol:${p.ch||0}mg Na:${p.so||0}mg`
+  ];
+}
+function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
