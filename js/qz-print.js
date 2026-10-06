@@ -153,15 +153,19 @@ function getNutriLines(p) {
 }
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
-/* ─── FRONT label TSPL (65x25mm, GAP 3mm) ─── */
+/* ─── FRONT label TSPL (65x25mm) — BarTender big bold font ─── */
 function buildFrontTSPL(name, copies) {
-  const W = 65, H = 25, GAP = 3;
+  const W = 65, H = 25;
   const n = tsplSafe(name.toUpperCase());
-  let font, xm, ym, maxCh;
-  if (n.length <= 7)       { font='4'; xm=3; ym=3; maxCh=7;  }
-  else if (n.length <= 10) { font='4'; xm=2; ym=2; maxCh=10; }
-  else                     { font='3'; xm=2; ym=2; maxCh=16; }
-  const lines    = wrapText(n, maxCh);
+  // Smart font: Font 4 xm=2,ym=2 (48x64px) if ≤2 lines, else Font 3 xm=2,ym=2 (32x48px)
+  let font, xm, ym, lines;
+  if (n.length <= 7) {
+    font='4'; xm=3; ym=3; lines = wrapText(n, 7);
+  } else {
+    const tryLines = wrapText(n, 10);
+    if (tryLines.length <= 2) { font='4'; xm=2; ym=2; lines = tryLines; }
+    else                      { font='3'; xm=2; ym=2; lines = wrapText(n, 16); }
+  }
   const fontH    = (font==='4' ? 32 : 24) * ym;
   const lineStep = fontH + 8;
   const totalH   = lines.length * lineStep - 8;
@@ -184,9 +188,9 @@ function buildFrontTSPL(name, copies) {
   ].join('\r\n');
 }
 
-/* ─── BACK label TSPL (50x90mm, GAP 3mm) ─── */
+/* ─── BACK label TSPL (50x90mm) — BarTender layout + nutrition ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
-  const W = 50, H = 90, GAP = 3;
+  const W = 50, H = 90;
   const dw = W*8, lm = 6, re = W*8 - lm;
   const mrp  = parseFloat(v.m) || 0;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
@@ -195,39 +199,50 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const ingr = tsplSafe(p.i || '-');
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
-  let y = 32, cmds = '';
+  let y = 10, cmds = '';
 
-  // Product Name
-  wrapText(name, 11).slice(0, 2).forEach(ln => {
-    const tw = ln.length * 32;
-    cmds += `TEXT ${Math.max(lm, Math.round((dw-tw)/2))},${y},"3",0,2,2,"${ln}"\r\n`;
-    y += 52;
+  // ── TITLE: Font3 xm=3,ym=3 (48x72px) — huge like BarTender ──
+  const titleTry = wrapText(name, 8);
+  const tXm = titleTry.length <= 3 ? 3 : 2;
+  const tYm = tXm;
+  const titleLines = tXm === 3 ? titleTry : wrapText(name, 12);
+  titleLines.slice(0, 3).forEach(ln => {
+    const tw = ln.length * 16 * tXm;
+    cmds += `TEXT ${Math.max(lm, Math.round((dw - tw) / 2))},${y},"3",0,${tXm},${tYm},"${ln}"\r\n`;
+    y += (24 * tYm) + 8;
   });
+  y += 6;
 
-  // Category
-  cmds += `BOX ${lm},${y},${re},${y+26},1\r\n`;
-  cmds += `TEXT ${lm+4},${y+6},"1",0,1,1,"Category: ${cat}"\r\n`;
-  y += 32;
+  // ── CATEGORY BOX (2px border — clearly visible) ──
+  cmds += `BOX ${lm},${y},${re},${y+28},2\r\n`;
+  cmds += `TEXT ${lm+5},${y+7},"2",0,1,1,"Category: ${cat}"\r\n`;
+  y += 36;
 
-  // Ingredients
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 24;
-  wrapText(ingr, 36).slice(0, 5).forEach(ln => {
-    cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 16;
+  // ── INGREDIENTS ──
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 22;
+  wrapText(ingr, 40).slice(0, 5).forEach(ln => {
+    cmds += `TEXT ${lm},${y},"1",0,1,1,"${ln}"\r\n`; y += 13;
   });
-  y += 8;
+  y += 6;
 
-  // Details
-  cmds += `BAR ${lm},${y},${re-lm},1\r\n`; y += 8;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WT: ${nw}"\r\n`; y += 24;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH: ${bno}"\r\n`; y += 24;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"PKD: ${tsplSafe(pd)}"\r\n`; y += 24;
-  cmds += `TEXT ${lm},${y},"2",0,1,1,"EXP: ${tsplSafe(bb)}"\r\n`; y += 30;
+  // ── NUTRITIONAL INFO ──
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"NUTRITIONAL INFO (per 100g):"\r\n`; y += 20;
+  const nutri = getNutriLines(p);
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"${tsplSafe(nutri[0])}"\r\n`; y += 13;
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"${tsplSafe(nutri[1])}"\r\n`; y += 16;
 
-  // MRP
-  cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 12;
+  // ── DETAILS — full labels like BarTender ──
+  cmds += `BAR ${lm},${y},${re-lm},1\r\n`; y += 7;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"NET WEIGHT : ${nw}"\r\n`; y += 22;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"BATCH NO   : ${bno}"\r\n`; y += 22;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"DATE OF PKG: ${tsplSafe(pd)}"\r\n`; y += 22;
+  cmds += `TEXT ${lm},${y},"2",0,1,1,"BEST BEFORE: ${tsplSafe(bb)}"\r\n`; y += 26;
+
+  // ── MRP ──
+  cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 10;
   const mrpTxt = `MRP : Rs.${mrp}/-`;
-  cmds += `TEXT ${Math.max(lm, Math.round((dw - mrpTxt.length*16)/2))},${y},"3",0,1,2,"${mrpTxt}"\r\n`; y += 52;
-  cmds += `TEXT ${lm},${y},"1",0,1,1,"(INCL. OF ALL TAXES)"\r\n`; y += 15;
+  cmds += `TEXT ${Math.max(lm, Math.round((dw - mrpTxt.length*24)/2))},${y},"4",0,1,2,"${mrpTxt}"\r\n`; y += 68;
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"(INCL. OF ALL TAXES)"\r\n`; y += 14;
   cmds += `TEXT ${lm},${y},"1",0,1,1,"FOR 1g = Rs.${pg}"\r\n`;
 
   return [
