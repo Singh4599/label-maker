@@ -155,49 +155,65 @@ function getNutriLines(p) {
 }
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
-/* ─── FRONT label TSPL (65x25mm) — bold heavy font, centered, no overflow ─── */
+/* ─── FRONT label TSPL (65x25mm) ─── */
 function buildFrontTSPL(name, copies) {
   const W = 65, H = 25;            // mm (520 × 200 dots at 8 dpi/mm)
   const n = tsplSafe(name.toUpperCase());
+  const isJain = n.includes('JAIN');
+
+  // Reserve height for Jain subtitle if needed (Font2 xm=1 ym=1 → ~20px)
+  const jainReserve = isJain ? 26 : 0;
+  const usableH = H * 8 - jainReserve;  // dots available for main name
 
   // 4-tier font selection — biggest font that fits without overflow
-  // Font4 base: 24×32px | Font3 base: 16×24px
   let font, xm, ym, lines;
   if (n.length <= 7) {
     font='4'; xm=3; ym=3; lines = wrapText(n, 7);
   } else {
     const tryAt10 = wrapText(n, 10);
     if (tryAt10.length === 1) {
-      font='4'; xm=2; ym=3; lines = tryAt10;          // 1 line tall (96px)
+      font='4'; xm=2; ym=3; lines = tryAt10;
     } else if (tryAt10.length <= 2) {
-      font='4'; xm=2; ym=2; lines = tryAt10;          // 2 lines (144px total)
+      font='4'; xm=2; ym=2; lines = tryAt10;
     } else {
-      // Font3 xm=2 actual charW ≈34px (not 32) → safe max=14 chars (14×34=476px < 520px)
       const tryAt14 = wrapText(n, 14);
       if (tryAt14.length <= 2) {
-        font='3'; xm=2; ym=3; lines = tryAt14;        // 2 lines tall (152px) – BIGGER
+        font='3'; xm=2; ym=3; lines = tryAt14;
       } else {
-        font='3'; xm=2; ym=2; lines = tryAt14.slice(0, 3);  // 3 lines (160px)
+        font='3'; xm=2; ym=2; lines = tryAt14.slice(0, 3);
       }
     }
   }
   const fontH    = (font==='4' ? 32 : 24) * ym;
   const lineStep = fontH + 8;
   const totalH   = lines.length * lineStep - 8;
-  const yStart   = Math.max(12, Math.round((H*8 - totalH) / 2));
+  // Center vertically within usable area
+  const yStart   = Math.max(8, Math.round((usableH - totalH) / 2));
   let cmds = '';
   lines.forEach((ln, i) => {
-    // Actual measured charW: Font4 base=24, Font3 base=18 (wider than spec 16)
     const charW = (font==='4' ? 24 : 18) * xm;
     const tW    = ln.length * charW;
     const x     = Math.max(4, Math.round((W*8 - tW) / 2));
     const y     = yStart + i * lineStep;
-    // Bold quad-print: 4 points (x,y) (x+1,y) (x,y+1) (x+1,y+1) — simulates Arial Black weight
+    // Bold quad-print — simulates Arial Black weight
     cmds += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x+1},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x+1},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
   });
+
+  // Jain subtitle: "NO ONION NO GARLIC" centered, Font2 xm=1 ym=1
+  if (isJain) {
+    const sub = 'NO ONION NO GARLIC';
+    const subW = sub.length * 12;  // Font2 ~12px/char
+    const sx = Math.max(4, Math.round((W*8 - subW) / 2));
+    const sy = H*8 - 22;           // 22 dots from bottom
+    cmds += `TEXT ${sx},${sy},"2",0,1,1,"${sub}"\r\n`;
+    cmds += `TEXT ${sx+1},${sy},"2",0,1,1,"${sub}"\r\n`;
+    cmds += `TEXT ${sx},${sy+1},"2",0,1,1,"${sub}"\r\n`;
+    cmds += `TEXT ${sx+1},${sy+1},"2",0,1,1,"${sub}"\r\n`;
+  }
+
   return [
     `SET DARKNESS 12`,
     `DIRECTION 1`,
@@ -208,27 +224,27 @@ function buildFrontTSPL(name, copies) {
   ].join('\r\n');
 }
 
-/* ─── BACK label TSPL (50x90mm) — bold title, full fill, BarTender layout + nutrition ─── */
+/* ─── BACK label TSPL (50x90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const W = 50, H = 90;
   const dw = W*8, lm = 6, re = W*8 - lm;  // 400 dots wide
   const LABEL_H = H * 8;                    // 720 dots tall
-  const mrp  = parseFloat(v.m) || 0;
+  const mrp  = (parseFloat(v.m) || 0) * 2; // ×2: retail = 2× wholesale
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const name = tsplSafe(p.n.toUpperCase());
   const cat  = tsplSafe(p.c || '-');
   const ingr = tsplSafe(p.i || '-');
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
+  const isJain = name.includes('JAIN');
 
-  // ── Title: DYNAMIC FONT SCALING — try biggest font, fall to smaller if any line clips ──
-  // VERY conservative charW (over-estimated 30%+ to GUARANTEE no right-edge clipping):
+  // ── Title: DYNAMIC FONT SCALING ──
   const availW = dw - 2 * lm;  // 388 usable dots
   const fontConfigs = [
-    { font:'3', xm:3, ym:3, cw:66, maxL:2 },   // biggest: max 5 chars/line
-    { font:'3', xm:2, ym:2, cw:44, maxL:3 },   // medium:  max 8 chars/line
-    { font:'2', xm:2, ym:2, cw:30, maxL:3 },   // smaller: max 12 chars/line
-    { font:'2', xm:1, ym:1, cw:16, maxL:3 },   // smallest: max 24 chars/line
+    { font:'3', xm:3, ym:3, cw:66, maxL:2 },
+    { font:'3', xm:2, ym:2, cw:44, maxL:3 },
+    { font:'2', xm:2, ym:2, cw:30, maxL:3 },
+    { font:'2', xm:1, ym:1, cw:16, maxL:3 },
   ];
   let tFont='2', tXm=1, tYm=1, tCharW=14, titleLines;
   for (const cfg of fontConfigs) {
@@ -240,56 +256,87 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
       break;
     }
   }
-  if (!titleLines) titleLines = wrapText(name, 27).slice(0, 3);  // absolute fallback
+  if (!titleLines) titleLines = wrapText(name, 27).slice(0, 3);
 
   const numTL     = titleLines.length;
   const tFontH    = (tFont==='3' ? 24 : 20) * tYm;
   const titleStep = tFontH + 8;
-  const ingrLines = wrapText(ingr, 27).slice(0, 6);  // Font2 ~16px/char: 27×16=432>388, safe at 24: 24×16=384
+
+  // Jain subtitle: "NO ONION NO GARLIC" (Font2 xm=1 ym=1 → 20px high)
+  const jainH = isJain ? 28 : 0;
+
+  // Category: wrap if text too long for 1 line in the box
+  const catFull  = `Category: ${cat}`;
+  const catLines = wrapText(catFull, 24);   // ~24 chars @ 14px = 336px ≤ 388px
+  const catBoxH  = 16 + catLines.length * 20 + 6;  // dynamic box height
+
+  const ingrLines = wrapText(ingr, 27).slice(0, 6);
   const numIL     = ingrLines.length;
 
-  // Compact height (all content, no extra spacing)
+  // Barcode height: 40-dot bar + ~18 human-readable = 58 total
+  const barcodeH = 64;
+
+  // Compact height: all content stacked
   const compactH = (
-    24 +                          // top margin (printer non-printable zone)
-    numTL * titleStep + 6 +       // title + gap base
-    36 +                          // category box
-    22 + numIL * 22 + 6 +        // ingr header + lines (Font2 step=22) + gap
-    20 + 22 + 22 +               // nutrition header + 2 lines (Font2 step=22)
-    7 + 22 + 22 + 22 + 26 +     // detail separator + 4 lines
-    10 + 68 + 14 + 14            // MRP bar + text + 2 footer lines
+    24 +                              // top margin
+    numTL * titleStep + 6 +           // title
+    jainH +                           // jain subtitle (0 if not jain)
+    catBoxH + 4 +                     // category box
+    22 + numIL * 22 + 6 +            // ingredients
+    20 + 22 + 22 +                   // nutrition
+    7 + 22 + 22 + 22 + 26 +         // details
+    10 + 68 + 14 + 14 +              // MRP
+    barcodeH                          // barcode
   );
 
-  // Distribute leftover space across 6 expandable gap points to fill label
+  // Distribute leftover across 6 gaps
   const extra = Math.max(0, LABEL_H - compactH - 8);
   const gp    = Math.floor(extra / 6);
 
-  let y = 24, cmds = '';  // y=24: printer has ~20-dot non-printable top zone
+  let y = 24, cmds = '';
 
-  // ── TITLE (bold double-print for heavy stroke weight) ──
+  // ── TITLE (bold quad-print) ──
   titleLines.forEach(ln => {
     const tw = ln.length * tCharW;
     const x  = Math.max(lm, Math.round((dw - tw) / 2));
     cmds += `TEXT ${x},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x+1},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1x
-    cmds += `TEXT ${x},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;   // bold +1y
+    cmds += `TEXT ${x+1},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x+1},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
     y += titleStep;
   });
-  y += 6 + gp;                                  // gap 1
 
-  // ── CATEGORY BOX (2px border) ──
-  cmds += `BOX ${lm},${y},${re},${y+28},2\r\n`;
-  cmds += `TEXT ${lm+5},${y+7},"2",0,1,1,"Category: ${cat}"\r\n`;
-  y += 36 + gp;                                  // gap 2
+  // ── JAIN SUBTITLE ──
+  if (isJain) {
+    const sub  = 'NO ONION NO GARLIC';
+    const subW = sub.length * 12;  // Font2 ~12px/char
+    const sx   = Math.max(lm, Math.round((dw - subW) / 2));
+    cmds += `TEXT ${sx},${y},"2",0,1,1,"${sub}"\r\n`;
+    cmds += `TEXT ${sx+1},${y},"2",0,1,1,"${sub}"\r\n`;
+    cmds += `TEXT ${sx},${y+1},"2",0,1,1,"${sub}"\r\n`;
+    cmds += `TEXT ${sx+1},${y+1},"2",0,1,1,"${sub}"\r\n`;
+    y += jainH;
+  }
 
-  // ── INGREDIENTS (Font2 actual ~14px/char, wrap at 27 chars = 27×14=378px ≤ 394px ✓) ──
+  y += 6 + gp;  // gap 1
+
+  // ── CATEGORY BOX (dynamic height, wraps long text) ──
+  cmds += `BOX ${lm},${y},${re},${y + catBoxH - 4},2\r\n`;
+  let cy = y + 6;
+  catLines.forEach(cl => {
+    cmds += `TEXT ${lm+5},${cy},"2",0,1,1,"${cl}"\r\n`;
+    cy += 20;
+  });
+  y += catBoxH + gp;  // gap 2
+
+  // ── INGREDIENTS ──
   cmds += `TEXT ${lm},${y},"2",0,1,1,"INGREDIENTS :-"\r\n`; y += 22;
   ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"2",0,1,1,"${ln}"\r\n`; y += 22; });
-  y += 6 + gp;                                  // gap 3
+  y += 6 + gp;  // gap 3
 
-  // ── NUTRITIONAL INFO (Font2: fits 28 chars per line) ──
+  // ── NUTRITIONAL INFO ──
   cmds += `TEXT ${lm},${y},"2",0,1,1,"NUTRITIONAL INFO (per 100g):"\r\n`; y += 20;
   const nutri = getNutriLines(p);
-  // nutri lines ≤ 28 chars × 12px = 336px ≤ 388px ✓
   cmds += `TEXT ${lm},${y},"2",0,1,1,"${tsplSafe(nutri[0])}"\r\n`; y += 22;
   cmds += `TEXT ${lm},${y},"2",0,1,1,"${tsplSafe(nutri[1])}"\r\n`; y += 22 + gp;  // gap 4
 
@@ -303,10 +350,14 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   // ── MRP ──
   cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 10 + gp;  // gap 6
   const mrpTxt = `MRP : Rs.${mrp}/-`;
-  // Font4 xm=1 ym=2: 24×64px per char. "MRP : Rs.9999/-" = 15 × 24 = 360px < 388px ✓
   cmds += `TEXT ${Math.max(lm, Math.round((dw - mrpTxt.length * 24) / 2))},${y},"4",0,1,2,"${mrpTxt}"\r\n`; y += 68;
   cmds += `TEXT ${lm},${y},"1",0,1,1,"(INCL. OF ALL TAXES)"\r\n`; y += 14;
-  cmds += `TEXT ${lm},${y},"1",0,1,1,"FOR 1g = Rs.${pg}"\r\n`;
+  cmds += `TEXT ${lm},${y},"1",0,1,1,"FOR 1g = Rs.${pg}"\r\n`; y += 16;
+
+  // ── BARCODE (CODE128) ──
+  const bcode = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
+  // TSPL BARCODE: x, y, type, height, readable, rotation, narrow, wide, data
+  cmds += `BARCODE ${lm},${y},"CODE128",40,1,0,2,4,"${bcode}"\r\n`;
 
   return [
     `SET DARKNESS 12`,
@@ -317,6 +368,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     ``
   ].join('\r\n');
 }
+
+
 
 /* ═══════════════════════════════════════════════════════════════
    PRINT FUNCTIONS
