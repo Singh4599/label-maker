@@ -292,13 +292,14 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     nutriLines = wrapText(nutriStr, cpl);
 
     catH   = catLines.length * baseStep;
+    const blendH = isBlended ? (3 * (Math.round(Math.max(4, basePt-1) * P2D) + 2) + 12) : 0;
     nBoxH  = 8 + nutriLines.length * baseStep + 8;       // box padding
 
     compactH =
       12 +                                                 // top margin
       titleTotalH +                                        // title
       jainH +                                              // jain line
-      4 + catH + 6 +                                       // category + line below
+      4 + catH + 2 + blendH + 4 +                          // category + blend + line
       baseStep + 2 + ingrLines.length * baseStep + 4 +     // INGREDIENTS header + lines
       baseStep + baseStep + 4 + nBoxH + 4 +                // NUTRI headers + box
       baseStep * 4 + 4 +                                   // 4 detail rows
@@ -345,7 +346,29 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     );
     y += baseStep;
   });
-  y += 2;
+  
+  /* ══ 3.5 BLENDED SPICES BOX ══ */
+  const isBlended = (p.c || '').toLowerCase().includes('blended');
+  if (isBlended) {
+    y += 2;
+    const blendTxt = "Mixed Masala Powder, Spices content more than 85%, salt content more than 5%";
+    const bPt = Math.max(4, basePt - 1);
+    const bCpl = maxCPL(bPt) - 4; // margin for box
+    const blendLines = wrapText(blendTxt, bCpl);
+    const bStep = Math.round(bPt * P2D) + 2;
+    const boxTop = y;
+    let by = y + 4;
+    blendLines.forEach(ln => {
+      const cx = centerX(ln, bPt);
+      cmds += `TEXT ${cx},${by},"ROMAN.TTF",0,${bPt},${bPt},"${ln}"\r\n`;
+      by += bStep;
+    });
+    cmds += `BOX ${lm+10},${boxTop},${re-10},${by+2},2\r\n`;
+    y = by + 6;
+  } else {
+    y += 2;
+  }
+
   cmds += `BAR ${lm},${y},${usableW},1\r\n`;
   y += 4 + gp;
 
