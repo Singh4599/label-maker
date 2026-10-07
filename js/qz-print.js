@@ -162,34 +162,37 @@ function buildFrontTSPL(name, copies) {
   const isJain = n.includes('JAIN');
   const pt2dots = 2.8;
 
-  // Split title into 1 or 2 balanced lines if > 14 chars
-  let bestLines = [n];
-  if (n.length > 14) {
-    const words = n.split(' ');
-    if (words.length >= 2) {
-       let minDiff = 999;
-       for(let i=1; i<words.length; i++) {
-          const l1 = words.slice(0,i).join(' ');
-          const l2 = words.slice(i).join(' ');
-          const diff = Math.abs(l1.length - l2.length);
-          if (diff <= minDiff) { minDiff = diff; bestLines = [l1, l2]; }
-       }
+  // Single consistent font size for entire title
+  const tiers = [
+    { pt: 36, maxL: 1 },
+    { pt: 32, maxL: 1 },
+    { pt: 28, maxL: 1 },
+    { pt: 24, maxL: 1 },
+    { pt: 20, maxL: 1 },
+    { pt: 36, maxL: 2 },
+    { pt: 32, maxL: 2 },
+    { pt: 28, maxL: 2 },
+    { pt: 24, maxL: 2 },
+    { pt: 24, maxL: 3 },
+    { pt: 20, maxL: 3 },
+    { pt: 16, maxL: 3 }
+  ];
+
+  let ptSize = 16, lines;
+  for (const t of tiers) {
+    const charW = t.pt * pt2dots * 0.58;
+    const maxCPL = Math.floor((DW - 24) / charW);
+    const wrapped = wrapText(n, maxCPL);
+    const lineH = Math.round(t.pt * pt2dots) + 8;
+    const totalH = wrapped.length * lineH;
+    if (wrapped.length <= t.maxL && totalH <= 190) {
+      ptSize = t.pt; lines = wrapped; break;
     }
   }
+  if (!lines) lines = wrapText(n, 25).slice(0, 3);
 
-  // Calculate independent pt size for each line for 'justice align'
-  const maxW = DW - 16;
-  const maxPt = 50; 
-  const minPt = 16;
-
-  let titleData = bestLines.map(ln => {
-     let pt = Math.floor(maxW / (ln.length * pt2dots * 0.58)); 
-     if (pt > maxPt) pt = maxPt;
-     if (pt < minPt) pt = minPt;
-     return { text: ln, pt: pt, h: Math.round(pt * pt2dots) };
-  });
-
-  const titleTotalH = titleData.reduce((sum, item) => sum + item.h + 8, 0);
+  const titleLineH = Math.round(ptSize * pt2dots) + 8;
+  const titleTotalH = lines.length * titleLineH;
   
   const subPt = 12;
   const jainBlockH = isJain ? (Math.round(subPt*pt2dots) + 12) : 0;
@@ -201,27 +204,29 @@ function buildFrontTSPL(name, copies) {
   let cmds = '';
   let y = yStart;
   
-  titleData.forEach(item => {
-    const tW = item.text.length * (item.pt * pt2dots * 0.58);
-    const x  = Math.max(4, Math.round((DW - tW) / 2));
+  lines.forEach(ln => {
+    const tW = ln.length * (ptSize * pt2dots * 0.58);
+    const x  = Math.max(12, Math.round((DW - tW) / 2));
     const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
     offsets.forEach(off => {
-      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${item.pt},${item.pt},"${item.text}"\r\n`;
+      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptSize},${ptSize},"${ln}"\r\n`;
     });
-    y += item.h + 8;
+    y += titleLineH;
   });
 
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
     y += 4;
     const subW = sub.length * (subPt * pt2dots * 0.58); 
-    const sx   = Math.max(4, Math.round((DW - subW) / 2));
+    const sx   = Math.max(12, Math.round((DW - subW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
       cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subPt},${subPt},"${sub}"\r\n`;
     });
   }
 
   return [
+    `SIZE 65 mm, 25 mm`,
+    `GAP 3 mm, 0 mm`,
     `SET DARKNESS 12`,
     `DIRECTION 1`,
     `CLS`,
@@ -234,7 +239,10 @@ function buildFrontTSPL(name, copies) {
 /* ─── BACK label TSPL (50x90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const W = 50, H = 90;
-  const dw = W*8, lm = 6, re = W*8 - lm;
+  const dw = W*8;
+  const lm = 12; // increased left margin to prevent clipping
+  const re = dw - 16; // reduced right edge to prevent box bottom clipping
+  const maxW = re - lm;
   const LABEL_H = H * 8;
   const mrp  = (parseFloat(v.m) || 0) * 2; 
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
@@ -246,30 +254,32 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const isJain = name.includes('JAIN');
   const pt2dots = 2.8;
 
-  // Split title if long
-  let bestLines = [name];
-  if (name.length > 14) {
-    const words = name.split(' ');
-    if (words.length >= 2) {
-       let minDiff = 999;
-       for(let i=1; i<words.length; i++) {
-          const l1 = words.slice(0,i).join(' ');
-          const l2 = words.slice(i).join(' ');
-          const diff = Math.abs(l1.length - l2.length);
-          if (diff <= minDiff) { minDiff = diff; bestLines = [l1, l2]; }
-       }
+  // Single consistent title font size
+  const ptOptions = [
+    { pt: 26, maxL: 1 },
+    { pt: 24, maxL: 1 },
+    { pt: 20, maxL: 1 },
+    { pt: 16, maxL: 1 },
+    { pt: 26, maxL: 2 },
+    { pt: 24, maxL: 2 },
+    { pt: 20, maxL: 2 },
+    { pt: 16, maxL: 2 },
+    { pt: 16, maxL: 3 },
+    { pt: 14, maxL: 3 }
+  ];
+
+  let ptTitle = 14, titleLines;
+  for (const t of ptOptions) {
+    const maxCPL = Math.floor(maxW / (t.pt * pt2dots * 0.58));
+    const wrapped = wrapText(name, maxCPL);
+    if (wrapped.length <= t.maxL) {
+      ptTitle = t.pt; titleLines = wrapped; break;
     }
   }
-
-  // Calculate Title sizing
-  const maxW = dw - 12;
-  const titleData = bestLines.map(ln => {
-     let pt = Math.floor(maxW / (ln.length * pt2dots * 0.58)); 
-     if (pt > 28) pt = 28; // conserve vertical space
-     if (pt < 12) pt = 12;
-     return { text: ln, pt: pt, h: Math.round(pt * pt2dots) };
-  });
-  const titleTotalH = titleData.reduce((sum, item) => sum + item.h + 6, 0);
+  if (!titleLines) titleLines = wrapText(name, 25).slice(0, 3);
+  
+  const titleH = Math.round(ptTitle * pt2dots);
+  const titleTotalH = titleLines.length * (titleH + 6);
 
   const jainPt = 10;
   const jainH = isJain ? (Math.round(jainPt * pt2dots) + 6) : 0;
@@ -284,12 +294,12 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   let catBoxH, ingrLines, numIL, nutriLines, nBoxH, catLines;
   let baseH, baseStep;
 
-  while (basePt >= 5) {
+  while (basePt >= 4.5) {
       baseH = Math.round(basePt * pt2dots);
       baseStep = baseH + 4; // tight leading
       
       const charW = basePt * pt2dots * 0.58;
-      const maxCPL = Math.floor((dw - 12) / charW);
+      const maxCPL = Math.floor(maxW / charW);
       
       catLines = wrapText(catFull, maxCPL);
       catBoxH = 8 + catLines.length * baseStep + 4;
@@ -313,22 +323,22 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
       );
       
       if (compactH <= 710) break; // Fits!
-      basePt--;
+      basePt -= 0.5;
   }
 
   const extra = Math.max(0, LABEL_H - compactH - 8);
   const gp = Math.floor(extra / 7);
   let y = 16, cmds = '';
 
-  // ── TITLE (Independent scaling per line) ──
-  titleData.forEach(item => {
-    const tW = item.text.length * (item.pt * pt2dots * 0.58);
+  // ── TITLE (Center aligned, consistent size) ──
+  titleLines.forEach(ln => {
+    const tW = ln.length * (ptTitle * pt2dots * 0.58);
     const x  = Math.max(lm, Math.round((dw - tW) / 2));
     const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
     offsets.forEach(off => {
-      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${item.pt},${item.pt},"${item.text}"\r\n`;
+      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptTitle},${ptTitle},"${ln}"\r\n`;
     });
-    y += item.h + 6;
+    y += titleH + 6;
   });
 
   // ── JAIN ──
@@ -400,6 +410,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `BARCODE ${lm},${LABEL_H - 66},"CODE128",40,1,0,2,4,"${bcode}"\r\n`;
 
   return [
+    `SIZE 50 mm, 90 mm`,
+    `GAP 3 mm, 0 mm`,
     `SET DARKNESS 12`,
     `DIRECTION 1`,
     `CLS`,
