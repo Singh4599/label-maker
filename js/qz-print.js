@@ -154,76 +154,62 @@ function getNutriLines(p) {
 }
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
-/* ─── FRONT label TSPL (65x25mm) ─── */
+/* ─── FRONT label TSPL (65×25mm) ─── */
 function buildFrontTSPL(name, copies) {
   const W = 65, H = 25;
-  const DW = W * 8; 
-  const n = tsplSafe(name.toUpperCase());
+  const DW  = W * 8;            // 520 dots
+  const DH  = H * 8;            // 200 dots
+  const n   = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const pt2dots = 2.8;
+  const CW  = 0.62;             // char-width factor for ROMAN.TTF (measured)
+  const P2D = 2.8;              // pt → dots
+  const SAFE = 20;              // safe margin each side (10 dots ≈ 1.25mm)
 
-  // Single consistent font size for entire title
-  const tiers = [
-    { pt: 50, maxL: 1 },
-    { pt: 46, maxL: 1 },
-    { pt: 42, maxL: 1 },
-    { pt: 38, maxL: 1 },
-    { pt: 34, maxL: 1 },
-    { pt: 30, maxL: 1 },
-    { pt: 26, maxL: 1 },
-    { pt: 46, maxL: 2 },
-    { pt: 42, maxL: 2 },
-    { pt: 38, maxL: 2 },
-    { pt: 34, maxL: 2 },
-    { pt: 30, maxL: 2 },
-    { pt: 26, maxL: 2 },
-    { pt: 34, maxL: 3 },
-    { pt: 30, maxL: 3 },
-    { pt: 26, maxL: 3 },
-    { pt: 22, maxL: 3 }
-  ];
+  /* ── pick the LARGEST font that fits without any cutting ── */
+  const tierPts = [48,44,40,36,32,28,24,20,18,16,14];
+  let ptSize = 14, lines;
 
-  let ptSize = 22, lines;
-  for (const t of tiers) {
-    const charW = t.pt * pt2dots * 0.50; // Adjusted factor to allow larger fonts and fix left-shift
-    const maxCPL = Math.floor((DW - 16) / charW);
-    const wrapped = wrapText(n, maxCPL);
-    const lineH = Math.round(t.pt * pt2dots) + 4; // Tighter line spacing
-    const totalH = wrapped.length * lineH;
-    if (wrapped.length <= t.maxL && totalH <= 210) { // Max height allowed increased
-      ptSize = t.pt; lines = wrapped; break;
+  for (const pt of tierPts) {
+    const charDots  = pt * P2D * CW;
+    const maxCPL    = Math.floor((DW - SAFE * 2) / charDots);   // safe chars per line
+    const wrapped   = wrapText(n, maxCPL);
+    const lineH     = Math.round(pt * P2D) + 6;
+    const totalH    = wrapped.length * lineH;
+    if (wrapped.length <= 3 && totalH <= DH - 10) {             // must fit in label height
+      ptSize = pt; lines = wrapped; break;
     }
   }
-  if (!lines) lines = wrapText(n, 25).slice(0, 3);
+  if (!lines) lines = wrapText(n, 20).slice(0, 3);
 
-  const titleLineH = Math.round(ptSize * pt2dots) + 4;
+  const titleLineH  = Math.round(ptSize * P2D) + 6;
   const titleTotalH = lines.length * titleLineH;
-  
-  const subPt = 12;
-  const jainBlockH = isJain ? (Math.round(subPt*pt2dots) + 12) : 0;
-  
-  // Center group vertically
-  const combinedH = titleTotalH + jainBlockH;
-  const yStart = Math.max(4, Math.round((H * 8 - combinedH) / 2));
 
-  let cmds = '';
-  let y = yStart;
-  
+  const subPt = 12;
+  const jainBlockH = isJain ? (Math.round(subPt * P2D) + 12) : 0;
+
+  /* ── vertical centering ── */
+  const combinedH = titleTotalH + jainBlockH;
+  const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
+
+  let cmds = '', y = yStart;
+
+  /* ── title lines (bold via 13-point star offsets) ── */
   lines.forEach(ln => {
-    const tW = ln.length * (ptSize * pt2dots * 0.50);
-    const x  = Math.max(8, Math.round((DW - tW) / 2));
-    const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
-    offsets.forEach(off => {
-      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptSize},${ptSize},"${ln}"\r\n`;
+    const tW = ln.length * (ptSize * P2D * CW);
+    const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
+    const offsets = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]];
+    offsets.forEach(([dx,dy]) => {
+      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${ptSize},${ptSize},"${ln}"\r\n`;
     });
     y += titleLineH;
   });
 
+  /* ── jain subtitle ── */
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
     y += 4;
-    const subW = sub.length * (subPt * pt2dots * 0.50); 
-    const sx   = Math.max(12, Math.round((DW - subW) / 2));
+    const subW = sub.length * (subPt * P2D * CW);
+    const sx   = Math.max(SAFE, Math.round((DW - subW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
       cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subPt},${subPt},"${sub}"\r\n`;
     });
@@ -239,15 +225,19 @@ function buildFrontTSPL(name, copies) {
   ].join('\r\n');
 }
 
-/* ─── BACK label TSPL (50x90mm) ─── */
+/* ─── BACK label TSPL (50×90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const W = 50, H = 90;
-  const dw = W*8;
-  const lm = 4; // reduced left margin to prevent pushing text to the right
-  const re = dw - 8; 
-  const maxW = re - lm;
-  const LABEL_H = H * 8;
-  const mrp  = (parseFloat(v.m) || 0) * 2; 
+  const dw   = W * 8;            // 400 dots
+  const DH   = H * 8;            // 720 dots
+  const CW   = 0.62;             // char-width factor for ROMAN.TTF
+  const P2D  = 2.8;              // pt → dots
+  const SAFE = 8;                // safe margin each side
+  const lm   = SAFE;
+  const re   = dw - SAFE;
+  const usableW = re - lm;       // printable width between margins
+
+  const mrp  = (parseFloat(v.m) || 0) * 2;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const name = tsplSafe(p.n.toUpperCase());
   const cat  = tsplSafe(p.c || '-');
@@ -255,171 +245,182 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
   const isJain = name.includes('JAIN');
-  const pt2dots = 2.8;
 
-  // Single consistent title font size
-  const ptOptions = [
-    { pt: 32, maxL: 1 },
-    { pt: 28, maxL: 1 },
-    { pt: 24, maxL: 1 },
-    { pt: 20, maxL: 1 },
-    { pt: 32, maxL: 2 },
-    { pt: 28, maxL: 2 },
-    { pt: 24, maxL: 2 },
-    { pt: 20, maxL: 2 },
-    { pt: 16, maxL: 2 },
-    { pt: 20, maxL: 3 },
-    { pt: 16, maxL: 3 },
-    { pt: 14, maxL: 3 }
-  ];
+  /* ═══════ HELPER: calculate text width in dots ═══════ */
+  function txtW(str, pt) { return str.length * pt * P2D * CW; }
+  function centerX(str, pt) { return Math.max(lm, Math.round((dw - txtW(str, pt)) / 2)); }
+  function maxCPL(pt) { return Math.floor(usableW / (pt * P2D * CW)); }
 
-  let ptTitle = 14, titleLines;
-  for (const t of ptOptions) {
-    const maxCPL = Math.floor(maxW / (t.pt * pt2dots * 0.50));
-    const wrapped = wrapText(name, maxCPL);
-    if (wrapped.length <= t.maxL) {
-      ptTitle = t.pt; titleLines = wrapped; break;
+  /* ── Title: pick largest font that fits ── */
+  const titlePts = [30,28,26,24,22,20,18,16,14,12,10];
+  let ptTitle = 10, titleLines;
+
+  for (const pt of titlePts) {
+    const cpl     = maxCPL(pt);
+    const wrapped = wrapText(name, cpl);
+    if (wrapped.length <= 3) {
+      // verify every line actually fits within usableW
+      const allFit = wrapped.every(ln => txtW(ln, pt) <= usableW);
+      if (allFit) { ptTitle = pt; titleLines = wrapped; break; }
     }
   }
-  if (!titleLines) titleLines = wrapText(name, 25).slice(0, 3);
-  
-  const titleH = Math.round(ptTitle * pt2dots);
-  const titleTotalH = titleLines.length * (titleH + 6);
+  if (!titleLines) titleLines = wrapText(name, maxCPL(10)).slice(0, 4);
 
-  const jainPt = 10;
-  const jainH = isJain ? (Math.round(jainPt * pt2dots) + 6) : 0;
-  
+  const titleLineH  = Math.round(ptTitle * P2D) + 6;
+  const titleTotalH = titleLines.length * titleLineH;
+
+  const jainPt = 9;
+  const jainH  = isJain ? (Math.round(jainPt * P2D) + 6) : 0;
+
   const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
   const catFull  = `Category - ${cat}`;
   const ingrFull = `(In Descending Order By Weight) ${ingr}`;
-  
-  // Dynamic scaling to fit all content within 720 dots
-  let basePt = 9; // Increased starting point size to 9 for larger text
-  let compactH = 9999;
-  let catBoxH, ingrLines, numIL, nutriLines, nBoxH, catLines;
-  let baseH, baseStep;
 
-  while (basePt >= 4.5) {
-      baseH = Math.round(basePt * pt2dots);
-      baseStep = baseH + 4; // tight leading
-      
-      const charW = basePt * pt2dots * 0.50;
-      const maxCPL = Math.floor(maxW / charW);
-      
-      catLines = wrapText(catFull, maxCPL);
-      catBoxH = 8 + catLines.length * baseStep + 4;
-      
-      ingrLines = wrapText(ingrFull, maxCPL).slice(0, 8);
-      numIL = ingrLines.length;
-      
-      nutriLines = wrapText(nutriStr, maxCPL);
-      nBoxH = 8 + nutriLines.length * baseStep + 4;
-      
-      compactH = (
-        16 + // top
-        titleTotalH + 
-        jainH + 
-        catBoxH + 4 +
-        baseStep + numIL * baseStep + 4 + // ingredients
-        baseStep + baseStep + 4 + nBoxH + 4 + // nutrition
-        6 + baseStep*4 + 4 + // details
-        8 + Math.round(14*pt2dots) + 8 + Math.round(6*pt2dots)*2 + 6 + // MRP (14pt)
-        64 // barcode
-      );
-      
-      if (compactH <= 710) break; // Fits!
-      basePt -= 0.5;
+  /* ══════════ AUTO-FIT: scale body font to fit everything in DH ══════════ */
+  let basePt = 9;
+  let compactH, catLines, ingrLines, nutriLines, baseStep, nBoxH, catH;
+  const MRP_PT = 12;
+  const TAX_PT = 6;
+  const BARCODE_H = 62;     // barcode height + number below
+
+  while (basePt >= 4) {
+    baseStep = Math.round(basePt * P2D) + 3;
+    const cpl = maxCPL(basePt);
+
+    catLines   = wrapText(catFull, cpl);
+    ingrLines  = wrapText(ingrFull, cpl).slice(0, 10);
+    nutriLines = wrapText(nutriStr, cpl);
+
+    catH   = catLines.length * baseStep;
+    nBoxH  = 8 + nutriLines.length * baseStep + 8;       // box padding
+
+    compactH =
+      12 +                                                 // top margin
+      titleTotalH +                                        // title
+      jainH +                                              // jain line
+      4 + catH + 6 +                                       // category + line below
+      baseStep + 2 + ingrLines.length * baseStep + 4 +     // INGREDIENTS header + lines
+      baseStep + baseStep + 4 + nBoxH + 4 +                // NUTRI headers + box
+      baseStep * 4 + 4 +                                   // 4 detail rows
+      Math.round(MRP_PT * P2D) + 4 +                       // MRP
+      Math.round(TAX_PT * P2D) * 2 + 8 +                   // tax lines
+      BARCODE_H;                                            // barcode at bottom
+
+    if (compactH <= DH - 8) break;
+    basePt -= 0.5;
   }
 
-  const extra = Math.max(0, LABEL_H - compactH - 8);
-  const gp = Math.floor(extra / 7);
-  let y = 16, cmds = '';
+  /* gap to distribute remaining space evenly across sections */
+  const extra = Math.max(0, DH - compactH - 8);
+  const gp    = Math.min(Math.floor(extra / 8), 8);     // cap gap so nothing floats
+  let y = 12, cmds = '';
 
-  // ── TITLE (Center aligned, consistent size) ──
+  /* ══ 1. TITLE (center-aligned, bold, consistent size) ══ */
   titleLines.forEach(ln => {
-    const tW = ln.length * (ptTitle * pt2dots * 0.50);
-    const x  = Math.max(lm, Math.round((dw - tW) / 2));
-    const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
-    offsets.forEach(off => {
-      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptTitle},${ptTitle},"${ln}"\r\n`;
-    });
-    y += titleH + 6;
+    const x = centerX(ln, ptTitle);
+    [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]
+      .forEach(([dx,dy]) => {
+        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${ptTitle},${ptTitle},"${ln}"\r\n`;
+      });
+    y += titleLineH;
   });
 
-  // ── JAIN ──
+  /* ══ 2. JAIN subtitle ══ */
   if (isJain) {
-    const sub  = 'NO ONION NO GARLIC';
-    const subW = sub.length * (jainPt * pt2dots * 0.50);
-    const sx   = Math.max(lm, Math.round((dw - subW) / 2));
-    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainPt},${jainPt},"${sub}"\r\n`);
-    y += Math.round(jainPt * pt2dots) + 6;
+    const sub = 'NO ONION NO GARLIC';
+    const sx  = centerX(sub, jainPt);
+    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
+      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainPt},${jainPt},"${sub}"\r\n`
+    );
+    y += Math.round(jainPt * P2D) + 6;
   }
   y += gp;
 
-  // ── CATEGORY ──
-  let cy = y;
-  catLines.forEach(cl => { 
-    cmds += `TEXT ${Math.max(lm, Math.round((dw - cl.length*(basePt*pt2dots*0.50))/2))},${cy},"ROMAN.TTF",0,${basePt},${basePt},"${cl}"\r\n`; 
-    cy += baseStep; 
+  /* ══ 3. CATEGORY (center-aligned, slightly bolder) ══ */
+  const catPt = Math.min(basePt + 1, 10);   // slightly bigger than body
+  catLines.forEach(cl => {
+    const cx = centerX(cl, catPt);
+    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
+      cmds += `TEXT ${cx+dx},${y+dy},"ROMAN.TTF",0,${catPt},${catPt},"${cl}"\r\n`
+    );
+    y += baseStep;
   });
-  y = cy + 4;
-  cmds += `BAR ${lm},${y},${re-lm},1\r\n`; // Thin line below category
+  y += 2;
+  cmds += `BAR ${lm},${y},${usableW},1\r\n`;
   y += 4 + gp;
 
-  // ── INGREDIENTS ──
-  [[0,0],[1,0]].forEach(([dx,dy]) => cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"INGREDIENTS :-"\r\n`); 
+  /* ══ 4. INGREDIENTS ══ */
+  [[0,0],[1,0]].forEach(([dx,dy]) =>
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"INGREDIENTS :-"\r\n`
+  );
   y += baseStep + 2;
-  ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`; y += baseStep; });
-  y += 4 + gp;
+  ingrLines.forEach(ln => {
+    cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`;
+    y += baseStep;
+  });
+  y += 2 + gp;
 
-  // ── NUTRITIONAL INFO BOX ──
-  const nTitle1 = "NUTRITIONAL INFORMATION";
-  const nTitle2 = "Approximate Composition per 100 g";
-  const nt1W = nTitle1.length * (basePt * pt2dots * 0.50);
-  const nt2W = nTitle2.length * (basePt * pt2dots * 0.50);
-  
-  const t1x = Math.max(lm, Math.round((dw - nt1W)/2));
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${t1x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle1}"\r\n`); y += baseStep;
-  
-  const t2x = Math.max(lm, Math.round((dw - nt2W)/2));
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${t2x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle2}"\r\n`); y += baseStep + 2;
+  /* ══ 5. NUTRITIONAL INFORMATION ══ */
+  const nTitle1 = 'NUTRITIONAL INFORMATION';
+  const nTitle2 = 'Approximate Composition per 100 g';
+  const t1x = centerX(nTitle1, basePt);
+  const t2x = centerX(nTitle2, basePt);
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
+    cmds += `TEXT ${t1x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle1}"\r\n`
+  );
+  y += baseStep;
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
+    cmds += `TEXT ${t2x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle2}"\r\n`
+  );
+  y += baseStep + 2;
 
-  cmds += `BOX ${lm},${y},${re},${y + nBoxH - 4},2\r\n`;
-  let ny = y + 6;
+  /* nutrition box */
+  const boxBot = y + nBoxH;
+  cmds += `BOX ${lm},${y},${re},${boxBot},2\r\n`;
+  let ny = y + 5;
   nutriLines.forEach(ln => {
-     cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`;
-     ny += baseStep;
+    cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`;
+    ny += baseStep;
   });
-  y += nBoxH + gp;
+  y = boxBot + 4 + gp;
 
-  // ── DETAILS (Bold) ──
-  [[0,0],[1,0]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"NET WEIGHT : ${nw}"\r\n`;
-    cmds += `TEXT ${lm+dx},${y+baseStep+dy},"ROMAN.TTF",0,${basePt},${basePt},"BATCH NO : ${bno}"\r\n`;
-    cmds += `TEXT ${lm+dx},${y+baseStep*2+dy},"ROMAN.TTF",0,${basePt},${basePt},"DATE OF PACKING : ${tsplSafe(pd)}"\r\n`;
-    cmds += `TEXT ${lm+dx},${y+baseStep*3+dy},"ROMAN.TTF",0,${basePt},${basePt},"BEST BEFORE : ${tsplSafe(bb).replace(/\s*\(.*$/, '')}"\r\n`;
+  /* ══ 6. DETAILS (bold via double-print) ══ */
+  const detPt = basePt;
+  const detStep = baseStep;
+  const details = [
+    `NET WEIGHT : ${nw}`,
+    `BATCH NO : ${bno}`,
+    `DATE OF PACKING : ${tsplSafe(pd)}`,
+    `BEST BEFORE : ${tsplSafe(bb).replace(/\s*\(.*$/, '')}`
+  ];
+  details.forEach(line => {
+    [[0,0],[1,0]].forEach(([dx,dy]) =>
+      cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${detPt},${detPt},"${line}"\r\n`
+    );
+    y += detStep;
   });
-  y += baseStep*4 + gp;
+  y += gp;
 
-  // ── MRP ──
+  /* ══ 7. MRP (bigger, bold, left-aligned with details) ══ */
   const mrpTxt = `MRP : Rs.${mrp}/-`;
-  const mrpPt = 14;
-  const mrpW = mrpTxt.length * (mrpPt * pt2dots * 0.58);
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${mrpPt},${mrpPt},"${mrpTxt}"\r\n`;
-  });
-  y += Math.round(mrpPt * pt2dots) + 4;
-  
-  const taxPt = 6;
-  [[0,0],[1,0]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${taxPt},${taxPt},"(INCL. OF ALL TAXES)"\r\n`;
-    cmds += `TEXT ${lm+dx},${y+Math.round(taxPt*pt2dots)+4+dy},"ROMAN.TTF",0,${taxPt},${taxPt},"FOR 1g = Rs.${pg}"\r\n`; 
-  });
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${MRP_PT},${MRP_PT},"${mrpTxt}"\r\n`
+  );
+  y += Math.round(MRP_PT * P2D) + 4;
 
-  // ── BARCODE (128) ──
-  // Changed to dynamic Y position instead of fixed bottom, and changed type to "128"
-  const bcode = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
-  cmds += `BARCODE ${lm + 30},${y + 10},"128",45,2,0,2,2,"${bcode}"\r\n`;
+  [[0,0],[1,0]].forEach(([dx,dy]) => {
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_PT},${TAX_PT},"(INCL. OF ALL TAXES)"\r\n`;
+  });
+  y += Math.round(TAX_PT * P2D) + 3;
+  [[0,0],[1,0]].forEach(([dx,dy]) => {
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_PT},${TAX_PT},"FOR 1g = Rs.${pg}"\r\n`;
+  });
+  y += Math.round(TAX_PT * P2D) + 6;
+
+  /* ══ 8. BARCODE — placed AFTER all text, guaranteed no overlap ══ */
+  const bcode   = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
+  const bcodeX  = Math.max(lm, Math.round((dw - 200) / 2));    // center barcode (≈200 dots wide)
+  cmds += `BARCODE ${bcodeX},${y},"128",40,1,0,2,2,"${bcode}"\r\n`;
 
   return [
     `SET DARKNESS 12`,
