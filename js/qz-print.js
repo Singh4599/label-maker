@@ -349,14 +349,18 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   }
   y += gp;
 
-  // ── CATEGORY BOX ──
-  cmds += `BOX ${lm},${y},${re},${y + catBoxH - 4},2\r\n`;
-  let cy = y + 6;
-  catLines.forEach(cl => { cmds += `TEXT ${lm+6},${cy},"ROMAN.TTF",0,${basePt},${basePt},"${cl}"\r\n`; cy += baseStep; });
-  y += catBoxH + gp;
+  // ── CATEGORY ──
+  let cy = y;
+  catLines.forEach(cl => { 
+    cmds += `TEXT ${Math.max(lm, Math.round((dw - cl.length*(basePt*pt2dots*0.58))/2))},${cy},"ROMAN.TTF",0,${basePt},${basePt},"${cl}"\r\n`; 
+    cy += baseStep; 
+  });
+  y = cy + 4;
+  cmds += `BAR ${lm},${y},${re-lm},1\r\n`; // Thin line below category
+  y += 4 + gp;
 
   // ── INGREDIENTS ──
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"INGREDIENTS :-"\r\n`); 
+  [[0,0],[1,0]].forEach(([dx,dy]) => cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"INGREDIENTS :-"\r\n`); 
   y += baseStep + 2;
   ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`; y += baseStep; });
   y += 4 + gp;
@@ -381,27 +385,29 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   });
   y += nBoxH + gp;
 
-  // ── DETAILS ──
-  cmds += `BAR ${lm},${y},${re-lm},1\r\n`; y += 6;
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"NET WEIGHT : ${nw}"\r\n`; y += baseStep;
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"BATCH NO   : ${bno}"\r\n`; y += baseStep;
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"DATE OF PKG: ${tsplSafe(pd)}"\r\n`; y += baseStep;
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"BEST BEFORE: ${tsplSafe(bb).replace(/\s*\(.*$/, '')}"\r\n`; y += baseStep + gp;
+  // ── DETAILS (Bold) ──
+  [[0,0],[1,0]].forEach(([dx,dy]) => {
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"NET WEIGHT : ${nw}"\r\n`;
+    cmds += `TEXT ${lm+dx},${y+baseStep+dy},"ROMAN.TTF",0,${basePt},${basePt},"BATCH NO : ${bno}"\r\n`;
+    cmds += `TEXT ${lm+dx},${y+baseStep*2+dy},"ROMAN.TTF",0,${basePt},${basePt},"DATE OF PACKING : ${tsplSafe(pd)}"\r\n`;
+    cmds += `TEXT ${lm+dx},${y+baseStep*3+dy},"ROMAN.TTF",0,${basePt},${basePt},"BEST BEFORE : ${tsplSafe(bb).replace(/\s*\(.*$/, '')}"\r\n`;
+  });
+  y += baseStep*4 + gp;
 
   // ── MRP ──
-  cmds += `BAR ${lm},${y},${re-lm},2\r\n`; y += 8 + gp;
   const mrpTxt = `MRP : Rs.${mrp}/-`;
   const mrpPt = 14;
   const mrpW = mrpTxt.length * (mrpPt * pt2dots * 0.58);
-  const mrpX = Math.max(lm, Math.round((dw - mrpW) / 2));
   [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${mrpX+dx},${y+dy},"ROMAN.TTF",0,${mrpPt},${mrpPt},"${mrpTxt}"\r\n`;
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${mrpPt},${mrpPt},"${mrpTxt}"\r\n`;
   });
-  y += Math.round(mrpPt * pt2dots) + 8;
+  y += Math.round(mrpPt * pt2dots) + 4;
   
   const taxPt = 6;
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${taxPt},${taxPt},"(INCL. OF ALL TAXES)"\r\n`; y += Math.round(taxPt * pt2dots) + 4;
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${taxPt},${taxPt},"FOR 1g = Rs.${pg}"\r\n`; 
+  [[0,0],[1,0]].forEach(([dx,dy]) => {
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${taxPt},${taxPt},"(INCL. OF ALL TAXES)"\r\n`;
+    cmds += `TEXT ${lm+dx},${y+Math.round(taxPt*pt2dots)+4+dy},"ROMAN.TTF",0,${taxPt},${taxPt},"FOR 1g = Rs.${pg}"\r\n`; 
+  });
 
   // ── BARCODE (CODE128) ──
   const bcode = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
