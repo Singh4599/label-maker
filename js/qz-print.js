@@ -164,26 +164,28 @@ function buildFrontTSPL(name, copies) {
 
   // Single consistent font size for entire title
   const tiers = [
-    { pt: 44, maxL: 1 },
-    { pt: 40, maxL: 1 },
-    { pt: 36, maxL: 1 },
-    { pt: 32, maxL: 1 },
-    { pt: 28, maxL: 1 },
-    { pt: 24, maxL: 1 },
-    { pt: 40, maxL: 2 },
-    { pt: 36, maxL: 2 },
-    { pt: 32, maxL: 2 },
-    { pt: 28, maxL: 2 },
-    { pt: 24, maxL: 2 },
-    { pt: 28, maxL: 3 },
-    { pt: 24, maxL: 3 },
-    { pt: 20, maxL: 3 },
-    { pt: 16, maxL: 3 }
+    { pt: 50, maxL: 1 },
+    { pt: 46, maxL: 1 },
+    { pt: 42, maxL: 1 },
+    { pt: 38, maxL: 1 },
+    { pt: 34, maxL: 1 },
+    { pt: 30, maxL: 1 },
+    { pt: 26, maxL: 1 },
+    { pt: 46, maxL: 2 },
+    { pt: 42, maxL: 2 },
+    { pt: 38, maxL: 2 },
+    { pt: 34, maxL: 2 },
+    { pt: 30, maxL: 2 },
+    { pt: 26, maxL: 2 },
+    { pt: 34, maxL: 3 },
+    { pt: 30, maxL: 3 },
+    { pt: 26, maxL: 3 },
+    { pt: 22, maxL: 3 }
   ];
 
-  let ptSize = 16, lines;
+  let ptSize = 22, lines;
   for (const t of tiers) {
-    const charW = t.pt * pt2dots * 0.58;
+    const charW = t.pt * pt2dots * 0.50; // Adjusted factor to allow larger fonts and fix left-shift
     const maxCPL = Math.floor((DW - 16) / charW);
     const wrapped = wrapText(n, maxCPL);
     const lineH = Math.round(t.pt * pt2dots) + 4; // Tighter line spacing
@@ -208,7 +210,7 @@ function buildFrontTSPL(name, copies) {
   let y = yStart;
   
   lines.forEach(ln => {
-    const tW = ln.length * (ptSize * pt2dots * 0.58);
+    const tW = ln.length * (ptSize * pt2dots * 0.50);
     const x  = Math.max(8, Math.round((DW - tW) / 2));
     const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
     offsets.forEach(off => {
@@ -220,7 +222,7 @@ function buildFrontTSPL(name, copies) {
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
     y += 4;
-    const subW = sub.length * (subPt * pt2dots * 0.58); 
+    const subW = sub.length * (subPt * pt2dots * 0.50); 
     const sx   = Math.max(12, Math.round((DW - subW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
       cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subPt},${subPt},"${sub}"\r\n`;
@@ -273,7 +275,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   let ptTitle = 14, titleLines;
   for (const t of ptOptions) {
-    const maxCPL = Math.floor(maxW / (t.pt * pt2dots * 0.58));
+    const maxCPL = Math.floor(maxW / (t.pt * pt2dots * 0.50));
     const wrapped = wrapText(name, maxCPL);
     if (wrapped.length <= t.maxL) {
       ptTitle = t.pt; titleLines = wrapped; break;
@@ -292,7 +294,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const ingrFull = `(In Descending Order By Weight) ${ingr}`;
   
   // Dynamic scaling to fit all content within 720 dots
-  let basePt = 7;
+  let basePt = 9; // Increased starting point size to 9 for larger text
   let compactH = 9999;
   let catBoxH, ingrLines, numIL, nutriLines, nBoxH, catLines;
   let baseH, baseStep;
@@ -301,7 +303,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
       baseH = Math.round(basePt * pt2dots);
       baseStep = baseH + 4; // tight leading
       
-      const charW = basePt * pt2dots * 0.58;
+      const charW = basePt * pt2dots * 0.50;
       const maxCPL = Math.floor(maxW / charW);
       
       catLines = wrapText(catFull, maxCPL);
@@ -335,7 +337,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   // ── TITLE (Center aligned, consistent size) ──
   titleLines.forEach(ln => {
-    const tW = ln.length * (ptTitle * pt2dots * 0.58);
+    const tW = ln.length * (ptTitle * pt2dots * 0.50);
     const x  = Math.max(lm, Math.round((dw - tW) / 2));
     const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
     offsets.forEach(off => {
@@ -347,7 +349,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   // ── JAIN ──
   if (isJain) {
     const sub  = 'NO ONION NO GARLIC';
-    const subW = sub.length * (jainPt * pt2dots * 0.58);
+    const subW = sub.length * (jainPt * pt2dots * 0.50);
     const sx   = Math.max(lm, Math.round((dw - subW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainPt},${jainPt},"${sub}"\r\n`);
     y += Math.round(jainPt * pt2dots) + 6;
@@ -357,7 +359,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   // ── CATEGORY ──
   let cy = y;
   catLines.forEach(cl => { 
-    cmds += `TEXT ${Math.max(lm, Math.round((dw - cl.length*(basePt*pt2dots*0.58))/2))},${cy},"ROMAN.TTF",0,${basePt},${basePt},"${cl}"\r\n`; 
+    cmds += `TEXT ${Math.max(lm, Math.round((dw - cl.length*(basePt*pt2dots*0.50))/2))},${cy},"ROMAN.TTF",0,${basePt},${basePt},"${cl}"\r\n`; 
     cy += baseStep; 
   });
   y = cy + 4;
@@ -373,8 +375,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   // ── NUTRITIONAL INFO BOX ──
   const nTitle1 = "NUTRITIONAL INFORMATION";
   const nTitle2 = "Approximate Composition per 100 g";
-  const nt1W = nTitle1.length * (basePt * pt2dots * 0.58);
-  const nt2W = nTitle2.length * (basePt * pt2dots * 0.58);
+  const nt1W = nTitle1.length * (basePt * pt2dots * 0.50);
+  const nt2W = nTitle2.length * (basePt * pt2dots * 0.50);
   
   const t1x = Math.max(lm, Math.round((dw - nt1W)/2));
   [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${t1x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle1}"\r\n`); y += baseStep;
@@ -414,9 +416,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     cmds += `TEXT ${lm+dx},${y+Math.round(taxPt*pt2dots)+4+dy},"ROMAN.TTF",0,${taxPt},${taxPt},"FOR 1g = Rs.${pg}"\r\n`; 
   });
 
-  // ── BARCODE (CODE128) ──
+  // ── BARCODE (128) ──
+  // Changed to dynamic Y position instead of fixed bottom, and changed type to "128"
   const bcode = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
-  cmds += `BARCODE ${lm},${LABEL_H - 66},"CODE128",40,1,0,2,4,"${bcode}"\r\n`;
+  cmds += `BARCODE ${lm + 30},${y + 10},"128",45,2,0,2,2,"${bcode}"\r\n`;
 
   return [
     `SET DARKNESS 12`,
