@@ -165,36 +165,53 @@ function buildFrontTSPL(name, copies) {
   // TTF Size conversion: 1 point = 2.8 dots (at 203 DPI)
   const pt2dots = 2.8;
 
-  // Jain subtitle: 12pt
-  const subPt = 12;
-  const subH = Math.round(subPt * pt2dots);
-  const jainReserve = isJain ? (subH + 12) : 0;
-  const usableH = H * 8 - jainReserve;
+  // Prefer 1 line down to 20pt, before wrapping to 2 lines
+  const tiers = [
+    { pt: 40, maxL: 1 },
+    { pt: 32, maxL: 1 },
+    { pt: 28, maxL: 1 },
+    { pt: 24, maxL: 1 },
+    { pt: 20, maxL: 1 },
+    { pt: 40, maxL: 2 },
+    { pt: 32, maxL: 2 },
+    { pt: 28, maxL: 2 },
+    { pt: 24, maxL: 2 },
+    { pt: 24, maxL: 3 },
+    { pt: 20, maxL: 3 },
+    { pt: 16, maxL: 3 }
+  ];
 
   let ptSize = 16, lines;
-  const options = [40, 32, 28, 24, 20, 16];
-  for (const pt of options) {
-    const charW = pt * pt2dots * 0.6; // estimated char width
+  for (const t of tiers) {
+    const charW = t.pt * pt2dots * 0.62; // safe width ratio 0.62
     const maxCPL = Math.floor((DW - 16) / charW);
     const wrapped = wrapText(n, maxCPL);
-    const lineH = Math.round(pt * pt2dots) + 8;
+    const lineH = Math.round(t.pt * pt2dots) + 8;
     const totalH = wrapped.length * lineH;
-    if (wrapped.length <= 3 && totalH <= usableH - 8) {
-      ptSize = pt; lines = wrapped; break;
+    // Max height constraint: leave room if jain subtitle is present
+    if (wrapped.length <= t.maxL && totalH <= 190) {
+      ptSize = t.pt; lines = wrapped; break;
     }
   }
   if (!lines) lines = wrapText(n, 25).slice(0, 3);
 
-  const charW = ptSize * pt2dots * 0.6;
-  const lineH = Math.round(ptSize * pt2dots) + 8;
-  const totalH = lines.length * lineH;
-  const yStart = Math.max(8, Math.round((usableH - totalH) / 2));
+  const titleLineH = Math.round(ptSize * pt2dots) + 8;
+  const titleTotalH = lines.length * titleLineH;
+
+  const subPt = 12;
+  const subH = Math.round(subPt * pt2dots);
+  const jainBlockH = isJain ? (subH + 12) : 0; // 12 dots gap + height
+
+  // Center the ENTIRE block (title + subtitle) vertically
+  const combinedH = titleTotalH + jainBlockH;
+  const yStart = Math.max(4, Math.round((H * 8 - combinedH) / 2));
 
   let cmds = '';
-  lines.forEach((ln, i) => {
-    const tW = ln.length * charW;
+  let y = yStart;
+  
+  lines.forEach((ln) => {
+    const tW = ln.length * (ptSize * pt2dots * 0.62); 
     const x  = Math.max(4, Math.round((DW - tW) / 2));
-    const y  = yStart + i * lineH;
     
     // 13-point bold for EXTREME thickness
     const offsets = [
@@ -204,17 +221,17 @@ function buildFrontTSPL(name, copies) {
     offsets.forEach(off => {
       cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptSize},${ptSize},"${ln}"\r\n`;
     });
+    y += titleLineH;
   });
 
   // Jain subtitle — ROMAN.TTF centered, bold 4-point
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
-    const sCharW = subPt * pt2dots * 0.55; 
-    const subW = sub.length * sCharW;
+    y += 4; // slight extra gap between title and subtitle
+    const subW = sub.length * (subPt * pt2dots * 0.62); 
     const sx   = Math.max(4, Math.round((DW - subW) / 2));
-    const sy   = H*8 - subH - 12;
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${sx+dx},${sy+dy},"ROMAN.TTF",0,${subPt},${subPt},"${sub}"\r\n`;
+      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subPt},${subPt},"${sub}"\r\n`;
     });
   }
 
@@ -245,14 +262,27 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   // TTF Size conversion: 1 point = 2.8 dots (at 203 DPI)
   const pt2dots = 2.8;
 
-  // Title: ROMAN.TTF dynamic pt size
-  const ptOptions = [28, 24, 20, 16, 14, 12];
+  // Prefer 1 line down to 16pt before wrapping
+  const ptOptions = [
+    { pt: 28, maxL: 1 },
+    { pt: 24, maxL: 1 },
+    { pt: 20, maxL: 1 },
+    { pt: 16, maxL: 1 },
+    { pt: 28, maxL: 2 },
+    { pt: 24, maxL: 2 },
+    { pt: 20, maxL: 2 },
+    { pt: 16, maxL: 2 },
+    { pt: 16, maxL: 3 },
+    { pt: 14, maxL: 3 },
+    { pt: 12, maxL: 3 }
+  ];
+
   let ptTitle = 12, titleLines;
-  for (const pt of ptOptions) {
-    const maxCPL = Math.floor((dw - 12) / (pt * pt2dots * 0.6));
+  for (const t of ptOptions) {
+    const maxCPL = Math.floor((dw - 12) / (t.pt * pt2dots * 0.62));
     const wrapped = wrapText(name, maxCPL);
-    if (wrapped.length <= 3) {
-      ptTitle = pt; titleLines = wrapped; break;
+    if (wrapped.length <= t.maxL) {
+      ptTitle = t.pt; titleLines = wrapped; break;
     }
   }
   if (!titleLines) titleLines = wrapText(name, 25).slice(0, 3);
