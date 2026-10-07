@@ -366,7 +366,7 @@ function renderBack() {
   if (!ST.prod || ST.vi < 0) { bp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
   const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
   bp.innerHTML = buildBackHTML(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
-  requestAnimationFrame(() => { fitBackTitle(); renderBarcode(ST.prod); });
+  requestAnimationFrame(() => { fitBackTitle(); setTimeout(() => renderBarcode(ST.prod), 30); });
 }
 
 /* Alias — HTML uses oninput="manualRender()" */
