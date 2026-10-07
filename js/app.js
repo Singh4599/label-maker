@@ -259,6 +259,7 @@ function calcBestBefore() {
   if (!pd || !bbSel || !bb || bbSel.value === 'custom' || !pd.value) return;
   const d = new Date(pd.value);
   d.setMonth(d.getMonth() + parseInt(bbSel.value));
+  d.setDate(d.getDate() - 1);  // -1 day: 07/10/26 + 12mo = 06/10/27
   bb.value = d.toISOString().split('T')[0];
 }
 
@@ -267,6 +268,7 @@ function calcManualBestBefore() {
   if (!pd || !bbSel || !bb || bbSel.value === 'custom' || !pd.value) return;
   const d = new Date(pd.value);
   d.setMonth(d.getMonth() + parseInt(bbSel.value));
+  d.setDate(d.getDate() - 1);  // -1 day
   bb.value = d.toISOString().split('T')[0];
 }
 
@@ -360,7 +362,7 @@ function renderBack() {
   if (!ST.prod || ST.vi < 0) { bp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
   const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
   bp.innerHTML = buildBackHTML(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
-  requestAnimationFrame(fitBackTitle);
+  requestAnimationFrame(() => { fitBackTitle(); renderBarcode(ST.prod); });
 }
 
 /* Alias — HTML uses oninput="manualRender()" */
@@ -389,18 +391,34 @@ function renderManual() {
     const v = { d: vd, g: vg, oz: voz, m: gn('m-mrp') };
     const bn = gv('m-bn'), pd = fmtDate(gv('m-pd')), bb = getBBValue('m-bb-sel','m-bb');
     bp.innerHTML = buildBackHTML(p, v, bn, pd, bb);
-    requestAnimationFrame(fitBackTitle);
+    requestAnimationFrame(() => { fitBackTitle(); renderBarcode(p); });
   } else {
     bp.innerHTML = '<span class="emptylbl">Enter weight (g) to preview back label</span>';
   }
 }
 
 function buildBackHTML(p, v, bn, pd, bb) {
-  const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
+  const mrp = (parseFloat(v.m)||0) * 2;  // ×2: pricelist is wholesale 1kg, retail is 2×
+  const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const ns = getNutrition(p);
+  const isJain = p.n.toUpperCase().includes('JAIN');
+  const isBlended = (p.c || '').toLowerCase().includes('blended');
+  // Strip "(12 Months)" suffix from bb
+  const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
+
+  const jainLine = isJain
+    ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.72em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:1px;">No Onion No Garlic</div>`
+    : '';
+
+  const blendedBox = isBlended
+    ? `<div style="border:0.8pt solid #000;padding:1mm 1.5mm;margin:1mm 0;font-size:0.52em;text-align:center;line-height:1.3;font-weight:600;">Mixed Masala Powder, Spices content more than 85%, salt content more than 5%</div>`
+    : '';
+
   return `<div class="bl-wrap">
     <div class="bltit" id="bltit-el">${p.n.toUpperCase()}</div>
+    ${jainLine}
     <div class="blcat">Category - ${p.c || '—'}</div>
+    ${blendedBox}
     <hr class="blhr">
     <div class="blsec">INGREDIENTS :-</div>
     <div class="blingr">(In Descending Order By Weight) ${p.i || '—'}</div>
@@ -411,17 +429,40 @@ function buildBackHTML(p, v, bn, pd, bb) {
     <div class="blr">NET WEIGHT : ${v.d} (${v.oz})</div>
     <div class="blr">BATCH NO : ${bn || '—'}</div>
     <div class="blr">DATE OF PACKING : ${pd}</div>
-    <div class="blr">BEST BEFORE : ${bb}</div>
+    <div class="blr">BEST BEFORE : ${bbClean}</div>
     <div class="blmrp">MRP : ₹ ${mrp}/-</div>
     <div class="bltax">(INCL. OF ALL TAXES)</div>
     <div class="blper">FOR 1g = Rs ${pg}</div>
+    <div class="bl-barcode-wrap"><svg id="bl-barcode-svg"></svg></div>
   </div>`;
 }
+
 
 /* ─── Utilities ─── */
 function splitName(n) {
   const w = (n||'').trim().split(/\s+/), m = Math.ceil(w.length/2);
   return { a: w.slice(0,m).join(' '), b: w.slice(m).join(' ') };
+}
+
+/* ─── Barcode Renderer (JsBarcode) ─── */
+function renderBarcode(p) {
+  const svg = document.getElementById('bl-barcode-svg');
+  if (!svg) return;
+  // Use product barcode field if available, else a branded placeholder
+  const code = (p && p.barcode) ? p.barcode : '8905606000001';
+  if (typeof JsBarcode === 'undefined') return;
+  try {
+    JsBarcode(svg, code, {
+      format: 'EAN13',
+      width: 1.4,
+      height: 28,
+      displayValue: true,
+      fontSize: 7,
+      margin: 1,
+      textMargin: 1,
+      font: 'Arial',
+    });
+  } catch(e) { console.warn('Barcode err:', e); }
 }
 
 /* Auto-scale front label name to fit container */
@@ -533,27 +574,37 @@ function pF() {
 }
 
 function pF_Chrome(name, copies) {
+  const isJain = name.toUpperCase().includes('JAIN');
+  const jainHTML = isJain
+    ? '<div class="jn">No Onion No Garlic</div>'
+    : '';
+
   const css =
     '@page{size:65mm 25mm;margin:0}'+
-    '.w{width:65mm;height:25mm;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff;page-break-after:avoid}'+
-    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;font-size:60pt;'+
-      'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;'+
-      'letter-spacing:-0.5pt;width:100%;word-break:break-word}';
+    '.w{width:65mm;height:25mm;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1mm 2mm;overflow:hidden;background:#fff;page-break-after:avoid}'+
+    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;'+
+      'text-align:center;line-height:0.88;text-transform:uppercase;color:#000;'+
+      'letter-spacing:-0.5pt;width:100%;word-break:break-word}'+
+    '.jn{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;'+
+      'font-size:8pt;text-align:center;text-transform:uppercase;color:#000;'+
+      'letter-spacing:0.3pt;margin-top:1.5pt;line-height:1}';
 
   let pStyle = document.getElementById('dynamic-print-style');
   pStyle.innerHTML = css;
 
   const box = document.createElement('div');
   box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:65mm;height:25mm;box-sizing:border-box;overflow:hidden;background:#fff;';
-  box.innerHTML = '<div class="w"><div class="n">'+name+'</div></div>';
+  box.innerHTML = `<div class="w"><div class="n">${name}</div>${jainHTML}</div>`;
   document.body.appendChild(box);
 
   const el = box.querySelector('.n');
   const w = el.parentElement;
   const mW = w.offsetWidth - 4;
-  const mH = w.offsetHeight - 2;
+  // If Jain, leave room for subtitle (~10pt = ~13px)
+  const subtractH = isJain ? 16 : 2;
+  const mH = w.offsetHeight - subtractH;
   let fs = 60, i = 0;
-  
+
   el.style.fontSize = fs + "pt";
   while ((el.scrollWidth > mW || el.scrollHeight > mH) && fs > 4 && i++ < 200) {
     el.style.fontSize = (fs -= 0.5) + "pt";
@@ -561,16 +612,14 @@ function pF_Chrome(name, copies) {
 
   const printZone = document.getElementById('print-zone');
   printZone.innerHTML = '';
-  
-  // Duplicate for copies
+
   for (let c = 0; c < copies; c++) {
     const clone = w.cloneNode(true);
     if (c < copies - 1) clone.style.pageBreakAfter = 'always';
     printZone.appendChild(clone);
   }
-  
-  document.body.removeChild(box);
 
+  document.body.removeChild(box);
   setTimeout(function(){ window.print(); }, 100);
 }
 
@@ -605,54 +654,96 @@ function pB() {
 }
 
 function pB_Chrome(p, v, bn, pd, bb, copies) {
-  const mrp = parseFloat(v.m)||0, pg = (mrp/(parseFloat(v.g)||1)).toFixed(2);
-  const ns = getNutrition(p);
+  const mrp = (parseFloat(v.m)||0) * 2;  // ×2
+  const pg  = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
+  const ns  = getNutrition(p);
+  const isJain   = p.n.toUpperCase().includes('JAIN');
+  const isBlended = (p.c || '').toLowerCase().includes('blended');
+  const bbClean  = (bb || '').replace(/\s*\(.*$/, '') || '—';
+
+  const jainCSS = isJain
+    ? '.jn{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:0.68em;text-align:center;text-transform:uppercase;letter-spacing:0.4pt;margin-bottom:0.5mm}'
+    : '';
+  const jainHTML = isJain
+    ? '<div class="jn">No Onion No Garlic</div>'
+    : '';
+  const blendedHTML = isBlended
+    ? '<div class="bl-box">Mixed Masala Powder, Spices content more than 85%, salt content more than 5%</div>'
+    : '';
+
+  // Barcode SVG placeholder (will be filled by JsBarcode below)
+  const barcodeHTML = '<div class="bc"><svg id="pbc-svg"></svg></div>';
 
   const css = [
     '@page{size:50mm 90mm;margin:0}',
-    '.L{width:50mm;height:90mm;padding:2mm 2.5mm 1.5mm 2.5mm;display:flex;flex-direction:column;',
-      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;background:#fff;font-family:Arial,sans-serif;page-break-after:avoid}',
+    '.L{width:50mm;height:90mm;padding:1.8mm 2.5mm 1.2mm 2.5mm;display:flex;flex-direction:column;',
+      'justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;overflow:hidden;background:#fff;',
+      'font-family:Arial,sans-serif;page-break-after:avoid}',
+    // Title: Arial Black heavy
     '.ti{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.45em;',
-      'text-align:center;line-height:0.92;text-transform:uppercase;word-break:break-word}',
-    '.ca{font-size:0.6em;text-align:center;font-weight:600}',
-    'hr{border:none;border-top:0.5pt solid #666;margin:0}',
-    '.se{font-size:0.72em;font-weight:700}',
+      'text-align:center;line-height:0.88;text-transform:uppercase;word-break:break-word;margin-bottom:0.5mm}',
+    jainCSS,
+    // Category plain
+    '.ca{font-size:0.6em;text-align:center;font-weight:600;margin-bottom:0.5mm}',
+    // Blended box
+    '.bl-box{border:0.7pt solid #000;padding:0.6mm 1mm;font-size:0.5em;text-align:center;line-height:1.3;font-weight:600;margin-bottom:0.8mm}',
+    'hr{border:none;border-top:0.5pt solid #000;margin:0.5mm 0}',
+    // INGREDIENTS header: Arial Black bold
+    '.se{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:0.72em;margin-bottom:0.3mm}',
     '.in{font-size:0.54em;line-height:1.25}',
-    '.nt{font-size:0.68em;font-weight:900;text-align:center;font-family:"Arial Black",Arial,sans-serif;text-transform:uppercase}',
+    // NUTRITIONAL INFORMATION header: Arial Black caps
+    '.nt{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:0.68em;text-align:center;text-transform:uppercase;margin-top:0.5mm}',
     '.ns{font-size:0.5em;text-align:center;font-style:italic;font-weight:600}',
-    '.nb{border:0.7pt solid #000;padding:0.5mm 1mm;font-size:0.48em;line-height:1.3}',
-    '.r{font-size:0.68em;font-weight:700;line-height:1.35}',
-    '.mrp{font-size:1.05em;font-weight:900;font-family:"Arial Black",Arial,sans-serif}',
+    '.nb{border:0.7pt solid #000;padding:0.5mm 1mm;font-size:0.48em;line-height:1.3;margin:0.5mm 0}',
+    // Details block: bold
+    '.r{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:0.68em;line-height:1.35}',
+    // MRP: Arial Black largest
+    '.mrp{font-family:"Arial Black",Arial,sans-serif;font-weight:900;font-size:1.05em}',
     '.tx{font-size:0.46em;font-weight:600}',
-    '.pg{font-size:0.56em;font-weight:700}'
+    '.pg{font-size:0.56em;font-weight:700}',
+    // Barcode
+    '.bc{text-align:center;margin-top:0.5mm}',
+    '.bc svg{max-width:100%}'
   ].join('');
 
   let pStyle = document.getElementById('dynamic-print-style');
   pStyle.innerHTML = css;
 
   const bodyHTML =
-    '<div class="L">'+
-    '<div class="ti">'+p.n.toUpperCase()+'</div>'+
-    '<div class="ca">Category - '+(p.c||'—')+'</div>'+
-    '<hr>'+
-    '<div class="se">INGREDIENTS :-</div>'+
-    '<div class="in">(In Descending Order By Weight) '+(p.i||'—')+'</div>'+
-    '<div class="nt">NUTRITIONAL INFORMATION</div>'+
-    '<div class="ns">Approximate Composition per 100 g</div>'+
-    '<div class="nb">'+ns+'</div>'+
-    '<div class="r">NET WEIGHT : '+v.d+' ('+v.oz+')</div>'+
-    '<div class="r">BATCH NO : '+(bn||'—')+'</div>'+
-    '<div class="r">DATE OF PACKING : '+pd+'</div>'+
-    '<div class="r">BEST BEFORE : '+bb+'</div>'+
-    '<div class="mrp">MRP : ₹ '+mrp+'/-</div>'+
-    '<div class="tx">(INCL. OF ALL TAXES)</div>'+
-    '<div class="pg">FOR 1g = Rs '+pg+'</div>'+
+    '<div class="L">' +
+    '<div class="ti">' + p.n.toUpperCase() + '</div>' +
+    jainHTML +
+    '<div class="ca">Category - ' + (p.c||'—') + '</div>' +
+    blendedHTML +
+    '<hr>' +
+    '<div class="se">INGREDIENTS :-</div>' +
+    '<div class="in">(In Descending Order By Weight) ' + (p.i||'—') + '</div>' +
+    '<div class="nt">NUTRITIONAL INFORMATION</div>' +
+    '<div class="ns">Approximate Composition per 100 g</div>' +
+    '<div class="nb">' + ns + '</div>' +
+    '<div class="r">NET WEIGHT : ' + v.d + ' (' + v.oz + ')</div>' +
+    '<div class="r">BATCH NO &nbsp;&nbsp;: ' + (bn||'—') + '</div>' +
+    '<div class="r">DATE OF PACKING : ' + pd + '</div>' +
+    '<div class="r">BEST BEFORE : &nbsp;' + bbClean + '</div>' +
+    '<div class="mrp">MRP : \u20B9 ' + mrp + '/-</div>' +
+    '<div class="tx">(INCL. OF ALL TAXES)</div>' +
+    '<div class="pg">FOR 1g = Rs ' + pg + '</div>' +
+    barcodeHTML +
     '</div>';
 
   const box = document.createElement('div');
   box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:50mm;height:90mm;overflow:hidden;background:#fff;';
   box.innerHTML = bodyHTML;
   document.body.appendChild(box);
+
+  // Render barcode into hidden box
+  const bsvg = box.querySelector('#pbc-svg');
+  const bcode = (p && p.barcode) ? p.barcode : '8905606000001';
+  if (bsvg && typeof JsBarcode !== 'undefined') {
+    try {
+      JsBarcode(bsvg, bcode, { format:'EAN13', width:1.2, height:22, displayValue:true, fontSize:6, margin:1, textMargin:1, font:'Arial' });
+    } catch(e) { console.warn('Barcode err:', e); }
+  }
 
   const L = box.querySelector('.L');
   let fs = 9, g = 0, s = 0;
@@ -668,15 +759,14 @@ function pB_Chrome(p, v, bn, pd, bb, copies) {
 
   const printZone = document.getElementById('print-zone');
   printZone.innerHTML = '';
-  
-  // Duplicate for copies
+
   for (let c = 0; c < copies; c++) {
     const clone = L.cloneNode(true);
     if (c < copies - 1) clone.style.pageBreakAfter = 'always';
     printZone.appendChild(clone);
   }
-  
-  document.body.removeChild(box);
 
+  document.body.removeChild(box);
   setTimeout(function(){ window.print(); }, 100);
 }
+
