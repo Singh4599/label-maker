@@ -191,31 +191,34 @@ function buildFrontTSPL(name, copies) {
   const yStart   = Math.max(8, Math.round((usableH - totalH) / 2));
   let cmds = '';
   lines.forEach((ln, i) => {
-    const charW = (font==='4' ? 24 : 18) * xm;
+    // Exact measured charW: Font4=24, Font3=16
+    const charW = (font==='4' ? 24 : 16) * xm;
     const tW    = ln.length * charW;
     const x     = Math.max(4, Math.round((W*8 - tW) / 2));
     const y     = yStart + i * lineStep;
-    // Max bold print (8 times around x,y) — simulates maximum stroke weight
-    cmds += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-    cmds += `TEXT ${x+1},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-    cmds += `TEXT ${x},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-    cmds += `TEXT ${x+1},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-    cmds += `TEXT ${x-1},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-    cmds += `TEXT ${x},${y-1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-    cmds += `TEXT ${x+2},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
-    cmds += `TEXT ${x},${y+2},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    
+    // EXTREME BOLD: 13-point star pattern for maximum thickness
+    const offsets = [
+      [0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1],
+      [-2,0], [2,0], [0,-2], [0,2]
+    ];
+    offsets.forEach(off => {
+      cmds += `TEXT ${x+off[0]},${y+off[1]},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    });
   });
 
   // Jain subtitle: "NO ONION NO GARLIC" centered, Font2 xm=1 ym=1
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
-    const subW = sub.length * 12;  // Font2 ~12px/char
+    const subW = sub.length * 12;  // Font2 exact width=12px/char
     const sx = Math.max(4, Math.round((W*8 - subW) / 2));
-    const sy = H*8 - 22;           // 22 dots from bottom
-    cmds += `TEXT ${sx},${sy},"2",0,1,1,"${sub}"\r\n`;
-    cmds += `TEXT ${sx+1},${sy},"2",0,1,1,"${sub}"\r\n`;
-    cmds += `TEXT ${sx},${sy+1},"2",0,1,1,"${sub}"\r\n`;
-    cmds += `TEXT ${sx+1},${sy+1},"2",0,1,1,"${sub}"\r\n`;
+    const sy = H*8 - 30;           // Moved up to 30 dots from bottom to prevent clipping
+    
+    // Bold subtitle slightly (4-point)
+    const subOffs = [[0,0], [1,0], [0,1], [1,1]];
+    subOffs.forEach(off => {
+      cmds += `TEXT ${sx+off[0]},${sy+off[1]},"2",0,1,1,"${sub}"\r\n`;
+    });
   }
 
   return [
@@ -244,13 +247,15 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   // ── Title: DYNAMIC FONT SCALING ──
   const availW = dw - 2 * lm;  // 388 usable dots
+  // EXACT character widths to guarantee perfect mathematical centering
+  // Font4=24, Font3=16, Font2=12
   const fontConfigs = [
-    { font:'3', xm:3, ym:3, cw:66, maxL:2 },
-    { font:'3', xm:2, ym:2, cw:44, maxL:3 },
-    { font:'2', xm:2, ym:2, cw:30, maxL:3 },
-    { font:'2', xm:1, ym:1, cw:16, maxL:3 },
+    { font:'4', xm:2, ym:2, cw:48, maxL:2 },   // 24 * 2 = 48
+    { font:'3', xm:2, ym:2, cw:32, maxL:3 },   // 16 * 2 = 32
+    { font:'2', xm:2, ym:2, cw:24, maxL:3 },   // 12 * 2 = 24
+    { font:'2', xm:1, ym:1, cw:12, maxL:3 },   // 12 * 1 = 12
   ];
-  let tFont='2', tXm=1, tYm=1, tCharW=14, titleLines;
+  let tFont='2', tXm=1, tYm=1, tCharW=12, titleLines;
   for (const cfg of fontConfigs) {
     const maxCPL = Math.floor(availW / cfg.cw);
     const wrapped = wrapText(name, maxCPL);
@@ -299,30 +304,34 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   let y = 24, cmds = '';
 
-  // ── TITLE (max bold print 8x) ──
+  // ── TITLE (Extreme bold 13x) ──
   titleLines.forEach(ln => {
     const tw = ln.length * tCharW;
     const x  = Math.max(lm, Math.round((dw - tw) / 2));
-    cmds += `TEXT ${x},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x+1},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x+1},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x-1},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x},${y-1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x+2},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
-    cmds += `TEXT ${x},${y+2},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    
+    // 13-point star pattern for MAXIMUM thickness
+    const offsets = [
+      [0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1],
+      [-2,0], [2,0], [0,-2], [0,2]
+    ];
+    offsets.forEach(off => {
+      cmds += `TEXT ${x+off[0]},${y+off[1]},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    });
+    
     y += titleStep;
   });
 
   // ── JAIN SUBTITLE ──
   if (isJain) {
     const sub  = 'NO ONION NO GARLIC';
-    const subW = sub.length * 12;  // Font2 ~12px/char
+    const subW = sub.length * 12;  // Font2 exact width=12px/char
     const sx   = Math.max(lm, Math.round((dw - subW) / 2));
-    cmds += `TEXT ${sx},${y},"2",0,1,1,"${sub}"\r\n`;
-    cmds += `TEXT ${sx+1},${y},"2",0,1,1,"${sub}"\r\n`;
-    cmds += `TEXT ${sx},${y+1},"2",0,1,1,"${sub}"\r\n`;
-    cmds += `TEXT ${sx+1},${y+1},"2",0,1,1,"${sub}"\r\n`;
+    
+    const subOffs = [[0,0], [1,0], [0,1], [1,1]];
+    subOffs.forEach(off => {
+      cmds += `TEXT ${sx+off[0]},${y+off[1]},"2",0,1,1,"${sub}"\r\n`;
+    });
+    
     y += jainH;
   }
 
