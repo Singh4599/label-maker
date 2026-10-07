@@ -165,34 +165,39 @@ function buildFrontTSPL(name, copies) {
   const jainReserve = isJain ? 26 : 0;
   const usableH = H * 8 - jainReserve;  // dots available for main name
 
-  // 4-tier font selection — biggest font that fits without overflow
-  let font, xm, ym, lines;
-  if (n.length <= 7) {
-    font='4'; xm=3; ym=3; lines = wrapText(n, 7);
-  } else {
-    const tryAt10 = wrapText(n, 10);
-    if (tryAt10.length === 1) {
-      font='4'; xm=2; ym=3; lines = tryAt10;
-    } else if (tryAt10.length <= 2) {
-      font='4'; xm=2; ym=2; lines = tryAt10;
-    } else {
-      const tryAt14 = wrapText(n, 14);
-      if (tryAt14.length <= 2) {
-        font='3'; xm=2; ym=3; lines = tryAt14;
-      } else {
-        font='3'; xm=2; ym=2; lines = tryAt14.slice(0, 3);
-      }
+  // Font4 ONLY — cleanest, densest bitmap font on TSC (no pixelated Font3 gaps)
+  // Font4 base: 24px wide × 32px tall per char
+  const tiers = [
+    { xm:3, ym:3, cw:72, maxCPL:7,  maxL:1 },
+    { xm:2, ym:3, cw:48, maxCPL:10, maxL:1 },
+    { xm:2, ym:2, cw:48, maxCPL:10, maxL:3 },
+    { xm:1, ym:2, cw:24, maxCPL:21, maxL:3 },
+    { xm:1, ym:1, cw:24, maxCPL:21, maxL:3 },
+  ];
+
+  let xm=1, ym=1, lines;
+  const font = '4';
+  for (const t of tiers) {
+    const wrapped = wrapText(n, t.maxCPL);
+    const lineH   = 32 * t.ym + 8;
+    const totalH  = wrapped.length * lineH - 8;
+    if (wrapped.length <= t.maxL && totalH <= usableH - 4) {
+      xm = t.xm; ym = t.ym;
+      lines = wrapped.slice(0, t.maxL);
+      break;
     }
   }
-  const fontH    = (font==='4' ? 32 : 24) * ym;
+  if (!lines) lines = wrapText(n, 21).slice(0, 3);
+
+  const fontH    = 32 * ym;
   const lineStep = fontH + 8;
   const totalH   = lines.length * lineStep - 8;
   // Center vertically within usable area
   const yStart   = Math.max(8, Math.round((usableH - totalH) / 2));
   let cmds = '';
   lines.forEach((ln, i) => {
-    // Exact measured charW: Font4=24, Font3=16
-    const charW = (font==='4' ? 24 : 16) * xm;
+    // Exact measured charW: Font4=24
+    const charW = 24 * xm;
     const tW    = ln.length * charW;
     const x     = Math.max(4, Math.round((W*8 - tW) / 2));
     const y     = yStart + i * lineStep;
@@ -373,8 +378,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   // ── BARCODE (CODE128) ──
   const bcode = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
-  // TSPL BARCODE: x, y, type, height, readable, rotation, narrow, wide, data
-  cmds += `BARCODE ${lm},${y},"CODE128",40,1,0,2,4,"${bcode}"\r\n`;
+  const barcodeY = LABEL_H - 66; // fixed absolute bottom Y position
+  cmds += `BARCODE ${lm},${barcodeY},"CODE128",40,1,0,2,4,"${bcode}"\r\n`;
 
   return [
     `SET DARKNESS 12`,
