@@ -195,11 +195,15 @@ function buildFrontTSPL(name, copies) {
     const tW    = ln.length * charW;
     const x     = Math.max(4, Math.round((W*8 - tW) / 2));
     const y     = yStart + i * lineStep;
-    // Bold quad-print — simulates Arial Black weight
+    // Max bold print (8 times around x,y) — simulates maximum stroke weight
     cmds += `TEXT ${x},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x+1},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
     cmds += `TEXT ${x+1},${y+1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    cmds += `TEXT ${x-1},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    cmds += `TEXT ${x},${y-1},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    cmds += `TEXT ${x+2},${y},"${font}",0,${xm},${ym},"${ln}"\r\n`;
+    cmds += `TEXT ${x},${y+2},"${font}",0,${xm},${ym},"${ln}"\r\n`;
   });
 
   // Jain subtitle: "NO ONION NO GARLIC" centered, Font2 xm=1 ym=1
@@ -295,7 +299,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   let y = 24, cmds = '';
 
-  // ── TITLE (bold quad-print) ──
+  // ── TITLE (max bold print 8x) ──
   titleLines.forEach(ln => {
     const tw = ln.length * tCharW;
     const x  = Math.max(lm, Math.round((dw - tw) / 2));
@@ -303,6 +307,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     cmds += `TEXT ${x+1},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
     cmds += `TEXT ${x},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
     cmds += `TEXT ${x+1},${y+1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x-1},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x},${y-1},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x+2},${y},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
+    cmds += `TEXT ${x},${y+2},"${tFont}",0,${tXm},${tYm},"${ln}"\r\n`;
     y += titleStep;
   });
 
