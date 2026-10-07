@@ -225,8 +225,6 @@ function buildFrontTSPL(name, copies) {
   }
 
   return [
-    `SIZE 65 mm, 25 mm`,
-    `GAP 3 mm, 0 mm`,
     `SET DARKNESS 12`,
     `DIRECTION 1`,
     `CLS`,
@@ -410,8 +408,6 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   cmds += `BARCODE ${lm},${LABEL_H - 66},"CODE128",40,1,0,2,4,"${bcode}"\r\n`;
 
   return [
-    `SIZE 50 mm, 90 mm`,
-    `GAP 3 mm, 0 mm`,
     `SET DARKNESS 12`,
     `DIRECTION 1`,
     `CLS`,
