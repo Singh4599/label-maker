@@ -164,15 +164,18 @@ function buildFrontTSPL(name, copies) {
 
   // Single consistent font size for entire title
   const tiers = [
+    { pt: 44, maxL: 1 },
+    { pt: 40, maxL: 1 },
     { pt: 36, maxL: 1 },
     { pt: 32, maxL: 1 },
     { pt: 28, maxL: 1 },
     { pt: 24, maxL: 1 },
-    { pt: 20, maxL: 1 },
+    { pt: 40, maxL: 2 },
     { pt: 36, maxL: 2 },
     { pt: 32, maxL: 2 },
     { pt: 28, maxL: 2 },
     { pt: 24, maxL: 2 },
+    { pt: 28, maxL: 3 },
     { pt: 24, maxL: 3 },
     { pt: 20, maxL: 3 },
     { pt: 16, maxL: 3 }
@@ -181,17 +184,17 @@ function buildFrontTSPL(name, copies) {
   let ptSize = 16, lines;
   for (const t of tiers) {
     const charW = t.pt * pt2dots * 0.58;
-    const maxCPL = Math.floor((DW - 24) / charW);
+    const maxCPL = Math.floor((DW - 16) / charW);
     const wrapped = wrapText(n, maxCPL);
-    const lineH = Math.round(t.pt * pt2dots) + 8;
+    const lineH = Math.round(t.pt * pt2dots) + 4; // Tighter line spacing
     const totalH = wrapped.length * lineH;
-    if (wrapped.length <= t.maxL && totalH <= 190) {
+    if (wrapped.length <= t.maxL && totalH <= 210) { // Max height allowed increased
       ptSize = t.pt; lines = wrapped; break;
     }
   }
   if (!lines) lines = wrapText(n, 25).slice(0, 3);
 
-  const titleLineH = Math.round(ptSize * pt2dots) + 8;
+  const titleLineH = Math.round(ptSize * pt2dots) + 4;
   const titleTotalH = lines.length * titleLineH;
   
   const subPt = 12;
@@ -206,7 +209,7 @@ function buildFrontTSPL(name, copies) {
   
   lines.forEach(ln => {
     const tW = ln.length * (ptSize * pt2dots * 0.58);
-    const x  = Math.max(12, Math.round((DW - tW) / 2));
+    const x  = Math.max(8, Math.round((DW - tW) / 2));
     const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
     offsets.forEach(off => {
       cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptSize},${ptSize},"${ln}"\r\n`;
@@ -238,8 +241,8 @@ function buildFrontTSPL(name, copies) {
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const W = 50, H = 90;
   const dw = W*8;
-  const lm = 12; // increased left margin to prevent clipping
-  const re = dw - 16; // reduced right edge to prevent box bottom clipping
+  const lm = 4; // reduced left margin to prevent pushing text to the right
+  const re = dw - 8; 
   const maxW = re - lm;
   const LABEL_H = H * 8;
   const mrp  = (parseFloat(v.m) || 0) * 2; 
@@ -254,14 +257,16 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   // Single consistent title font size
   const ptOptions = [
-    { pt: 26, maxL: 1 },
+    { pt: 32, maxL: 1 },
+    { pt: 28, maxL: 1 },
     { pt: 24, maxL: 1 },
     { pt: 20, maxL: 1 },
-    { pt: 16, maxL: 1 },
-    { pt: 26, maxL: 2 },
+    { pt: 32, maxL: 2 },
+    { pt: 28, maxL: 2 },
     { pt: 24, maxL: 2 },
     { pt: 20, maxL: 2 },
     { pt: 16, maxL: 2 },
+    { pt: 20, maxL: 3 },
     { pt: 16, maxL: 3 },
     { pt: 14, maxL: 3 }
   ];
