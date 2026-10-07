@@ -147,13 +147,40 @@ function wrapText(text, maxChars) {
   return lines.length ? lines : [text];  // no truncation fallback
 }
 function getNutriLines(p) {
-  // Font2 format: max ~28 chars × 12px = 336px ≤ 388px available ✓
   return [
     `En:${p.e||0}kcal Pro:${p.p||0}g Carb:${p.cb||0}g`,
     `Fat:${p.tf||0}g Sat:${p.sf||0}g Na:${p.so||0}mg`
   ];
 }
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
+
+function addJustifiedText(text, y, pt, maxW, lm, pt2dots) {
+    let cmds = '';
+    const charW = pt * pt2dots * 0.62;
+    const totalCharW = text.length * charW;
+    let cx = lm;
+    let gap = 0;
+    
+    // Justify if > 50% width to prevent ridiculous stretching
+    if (totalCharW > maxW * 0.5 && text.length > 1) {
+        gap = (maxW - totalCharW) / (text.length - 1);
+    } else {
+        cx = lm + (maxW - totalCharW) / 2; // Center
+    }
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        if (char !== ' ') {
+            const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
+            offsets.forEach(off => {
+                cmds += `TEXT ${Math.round(cx)+off[0]},${Math.round(y)+off[1]},"ROMAN.TTF",0,${pt},${pt},"${char}"\r\n`;
+            });
+        }
+        // Advance cursor even for spaces
+        cx += charW + gap;
+    }
+    return cmds;
+}
 
 /* ─── FRONT label TSPL (65x25mm) ─── */
 function buildFrontTSPL(name, copies) {
@@ -210,17 +237,7 @@ function buildFrontTSPL(name, copies) {
   let y = yStart;
   
   lines.forEach((ln) => {
-    const tW = ln.length * (ptSize * pt2dots * 0.62); 
-    const x  = Math.max(4, Math.round((DW - tW) / 2));
-    
-    // 13-point bold for EXTREME thickness
-    const offsets = [
-      [0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1],
-      [-2,0], [2,0], [0,-2], [0,2]
-    ];
-    offsets.forEach(off => {
-      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptSize},${ptSize},"${ln}"\r\n`;
-    });
+    cmds += addJustifiedText(ln, y, ptSize, DW - 16, 8, pt2dots);
     y += titleLineH;
   });
 
@@ -301,12 +318,19 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const baseStep = baseH + 6;
 
   // Category
-  const catFull  = `Category: ${cat}`;
+  const catFull  = `Category - ${cat}`;
   const catLines = wrapText(catFull, 30);
   const catBoxH  = 12 + catLines.length * baseStep + 4;  
 
-  const ingrLines = wrapText(ingr, 34).slice(0, 6);
+  // Ingredients with Descending Order text
+  const ingrFull = `(In Descending Order By Weight) ${ingr}`;
+  const ingrLines = wrapText(ingrFull, 34).slice(0, 7);
   const numIL     = ingrLines.length;
+  
+  // Nutri Box Calculation
+  const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
+  const nutriLines = wrapText(nutriStr, 32); 
+  const nBoxH = 12 + nutriLines.length * baseStep;
 
   // Barcode height
   const barcodeH = 64;
@@ -318,7 +342,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     jainH +                           // jain subtitle
     catBoxH + 4 +                     // category box
     baseStep + numIL * baseStep + 6 + // ingredients
-    baseStep + baseStep + baseStep +  // nutrition
+    baseStep + baseStep + 6 + nBoxH + 4 +  // nutrition box (2 headers + box)
     7 + baseStep*4 + 4 +              // details
     10 + Math.round(16 * pt2dots) + 12 + Math.round(7 * pt2dots)*2 + 6 +   // MRP
     barcodeH                          // barcode
@@ -329,14 +353,9 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   let y = 20, cmds = '';
 
-  // ── TITLE (ROMAN.TTF, 13x extreme bold grid) ──
+  // ── TITLE (Justified ROMAN.TTF, 13x extreme bold) ──
   titleLines.forEach(ln => {
-    const tW = ln.length * (ptTitle * pt2dots * 0.6);
-    const x  = Math.max(lm, Math.round((dw - tW) / 2));
-    const offsets = [[0,0], [-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1], [-1,1], [1,1], [-2,0], [2,0], [0,-2], [0,2]];
-    offsets.forEach(off => {
-      cmds += `TEXT ${x+off[0]},${y+off[1]},"ROMAN.TTF",0,${ptTitle},${ptTitle},"${ln}"\r\n`;
-    });
+    cmds += addJustifiedText(ln, y, ptTitle, dw - 12, lm, pt2dots);
     y += titleStep;
   });
 
@@ -365,15 +384,30 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   // ── INGREDIENTS ──
   [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"INGREDIENTS :-"\r\n`); 
   y += baseStep + 4;
-  ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${ln}"\r\n`; y += baseStep; });
+  ingrLines.forEach(ln => { cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`; y += baseStep; });
   y += 6 + gp;  // gap 3
 
-  // ── NUTRITIONAL INFO ──
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"NUTRITIONAL INFO (per 100g):"\r\n`); 
-  y += baseStep + 4;
-  const nutri = getNutriLines(p);
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(nutri[0])}"\r\n`; y += baseStep;
-  cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(nutri[1])}"\r\n`; y += baseStep + gp;  // gap 4
+  // ── NUTRITIONAL INFO BOX ──
+  const nTitle1 = "NUTRITIONAL INFORMATION";
+  const nTitle2 = "Approximate Composition per 100 g";
+  const nt1W = nTitle1.length * (basePt * pt2dots * 0.62);
+  const nt2W = nTitle2.length * (basePt * pt2dots * 0.62);
+  
+  const t1x = Math.max(lm, Math.round((dw - nt1W)/2));
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${t1x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle1}"\r\n`);
+  y += baseStep;
+  
+  const t2x = Math.max(lm, Math.round((dw - nt2W)/2));
+  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => cmds += `TEXT ${t2x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle2}"\r\n`);
+  y += baseStep + 2;
+
+  cmds += `BOX ${lm},${y},${re},${y + nBoxH},2\r\n`;
+  let ny = y + 6;
+  nutriLines.forEach(ln => {
+     cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`;
+     ny += baseStep;
+  });
+  y += nBoxH + 4 + gp;  // gap 4
 
   // ── DETAILS ──
   cmds += `BAR ${lm},${y},${re-lm},1\r\n`; y += 7;
