@@ -353,7 +353,11 @@ function render() {
 function renderFront() {
   const fp = $('fp'); if (!fp) return;
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
-  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div></div>`;
+  const isJain = ST.prod.n.toUpperCase().includes('JAIN');
+  const jainSub = isJain
+    ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.55em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:2px;line-height:1;">No Onion No Garlic</div>`
+    : '';
+  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div>${jainSub}</div>`;
   requestAnimationFrame(fitFrontName);
 }
 
@@ -447,13 +451,12 @@ function splitName(n) {
 /* ─── Barcode Renderer (JsBarcode) ─── */
 function renderBarcode(p) {
   const svg = document.getElementById('bl-barcode-svg');
-  if (!svg) return;
-  // Use product barcode field if available, else a branded placeholder
-  const code = (p && p.barcode) ? p.barcode : '8905606000001';
-  if (typeof JsBarcode === 'undefined') return;
+  if (!svg || typeof JsBarcode === 'undefined') return;
+  // Use product barcode if available, else placeholder
+  const code = (p && p.barcode) ? String(p.barcode) : '8905606000007';
   try {
     JsBarcode(svg, code, {
-      format: 'EAN13',
+      format: 'CODE128',   // CODE128 accepts any string — no checksum requirement
       width: 1.4,
       height: 28,
       displayValue: true,
@@ -738,10 +741,10 @@ function pB_Chrome(p, v, bn, pd, bb, copies) {
 
   // Render barcode into hidden box
   const bsvg = box.querySelector('#pbc-svg');
-  const bcode = (p && p.barcode) ? p.barcode : '8905606000001';
+  const bcode = (p && p.barcode) ? String(p.barcode) : '8905606000007';
   if (bsvg && typeof JsBarcode !== 'undefined') {
     try {
-      JsBarcode(bsvg, bcode, { format:'EAN13', width:1.2, height:22, displayValue:true, fontSize:6, margin:1, textMargin:1, font:'Arial' });
+      JsBarcode(bsvg, bcode, { format:'CODE128', width:1.2, height:22, displayValue:true, fontSize:6, margin:1, textMargin:1, font:'Arial' });
     } catch(e) { console.warn('Barcode err:', e); }
   }
 
