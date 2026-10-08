@@ -198,7 +198,10 @@ function buildFrontTSPL(name, copies) {
     
     // FAST TRACK: If 1 line gives a solid large font, keep it on 1 line.
     if (nL === 1 && pt >= 22) {
-      bestPt = pt; bestLines = lines; bestTotalH = totalH; break;
+      bestPt = 35; // User requested test
+      bestLines = lines; 
+      bestTotalH = Math.round(35 * P2D + 6); 
+      break;
     }
     // FAST TRACK: If 2 lines gives a good font, stop here.
     if (nL === 2 && pt >= 18) {
@@ -219,7 +222,8 @@ function buildFrontTSPL(name, copies) {
 
   bestLines.forEach(ln => {
     const tW = Math.round(ln.length * bestPt * P2D * CW);
-    const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
+    // Remove SAFE limit on X so it stays perfectly centered even if it bleeds off edges
+    const x  = Math.round((DW - tW) / 2);
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
       cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${bestPt},${bestPt},"${ln}"\r\n`;
     });
