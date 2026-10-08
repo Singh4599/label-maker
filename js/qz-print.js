@@ -176,8 +176,8 @@ function balanceLines(text, maxLines) {
   return bestChunks;
 }
 
-/* ═══════ HELPER: Edge-to-Edge Line Scaler (DOT based) ═══════ */
-function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxDot = 100) {
+/* ═══════ HELPER: Edge-to-Edge Line Scaler (STRETCH based) ═══════ */
+function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxH = 100) {
   let bestConfig = null;
   let maxScore = -9999;
 
@@ -189,10 +189,12 @@ function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxDot 
     let totalH = 0;
     
     for (const ln of lines) {
-      let dot = Math.floor(dwSafe / (ln.length * CW));
-      dot = Math.min(absoluteMaxDot, dot);
-      let lh = dot + 6; // line spacing
-      lineConfigs.push({ text: ln, dot: dot, lh: lh });
+      let dotW = Math.floor(dwSafe / (ln.length * CW));
+      dotW = Math.min(250, dotW); // Don't let it become ridiculously wide
+      
+      let dotH = Math.min(absoluteMaxH, dotW); // Natural proportion capped at max height
+      let lh = dotH + 6; // line spacing
+      lineConfigs.push({ text: ln, dotW: dotW, dotH: dotH, lh: lh });
       totalH += lh;
     }
 
@@ -200,21 +202,22 @@ function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxDot 
       const scale = maxDH / totalH;
       totalH = 0;
       lineConfigs.forEach(c => {
-        c.dot = Math.max(12, Math.floor(c.dot * scale));
-        c.lh = c.dot + 6;
+        c.dotH = Math.max(12, Math.floor(c.dotH * scale));
+        c.lh = c.dotH + 6;
         totalH += c.lh;
       });
+      // WE DO NOT SCALE c.dotW! It stays stretched horizontally.
     }
 
-    const avgDot = lineConfigs.reduce((sum, c) => sum + c.dot, 0) / lineConfigs.length;
-    const score = avgDot - (numLines * 4); // penalize too many lines
+    const avgDotH = lineConfigs.reduce((sum, c) => sum + c.dotH, 0) / lineConfigs.length;
+    const score = avgDotH - (numLines * 4); // penalize too many lines
     
     if (score > maxScore) {
       maxScore = score;
       bestConfig = { lines: lineConfigs, totalH: totalH };
     }
   }
-  return bestConfig || { lines: [{ text: name, dot: 20, lh: 26 }], totalH: 26 };
+  return bestConfig || { lines: [{ text: name, dotW: 30, dotH: 20, lh: 26 }], totalH: 26 };
 }
 
 /* ─── FRONT label TSPL (65×25mm) ─── */
@@ -222,8 +225,8 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const CW = 0.58; // slightly conservative width factor for Arial
-  const SAFE = 20;
+  const CW = 0.50; // Calibrated for maximum edge-to-edge stretch
+  const SAFE = 12; // Push closer to edges
 
   const subDot = 20;
   const jainBlockH = isJain ? (subDot + 10) : 0;
@@ -237,11 +240,11 @@ function buildFrontTSPL(name, copies) {
   let cmds = '', y = yStart;
 
   titleConfig.lines.forEach(c => {
-    const tW = c.text.length * (c.dot * CW);
+    const tW = c.text.length * (c.dotW * CW);
     const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
     const offsets = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]];
     offsets.forEach(([dx,dy]) => {
-      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dot},${c.dot},"${c.text}"\r\n`;
+      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dotW},${c.dotH},"${c.text}"\r\n`;
     });
     y += c.lh;
   });
@@ -269,8 +272,8 @@ function buildFrontTSPL(name, copies) {
 /* ─── BACK label TSPL (50×90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const dw = 400, DH = 720;
-  const CW = 0.58;             
-  const SAFE = 10;                
+  const CW = 0.50;             
+  const SAFE = 12;                
   const lm = SAFE, re = dw - SAFE, usableW = re - lm;
 
   const mrp  = (parseFloat(v.m) || 0) * 2;
@@ -338,10 +341,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   /* ══ 1. TITLE ══ */
   titleConfig.lines.forEach(c => {
-    const x = centerX(c.text, c.dot);
+    const x = centerX(c.text, c.dotW);
     [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]
       .forEach(([dx,dy]) => {
-        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dot},${c.dot},"${c.text}"\r\n`;
+        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dotW},${c.dotH},"${c.text}"\r\n`;
       });
     y += c.lh;
   });
