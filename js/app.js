@@ -608,64 +608,20 @@ function pF() {
 }
 
 function pF_Chrome(name, copies) {
-  const isJain = name.toUpperCase().includes('JAIN');
-  const jainHTML = isJain
-    ? '<div class="jn">No Onion No Garlic</div>'
-    : '';
-
-  const css =
-    '@page{size:65mm 25mm;margin:0}'+
-    // .w: the full label box — column flex so subtitle below name
-    '.w{width:65mm;height:25mm;box-sizing:border-box;display:flex;flex-direction:column;'+
-      'align-items:center;justify-content:center;padding:1.5mm 3mm;overflow:hidden;background:#fff;page-break-after:avoid}'+
-    // .n: product name — Arial Black, bold as hell, wraps, NEVER clips
-    '.n{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;'+
-      'text-align:center;line-height:0.9;text-transform:uppercase;color:#000;'+
-      'letter-spacing:-0.5pt;width:100%;'+
-      'word-break:break-word;overflow-wrap:break-word;hyphens:none;'+
-      'overflow:hidden}'+
-    // .jn: Jain subtitle — smaller, same family
-    '.jn{font-family:"Arial Black","Arial Bold",Arial,sans-serif;font-weight:900;'+
-      'font-size:7pt;text-align:center;text-transform:uppercase;color:#000;'+
-      'letter-spacing:0.5pt;margin-top:2pt;line-height:1;width:100%;'+
-      'word-break:break-word;overflow-wrap:break-word}';
-
-  let pStyle = document.getElementById('dynamic-print-style');
-  pStyle.innerHTML = css;
-
-  const box = document.createElement('div');
-  // Extra conservative container — 1mm smaller than real label on each side
-  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:65mm;height:25mm;box-sizing:border-box;overflow:hidden;background:#fff;';
-  box.innerHTML = `<div class="w"><div class="n">${name}</div>${jainHTML}</div>`;
-  document.body.appendChild(box);
-
-  const el = box.querySelector('.n');
-  const wrap = el.parentElement;
-
-  // Very conservative bounds: -12px width, reserve height for subtitle + padding
-  const mW = wrap.offsetWidth  - 12;
-  const subtractH = isJain ? 20 : 6;
-  const mH = wrap.offsetHeight - subtractH;
-
-  // Shrink font until BOTH width AND height fit — step 0.5pt, max 400 iterations
-  let fs = 58;
-  el.style.fontSize = fs + 'pt';
-  let itr = 0;
-  while ((el.scrollWidth > mW || el.scrollHeight > mH) && fs > 2 && itr++ < 400) {
-    el.style.fontSize = (fs -= 0.5) + 'pt';
+  if (typeof generateFrontCanvas === 'function') {
+    const canvas = generateFrontCanvas(name);
+    const dataUrl = canvas.toDataURL('image/png');
+    
+    let pStyle = document.getElementById('dynamic-print-style');
+    pStyle.innerHTML = '@page{size:65mm 25mm;margin:0} .L{width:65mm;height:25mm;margin:0;padding:0;page-break-after:always;display:flex;justify-content:center;align-items:center} img{width:100%;height:100%;object-fit:contain;}';
+    
+    const printZone = document.getElementById('print-zone');
+    printZone.innerHTML = '';
+    for (let c = 0; c < copies; c++) {
+      printZone.innerHTML += `<div class="L"><img src="${dataUrl}" /></div>`;
+    }
+    setTimeout(function(){ window.print(); }, 100);
   }
-  // Extra safety: shrink 1 more step
-  if (fs > 2) el.style.fontSize = (fs - 0.5) + 'pt';
-
-  const printZone = document.getElementById('print-zone');
-  printZone.innerHTML = '';
-  for (let c = 0; c < copies; c++) {
-    const clone = wrap.cloneNode(true);
-    if (c < copies - 1) clone.style.pageBreakAfter = 'always';
-    printZone.appendChild(clone);
-  }
-  document.body.removeChild(box);
-  setTimeout(function(){ window.print(); }, 100);
 }
 
 
@@ -700,133 +656,19 @@ function pB() {
 }
 
 function pB_Chrome(p, v, bn, pd, bb, copies) {
-  const mrp = (parseFloat(v.m)||0) * 2;  // ×2
-  const pg  = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-  const ns  = getNutrition(p);
-  const isJain    = p.n.toUpperCase().includes('JAIN');
-  const isBlended = (p.c || '').toLowerCase().includes('blended');
-  const bbClean   = (bb || '').replace(/\s*\(.*$/, '') || '—';
-
-  /* ── Arial Black shorthand ── */
-  const AB = '"Arial Black","Arial Bold",Arial,sans-serif';
-
-  const jainCSS = isJain
-    ? `.jn{font-family:${AB};font-weight:900;font-size:0.65em;text-align:center;`+
-      `text-transform:uppercase;letter-spacing:0.5pt;margin-bottom:0.4mm;`+
-      `word-break:break-word;overflow-wrap:break-word}`
-    : '';
-  const jainHTML    = isJain ? '<div class="jn">No Onion No Garlic</div>' : '';
-  const blendedHTML = isBlended
-    ? '<div class="bl-box">Mixed Masala Powder, Spices content more than 85%, salt content more than 5%</div>'
-    : '';
-  const barcodeHTML = '<div class="bc"><svg id="pbc-svg"></svg></div>';
-
-  /* word-break + overflow-wrap on EVERY class = zero clipping guaranteed */
-  const WB = 'word-break:break-word;overflow-wrap:break-word;';
-
-  const css = [
-    '@page{size:50mm 90mm;margin:0}',
-    // Label container — conservative padding
-    `.L{width:50mm;height:90mm;padding:2mm 3mm 1.5mm 3mm;display:flex;flex-direction:column;`+
-      `justify-content:space-between;color:#000;font-size:9pt;box-sizing:border-box;`+
-      `overflow:hidden;background:#fff;font-family:${AB};page-break-after:avoid}`,
-    // Title — Arial Black, wraps, never clips
-    `.ti{font-family:${AB};font-weight:900;font-size:1.4em;`+
-      `text-align:center;line-height:0.9;text-transform:uppercase;${WB}margin-bottom:0.5mm}`,
-    jainCSS,
-    // Category
-    `.ca{font-size:0.58em;text-align:center;font-weight:700;margin-bottom:0.4mm;${WB}}`,
-    // Blended box
-    `.bl-box{border:0.7pt solid #000;padding:0.5mm 1mm;font-size:0.48em;`+
-      `text-align:center;line-height:1.3;font-weight:700;margin-bottom:0.6mm;${WB}}`,
-    `hr{border:none;border-top:0.5pt solid #000;margin:0.4mm 0}`,
-    // Ingredients header — Arial Black
-    `.se{font-family:${AB};font-weight:900;font-size:0.70em;margin-bottom:0.2mm}`,
-    // Ingredients text
-    `.in{font-size:0.52em;line-height:1.25;${WB}}`,
-    // Nutrition header — Arial Black caps
-    `.nt{font-family:${AB};font-weight:900;font-size:0.66em;text-align:center;`+
-      `text-transform:uppercase;margin-top:0.4mm}`,
-    `.ns{font-size:0.48em;text-align:center;font-style:italic;font-weight:600}`,
-    `.nb{border:0.7pt solid #000;padding:0.4mm 1mm;font-size:0.46em;line-height:1.3;margin:0.4mm 0;${WB}}`,
-    // Details — Arial Black bold
-    `.r{font-family:${AB};font-weight:900;font-size:0.66em;line-height:1.35;${WB}}`,
-    // MRP — Arial Black largest
-    `.mrp{font-family:${AB};font-weight:900;font-size:1.0em;${WB}}`,
-    `.tx{font-size:0.44em;font-weight:700}`,
-    `.pg{font-size:0.54em;font-weight:700}`,
-    // Barcode
-    `.bc{text-align:center;margin-top:0.4mm}`,
-    `.bc svg{max-width:100%;display:block;margin:0 auto}`
-  ].join('');
-
-  let pStyle = document.getElementById('dynamic-print-style');
-  pStyle.innerHTML = css;
-
-  const bodyHTML =
-    '<div class="L">' +
-    '<div class="ti">' + p.n.toUpperCase() + '</div>' +
-    jainHTML +
-    '<div class="ca">Category - ' + (p.c||'—') + '</div>' +
-    blendedHTML +
-    '<hr>' +
-    '<div class="se">INGREDIENTS :-</div>' +
-    '<div class="in">(In Descending Order By Weight) ' + (p.i||'—') + '</div>' +
-    '<div class="nt">NUTRITIONAL INFORMATION</div>' +
-    '<div class="ns">Approximate Composition per 100 g</div>' +
-    '<div class="nb">' + ns + '</div>' +
-    '<div class="r">NET WEIGHT    : ' + v.d + ' (' + v.oz + ')</div>' +
-    '<div class="r">BATCH NO      : ' + (bn||'—') + '</div>' +
-    '<div class="r">DATE OF PKG   : ' + pd + '</div>' +
-    '<div class="r">BEST BEFORE   : ' + bbClean + '</div>' +
-    '<div class="mrp">MRP : \u20B9 ' + mrp + '/-</div>' +
-    '<div class="tx">(INCL. OF ALL TAXES)</div>' +
-    '<div class="pg">FOR 1g = Rs ' + pg + '</div>' +
-    barcodeHTML +
-    '</div>';
-
-  const box = document.createElement('div');
-  box.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:50mm;height:90mm;overflow:hidden;background:#fff;';
-  box.innerHTML = bodyHTML;
-  document.body.appendChild(box);
-
-  // Render barcode
-  const bsvg = box.querySelector('#pbc-svg');
-  const bcode = (p && p.barcode) ? String(p.barcode) : '8905606000007';
-  if (bsvg && typeof JsBarcode !== 'undefined') {
-    try {
-      JsBarcode(bsvg, bcode, { format:'CODE128', width:1.1, height:20, displayValue:true, fontSize:6, margin:1, textMargin:1, font:'Arial' });
-    } catch(e) { console.warn('Barcode err:', e); }
+  if (typeof generateBackCanvas === 'function') {
+    const canvas = generateBackCanvas(p, v, bn, pd, bb);
+    const dataUrl = canvas.toDataURL('image/png');
+    
+    let pStyle = document.getElementById('dynamic-print-style');
+    pStyle.innerHTML = '@page{size:50mm 90mm;margin:0} .L{width:50mm;height:90mm;margin:0;padding:0;page-break-after:always;display:flex;justify-content:center;align-items:center} img{width:100%;height:100%;object-fit:contain;}';
+    
+    const printZone = document.getElementById('print-zone');
+    printZone.innerHTML = '';
+    for (let c = 0; c < copies; c++) {
+      printZone.innerHTML += `<div class="L"><img src="${dataUrl}" /></div>`;
+    }
+    setTimeout(function(){ window.print(); }, 100);
   }
-
-  const L = box.querySelector('.L');
-  const bH = L.offsetHeight;
-
-  // Phase 1: grow from safe base until overflow
-  let fs = 6.5, g = 0;
-  L.style.fontSize = fs + 'pt';
-  while (L.scrollHeight <= bH && fs < 20 && g++ < 200) {
-    fs += 0.15; L.style.fontSize = fs + 'pt';
-  }
-  // Phase 2: shrink until fits
-  let s = 0;
-  while (L.scrollHeight > bH && fs > 3 && s++ < 300) {
-    fs -= 0.15; L.style.fontSize = fs + 'pt';
-  }
-  // Safety buffer: -0.6pt extra to guarantee no edge clipping
-  fs = Math.max(3, fs - 0.6);
-  L.style.fontSize = fs + 'pt';
-
-  const printZone = document.getElementById('print-zone');
-  printZone.innerHTML = '';
-
-  for (let c = 0; c < copies; c++) {
-    const clone = L.cloneNode(true);
-    if (c < copies - 1) clone.style.pageBreakAfter = 'always';
-    printZone.appendChild(clone);
-  }
-
-  document.body.removeChild(box);
-  setTimeout(function(){ window.print(); }, 100);
 }
 
