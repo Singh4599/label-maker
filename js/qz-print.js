@@ -231,14 +231,14 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const CW = 0.50; // optimized width factor
+  const CW = 0.58; // proven stable width factor
   const SAFE = 20;
 
   const subDot = 20;
   const jainBlockH = isJain ? (subDot + 10) : 0;
   
-  // Calculate edge-to-edge title
-  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 90);
+  // Calculate edge-to-edge title — hard cap at 80 dots to prevent overflow
+  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 80);
 
   const combinedH = titleConfig.totalH + jainBlockH;
   const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
@@ -278,7 +278,7 @@ function buildFrontTSPL(name, copies) {
 /* ─── BACK label TSPL (50×90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const dw = 400, DH = 720;
-  const CW = 0.50; // Optimized width factor to allow wider lines and bigger text
+  const CW = 0.58; // proven stable width factor
   const SAFE = 10;                
   const lm = SAFE, re = dw - SAFE, usableW = re - lm;
 
@@ -298,23 +298,23 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   function maxCPL(dot) { return Math.floor(usableW / (dot * CW)); }
 
   const jainDot = 20;
-  const jainH = isJain ? (jainDot + 2) : 0; // Reduced vertical gap
+  const jainH = isJain ? (jainDot + 6) : 0;
 
-  // Title edge-to-edge calculation
-  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, CW, 80); // Increased max dot to 80
+  // Title edge-to-edge: hard cap 60 dots max so it never overflows the 50mm label
+  const titleConfig = solveEdgeToEdge(name, 4, 150 - jainH, usableW, CW, 60);
 
   const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
   const catFull  = `Category - ${cat}`;
   const ingrFull = `(In Descending Order By Weight) ${ingr}`;
 
-  let baseDot = 24; // starting large
+  let baseDot = 20; // start at a safe size, loop will shrink if needed
   let compactH, catLines, ingrLines, nutriLines, baseStep, nBoxH, catH;
-  const MRP_DOT = 28;
-  const TAX_DOT = 18;
+  const MRP_DOT = 24;
+  const TAX_DOT = 14;
   const BARCODE_H = 62;     
 
   while (baseDot >= 10) {
-    baseStep = baseDot + 2; // Crucial: reduce gap from 4 to 2 to save vertical space
+    baseStep = baseDot + 4;
     const cpl = maxCPL(baseDot);
 
     catLines   = wrapText(catFull, cpl);
@@ -322,15 +322,15 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     nutriLines = wrapText(nutriStr, cpl);
 
     catH = catLines.length * baseStep;
-    const blendH = isBlended ? (3 * (Math.max(10, baseDot-2) + 2) + 12) : 0;
-    nBoxH = 4 + nutriLines.length * baseStep + 4; // Reduced box padding
+    const blendH = isBlended ? (3 * (Math.max(10, baseDot-2) + 4) + 12) : 0;
+    nBoxH = 8 + nutriLines.length * baseStep + 8;
 
     compactH =
       12 +                                                 
       titleConfig.totalH +                                 
       jainH +                                              
       4 + catH + 2 + blendH + 4 +                          
-      baseStep + 2 + ingrLines.length * baseStep + 2 +     
+      baseStep + 2 + ingrLines.length * baseStep + 4 +     
       baseStep + baseStep + 4 + nBoxH + 4 +                
       baseStep * 4 + 4 +                                   
       MRP_DOT + 4 +                       
@@ -362,7 +362,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
       cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainDot},${jainDot},"${sub}"\r\n`
     );
-    y += jainDot + 2;
+    y += jainDot + 6;
   }
   y += gp;
 
@@ -383,7 +383,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     const bDot = Math.max(10, baseDot - 2);
     const bCpl = maxCPL(bDot) - 4; 
     const blendLines = wrapText(blendTxt, bCpl);
-    const bStep = bDot + 2;
+    const bStep = bDot + 4;
     const boxTop = y;
     let by = y + 4;
     blendLines.forEach(ln => {
