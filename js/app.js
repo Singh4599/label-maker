@@ -405,8 +405,20 @@ function renderManual() {
     const voz = gv('m-voz') || (vg * 0.03527).toFixed(2) + 'oz';
     const v = { d: vd, g: vg, oz: voz, m: gn('m-mrp') };
     const bn = gv('m-bn'), pd = fmtDate(gv('m-pd')), bb = getBBValue('m-bb-sel','m-bb');
-    bp.innerHTML = buildBackHTML(p, v, bn, pd, bb);
-    requestAnimationFrame(() => { fitBackTitle(); renderBarcode(p); });
+    
+    if (typeof generateBackCanvas === 'function') {
+      const bCanvas = generateBackCanvas(p, v, bn, pd, bb);
+      bCanvas.style.width = '100%';
+      bCanvas.style.height = '100%';
+      bCanvas.style.objectFit = 'contain';
+      bCanvas.style.display = 'block';
+      bCanvas.style.boxShadow = '0 0 5px rgba(0,0,0,0.1)';
+      bp.innerHTML = '';
+      bp.appendChild(bCanvas);
+    } else {
+      bp.innerHTML = buildBackHTML(p, v, bn, pd, bb);
+      requestAnimationFrame(() => { fitBackTitle(); renderBarcode(p); });
+    }
   } else {
     bp.innerHTML = '<span class="emptylbl">Enter weight (g) to preview back label</span>';
   }

@@ -321,211 +321,267 @@ function buildFrontTSPL(name, copies) {
 }
 
 
-/* ─── BACK label TSPL (50×90mm) ─── */
-function buildBackTSPL(p, v, bn, pd, bb, copies) {
-  const W = 50, H = 90;
-  const dw   = W * 8;            // 400 dots
-  const DH   = H * 8;            // 720 dots
-  const CW   = 0.62;             // char-width factor for ROMAN.TTF
-  const P2D  = 2.8;              // pt → dots
-  const SAFE = 8;                // safe margin each side
-  const lm   = SAFE;
-  const re   = dw - SAFE;
-  const usableW = re - lm;       // printable width between margins
+function generateBackCanvas(p, v, bn, pd, bb) {
+  const DW = 400;
+  // Use a tall virtual canvas to draw everything, then squish if it's too tall
+  const canvas = document.createElement('canvas');
+  canvas.width = DW;
+  canvas.height = 1200;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, DW, 1200);
+  ctx.fillStyle = 'black';
+  ctx.textBaseline = 'top';
 
+  const SAFE_X = 24;
+  const usableW = DW - (SAFE_X * 2);
+  let y = 16;
+  
   const mrp  = (parseFloat(v.m) || 0) * 2;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-  const name = tsplSafe(p.n.toUpperCase());
+  const name = tsplSafe((p.n || '').toUpperCase().trim());
   const cat  = tsplSafe(p.c || '-');
   const ingr = tsplSafe(p.i || '-');
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
   const isJain = name.includes('JAIN');
+  const isBlended = (p.c || '').toLowerCase().includes('BLENDED');
 
-  /* ═══════ HELPER: calculate text width in dots ═══════ */
-  function txtW(str, pt) { return str.length * pt * P2D * CW; }
-  function centerX(str, pt) { return Math.max(lm, Math.round((dw - txtW(str, pt)) / 2)); }
-  function maxCPL(pt) { return Math.floor(usableW / (pt * P2D * CW)); }
-
-  /* ── Title: pick largest font that fits ── */
-  const titlePts = [30,28,26,24,22,20,18,16,14,12,10];
-  let ptTitle = 10, titleLines;
-
-  for (const pt of titlePts) {
-    const cpl     = maxCPL(pt);
-    const wrapped = wrapText(name, cpl);
-    if (wrapped.length <= 3) {
-      // verify every line actually fits within usableW
-      const allFit = wrapped.every(ln => txtW(ln, pt) <= usableW);
-      if (allFit) { ptTitle = pt; titleLines = wrapped; break; }
+  // 1. Title (stretched edge-to-edge)
+  let lines = balanceLines(name, 1);
+  if (name.length > 15 && name.length <= 26) {
+    lines = balanceLines(name, 2);
+    if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')]; 
+  } else if (name.length > 26) {
+    lines = balanceLines(name, 3);
+    if (lines.length < 3) {
+      const words = name.split(' ');
+      if (words.length >= 3) {
+        const third = Math.ceil(words.length / 3);
+        lines = [
+          words.slice(0, third).join(' '),
+          words.slice(third, third * 2).join(' '),
+          words.slice(third * 2).join(' ')
+        ];
+      }
     }
   }
-  if (!titleLines) titleLines = wrapText(name, maxCPL(10)).slice(0, 4);
-
-  const titleLineH  = Math.round(ptTitle * P2D) + 6;
-  const titleTotalH = titleLines.length * titleLineH;
-
-  const jainPt = 9;
-  const jainH  = isJain ? (Math.round(jainPt * P2D) + 6) : 0;
-
-  const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
-  const catFull  = `Category - ${cat}`;
-  const ingrFull = `(In Descending Order By Weight) ${ingr}`;
-
-  /* ══════════ AUTO-FIT: scale body font to fit everything in DH ══════════ */
-  let basePt = 9;
-  let compactH, catLines, ingrLines, nutriLines, baseStep, nBoxH, catH;
-  const MRP_PT = 12;
-  const TAX_PT = 6;
-  const BARCODE_H = 62;     // barcode height + number below
-
-  while (basePt >= 4) {
-    baseStep = Math.round(basePt * P2D) + 3;
-    const cpl = maxCPL(basePt);
-
-    catLines   = wrapText(catFull, cpl);
-    ingrLines  = wrapText(ingrFull, cpl).slice(0, 10);
-    nutriLines = wrapText(nutriStr, cpl);
-
-    catH   = catLines.length * baseStep;
-    nBoxH  = 8 + nutriLines.length * baseStep + 8;       // box padding
-
-    compactH =
-      12 +                                                 // top margin
-      titleTotalH +                                        // title
-      jainH +                                              // jain line
-      4 + catH + 6 +                                       // category + line below
-      baseStep + 2 + ingrLines.length * baseStep + 4 +     // INGREDIENTS header + lines
-      baseStep + baseStep + 4 + nBoxH + 4 +                // NUTRI headers + box
-      baseStep * 4 + 4 +                                   // 4 detail rows
-      Math.round(MRP_PT * P2D) + 4 +                       // MRP
-      Math.round(TAX_PT * P2D) * 2 + 8 +                   // tax lines
-      BARCODE_H;                                            // barcode at bottom
-
-    if (compactH <= DH - 8) break;
-    basePt -= 0.5;
+  
+  const titleLineH = 46;
+  for (let ln of lines) {
+    const lCanvas = document.createElement('canvas');
+    const lCtx = lCanvas.getContext('2d');
+    lCtx.font = `900 100px "Arial Black", Arial, sans-serif`;
+    const m = lCtx.measureText(ln);
+    const left = m.actualBoundingBoxLeft || 0;
+    const right = m.actualBoundingBoxRight || m.width;
+    const w = left + right;
+    const ascent = m.actualBoundingBoxAscent || 75;
+    const descent = m.actualBoundingBoxDescent || 25;
+    const h = ascent + descent;
+    
+    lCanvas.width = w + 10; lCanvas.height = h + 10;
+    lCtx.font = `900 100px "Arial Black", Arial, sans-serif`;
+    lCtx.fillStyle = 'white'; lCtx.fillRect(0,0,lCanvas.width,lCanvas.height);
+    lCtx.fillStyle = 'black'; lCtx.fillText(ln, left+5, ascent+5);
+    ctx.drawImage(lCanvas, 5, 5, w, h, SAFE_X, y, usableW, titleLineH);
+    y += titleLineH + 6;
   }
+  y += 4;
 
-  /* gap to distribute remaining space evenly across sections */
-  const extra = Math.max(0, DH - compactH - 8);
-  const gp    = Math.min(Math.floor(extra / 8), 8);     // cap gap so nothing floats
-  let y = 12, cmds = '';
-
-  /* ══ 1. TITLE (center-aligned, bold, consistent size) ══ */
-  titleLines.forEach(ln => {
-    const x = centerX(ln, ptTitle);
-    [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]
-      .forEach(([dx,dy]) => {
-        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${ptTitle},${ptTitle},"${ln}"\r\n`;
-      });
-    y += titleLineH;
-  });
-
-  /* ══ 2. JAIN subtitle ══ */
+  // Jain
   if (isJain) {
+    ctx.font = '900 16px "Arial Black", Arial, sans-serif';
     const sub = 'NO ONION NO GARLIC';
-    const sx  = centerX(sub, jainPt);
-    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainPt},${jainPt},"${sub}"\r\n`
-    );
-    y += Math.round(jainPt * P2D) + 6;
+    ctx.fillText(sub, (DW - ctx.measureText(sub).width)/2, y);
+    y += 24;
   }
-  y += gp;
 
-  /* ══ 3. CATEGORY (center-aligned, slightly bolder) ══ */
-  const catPt = Math.min(basePt + 1, 10);   // slightly bigger than body
-  catLines.forEach(cl => {
-    const cx = centerX(cl, catPt);
-    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-      cmds += `TEXT ${cx+dx},${y+dy},"ROMAN.TTF",0,${catPt},${catPt},"${cl}"\r\n`
-    );
-    y += baseStep;
-  });
-  y += 2;
-  cmds += `BAR ${lm},${y},${usableW},1\r\n`;
-  y += 4 + gp;
+  // Category
+  ctx.font = 'bold 20px Arial';
+  const catTxt = `Category - ${cat}`;
+  ctx.fillText(catTxt, (DW - ctx.measureText(catTxt).width)/2, y);
+  y += 30;
 
-  /* ══ 4. INGREDIENTS ══ */
-  [[0,0],[1,0]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"INGREDIENTS :-"\r\n`
-  );
-  y += baseStep + 2;
-  ingrLines.forEach(ln => {
-    cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`;
-    y += baseStep;
-  });
-  y += 2 + gp;
+  // Blended
+  if (isBlended) {
+    ctx.font = 'bold 14px Arial';
+    const bl1 = 'Mixed Masala Powder, Spices content';
+    const bl2 = 'more than 85%, salt content more than 5%';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(SAFE_X, y, usableW, 46);
+    ctx.fillText(bl1, (DW - ctx.measureText(bl1).width)/2, y + 6);
+    ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 24);
+    y += 56;
+  }
 
-  /* ══ 5. NUTRITIONAL INFORMATION ══ */
-  const nTitle1 = 'NUTRITIONAL INFORMATION';
-  const nTitle2 = 'Approximate Composition per 100 g';
-  const t1x = centerX(nTitle1, basePt);
-  const t2x = centerX(nTitle2, basePt);
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${t1x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle1}"\r\n`
-  );
-  y += baseStep;
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${t2x+dx},${y+dy},"ROMAN.TTF",0,${basePt},${basePt},"${nTitle2}"\r\n`
-  );
-  y += baseStep + 2;
+  // HR
+  ctx.fillRect(SAFE_X, y, usableW, 2);
+  y += 12;
 
-  /* nutrition box */
-  const boxBot = y + nBoxH;
-  cmds += `BOX ${lm},${y},${re},${boxBot},2\r\n`;
-  let ny = y + 5;
-  nutriLines.forEach(ln => {
-    cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${basePt},${basePt},"${tsplSafe(ln)}"\r\n`;
-    ny += baseStep;
-  });
-  y = boxBot + 4 + gp;
+  // Ingredients
+  ctx.font = 'bold 18px Arial';
+  ctx.fillText('INGREDIENTS :-', SAFE_X, y);
+  y += 24;
+  ctx.font = '18px Arial';
+  const ingrLines = wrapText(`(In Descending Order By Weight) ${ingr}`, 38);
+  for(let ln of ingrLines) {
+    ctx.fillText(ln, SAFE_X, y);
+    y += 22;
+  }
+  y += 6;
 
-  /* ══ 6. DETAILS (bold via double-print) ══ */
-  const detPt = basePt;
-  const detStep = baseStep;
+  // Nutrition
+  ctx.font = 'bold 18px Arial';
+  const n1 = 'NUTRITIONAL INFORMATION';
+  const n2 = 'Approximate Composition per 100 g';
+  ctx.fillText(n1, (DW - ctx.measureText(n1).width)/2, y);
+  y += 22;
+  ctx.fillText(n2, (DW - ctx.measureText(n2).width)/2, y);
+  y += 28;
+
+  // Box
+  ctx.font = 'bold 18px Arial';
+  const nl = typeof getNutriLines === 'function' ? getNutriLines(p) : [];
+  const boxTop = y;
+  y += 8;
+  for(let ln of nl) {
+    ctx.fillText(ln, SAFE_X + 8, y);
+    y += 24;
+  }
+  ctx.lineWidth = 2;
+  ctx.strokeRect(SAFE_X, boxTop, usableW, y - boxTop + 4);
+  y += 20;
+
+  // Details
+  ctx.font = 'bold 18px Arial';
+  const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
   const details = [
     `NET WEIGHT : ${nw}`,
     `BATCH NO : ${bno}`,
-    `DATE OF PACKING : ${tsplSafe(pd)}`,
-    `BEST BEFORE : ${tsplSafe(bb).replace(/\s*\(.*$/, '')}`
+    `DATE OF PACKING : ${pd}`,
+    `BEST BEFORE : ${bbClean}`
   ];
-  details.forEach(line => {
-    [[0,0],[1,0]].forEach(([dx,dy]) =>
-      cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${detPt},${detPt},"${line}"\r\n`
-    );
-    y += detStep;
-  });
-  y += gp;
+  for(let ln of details) {
+    ctx.fillText(ln, SAFE_X, y);
+    y += 24;
+  }
+  y += 8;
 
-  /* ══ 7. MRP (bigger, bold, left-aligned with details) ══ */
-  const mrpTxt = `MRP : Rs.${mrp}/-`;
-  [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${MRP_PT},${MRP_PT},"${mrpTxt}"\r\n`
-  );
-  y += Math.round(MRP_PT * P2D) + 4;
+  // MRP
+  ctx.font = '900 24px "Arial Black", Arial, sans-serif';
+  ctx.fillText(`MRP : ₹ ${mrp}/-`, SAFE_X, y);
+  y += 30;
+  ctx.font = 'bold 14px Arial';
+  ctx.fillText(`(INCL. OF ALL TAXES)`, SAFE_X, y);
+  y += 20;
+  ctx.fillText(`FOR 1g = Rs ${pg}`, SAFE_X, y);
+  y += 30;
 
-  [[0,0],[1,0]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_PT},${TAX_PT},"(INCL. OF ALL TAXES)"\r\n`;
-  });
-  y += Math.round(TAX_PT * P2D) + 3;
-  [[0,0],[1,0]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_PT},${TAX_PT},"FOR 1g = Rs.${pg}"\r\n`;
-  });
-  y += Math.round(TAX_PT * P2D) + 6;
+  // Barcode
+  if (typeof JsBarcode !== 'undefined') {
+    const bcode = (p.barcode) ? String(p.barcode) : '8905606000007';
+    const bcCanvas = document.createElement('canvas');
+    JsBarcode(bcCanvas, bcode, {
+      format: "CODE128",
+      width: 2,
+      height: 46,
+      displayValue: true,
+      fontSize: 18,
+      margin: 0
+    });
+    const bcX = Math.max(SAFE_X, (DW - bcCanvas.width) / 2);
+    ctx.drawImage(bcCanvas, bcX, y);
+    y += bcCanvas.height;
+  }
 
-  /* ══ 8. BARCODE — placed AFTER all text, guaranteed no overlap ══ */
-  const bcode   = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
-  const bcodeX  = Math.max(lm, Math.round((dw - 200) / 2));    // center barcode (≈200 dots wide)
-  cmds += `BARCODE ${bcodeX},${y},"128",40,1,0,2,2,"${bcode}"\r\n`;
+  y += 16; // bottom padding
 
-  return [
-    `SET DARKNESS 12`,
-    `DIRECTION 1`,
-    `CLS`,
-    cmds.trim(),
-    `PRINT ${copies},1`,
-    ``
-  ].join('\r\n');
+  const DH_FINAL = 720; // 50x90mm
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = DW;
+  finalCanvas.height = DH_FINAL;
+  const fCtx = finalCanvas.getContext('2d', { willReadFrequently: true });
+  fCtx.fillStyle = 'white';
+  fCtx.fillRect(0, 0, DW, DH_FINAL);
+
+  const drawH = Math.min(y, DH_FINAL);
+  // Just stretch exactly whatever we generated to fit exactly or pad at bottom
+  // Actually, if y < DH_FINAL, we don't want to stretch it, just leave it top aligned.
+  // Wait, if we want it to always fill the 90mm nicely, we could stretch it slightly?
+  // No, stretching text vertically looks bad. Top-aligned is safer.
+  // But wait! If y > DH_FINAL, we MUST squish it so nothing is cut off!
+  // If y < DH_FINAL, we should just distribute some gap.
+  // The simplest is: draw height = drawH. (Squishes if > 720, exact pixel mapping if < 720).
+  // This is BarTender's exact "Scale to fit" logic.
+  fCtx.drawImage(canvas, 0, 0, DW, y, 0, 0, DW, drawH);
+
+  return finalCanvas;
+}
+
+function buildBackTSPL(p, v, bn, pd, bb, copies) {
+  const canvas = generateBackCanvas(p, v, bn, pd, bb);
+  const DW = canvas.width;
+  const DH = canvas.height;
+  const ctx = canvas.getContext('2d');
+
+  // --- VISUAL PREVIEW FOR TESTING WITHOUT PRINTER ---
+  try {
+    const prevId = 'debug-tspl-preview-back';
+    const old = document.getElementById(prevId);
+    if(old) old.remove();
+    
+    const preview = document.createElement('div');
+    preview.id = prevId;
+    preview.style.cssText = 'position:fixed; top:20px; left:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);';
+    preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Back Bitmap Preview</div>';
+    
+    const clone = document.createElement('canvas');
+    clone.width = DW; clone.height = DH;
+    clone.getContext('2d').drawImage(canvas, 0, 0);
+    // scale to fit screen nicely
+    clone.style.width = '200px'; 
+    clone.style.height = (DH/2) + 'px';
+    clone.style.border = '1px dashed #333';
+    
+    preview.appendChild(clone);
+    document.body.appendChild(preview);
+    setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
+  } catch(e) {}
+  // ---------------------------------------------------
+
+  const imgData = ctx.getImageData(0, 0, DW, DH);
+  const data = imgData.data;
+  
+  const widthBytes = Math.ceil(DW / 8); 
+  const buffer = new Uint8Array(widthBytes * DH);
+  
+  for (let cy = 0; cy < DH; cy++) {
+    for (let cx = 0; cx < DW; cx++) {
+      const idx = (cy * DW + cx) * 4;
+      const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+      if (gray < 128) {
+        const byteIdx = cy * widthBytes + Math.floor(cx / 8);
+        const bitIdx = 7 - (cx % 8);
+        buffer[byteIdx] |= (1 << bitIdx);
+      }
+    }
+  }
+
+  let hexString = '';
+  const hexMap = "0123456789ABCDEF";
+  for (let i = 0; i < buffer.length; i++) {
+    const b = buffer[i];
+    hexString += hexMap[(b >> 4) & 0x0F] + hexMap[b & 0x0F];
+  }
+
+  const printData = [];
+  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${DH},0,` });
+  printData.push({ type: 'raw', format: 'hex', data: hexString });
+  printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
+  
+  return printData;
 }
 
 
