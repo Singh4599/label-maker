@@ -176,19 +176,17 @@ function balanceLines(text, maxLines) {
   return bestChunks;
 }
 
-/* ═══════ HELPER: TSPL Proportional Line Scaler ═══════ */
-const CW = 0.40; // True width ratio of ROMAN.TTF on TSC is very narrow
-
+/* ═══════ HELPER: TSPL Edge-to-Edge Line Scaler (DOT based) ═══════ */
 function drawBox(x1, y1, x2, y2, t) {
   let b = '';
-  b += `BAR ${x1},${y1},${x2-x1},${t}\r\n`; // top
-  b += `BAR ${x1},${y2-t},${x2-x1},${t}\r\n`; // bottom
-  b += `BAR ${x1},${y1},${t},${y2-y1}\r\n`; // left
-  b += `BAR ${x2-t},${y1},${t},${y2-y1}\r\n`; // right
+  b += `BAR ${x1},${y1},${x2-x1},${t}\r\n`;
+  b += `BAR ${x1},${y2-t},${x2-x1},${t}\r\n`;
+  b += `BAR ${x1},${y1},${t},${y2-y1}\r\n`;
+  b += `BAR ${x2-t},${y1},${t},${y2-y1}\r\n`;
   return b;
 }
 
-function solveProportional(name, maxLinesLimit, maxDH, dwSafe, CW_assume = 0.40, absoluteMaxH = 140) {
+function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxDot = 100) {
   let bestConfig = null;
   let maxScore = -9999;
 
@@ -200,10 +198,10 @@ function solveProportional(name, maxLinesLimit, maxDH, dwSafe, CW_assume = 0.40,
     let totalH = 0;
     
     for (const ln of lines) {
-      let maxWSize = Math.floor(dwSafe / (ln.length * CW_assume));
-      let size = Math.min(absoluteMaxH, maxWSize); 
-      let lh = size + 6; 
-      lineConfigs.push({ text: ln, size, lh });
+      let dot = Math.floor(dwSafe / (ln.length * CW));
+      dot = Math.min(absoluteMaxDot, dot);
+      let lh = dot + 6; // line spacing
+      lineConfigs.push({ text: ln, dot: dot, lh: lh });
       totalH += lh;
     }
 
@@ -211,21 +209,21 @@ function solveProportional(name, maxLinesLimit, maxDH, dwSafe, CW_assume = 0.40,
       const scale = maxDH / totalH;
       totalH = 0;
       lineConfigs.forEach(c => {
-        c.size = Math.max(16, Math.floor(c.size * scale));
-        c.lh = c.size + 6;
+        c.dot = Math.max(12, Math.floor(c.dot * scale));
+        c.lh = c.dot + 6;
         totalH += c.lh;
       });
     }
 
-    const avgSize = lineConfigs.reduce((sum, c) => sum + c.size, 0) / lineConfigs.length;
-    const score = avgSize - (numLines * 4); // penalize too many lines
+    const avgDot = lineConfigs.reduce((sum, c) => sum + c.dot, 0) / lineConfigs.length;
+    const score = avgDot - (numLines * 4); // penalize too many lines
     
     if (score > maxScore) {
       maxScore = score;
       bestConfig = { lines: lineConfigs, totalH: totalH };
     }
   }
-  return bestConfig || { lines: [{ text: name, size: 40, lh: 46 }], totalH: 46 };
+  return bestConfig || { lines: [{ text: name, dot: 20, lh: 26 }], totalH: 26 };
 }
 
 /* ─── FRONT label TSPL (65×25mm) ─── */
@@ -233,13 +231,14 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const SAFE = 12; // Push closer to edges
+  const CW = 0.50; // optimized width factor
+  const SAFE = 20;
 
-  const jainDot = 26;
-  const jainBlockH = isJain ? (jainDot + 10) : 0;
+  const subDot = 20;
+  const jainBlockH = isJain ? (subDot + 10) : 0;
   
-  // Calculate proportional edge-to-edge title
-  const titleConfig = solveProportional(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 140);
+  // Calculate edge-to-edge title
+  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 90);
 
   const combinedH = titleConfig.totalH + jainBlockH;
   const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
@@ -247,10 +246,11 @@ function buildFrontTSPL(name, copies) {
   let cmds = '', y = yStart;
 
   titleConfig.lines.forEach(c => {
-    const tW = c.text.length * (c.size * CW);
+    const tW = c.text.length * (c.dot * CW);
     const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
-    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.size},${c.size},"${c.text}"\r\n`;
+    const offsets = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]];
+    offsets.forEach(([dx,dy]) => {
+      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dot},${c.dot},"${c.text}"\r\n`;
     });
     y += c.lh;
   });
@@ -258,10 +258,10 @@ function buildFrontTSPL(name, copies) {
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
     y += 4;
-    const tW = sub.length * (jainDot * 0.45);
-    const sx   = Math.max(SAFE, Math.round((DW - tW) / 2));
+    const subW = sub.length * (subDot * CW);
+    const sx   = Math.max(SAFE, Math.round((DW - subW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainDot},${jainDot},"${sub}"\r\n`;
+      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subDot},${subDot},"${sub}"\r\n`;
     });
   }
 
@@ -278,8 +278,8 @@ function buildFrontTSPL(name, copies) {
 /* ─── BACK label TSPL (50×90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const dw = 400, DH = 720;
-  const CW = 0.40; // True width ratio of ROMAN.TTF on TSC is very narrow
-  const SAFE = 12;                
+  const CW = 0.50; // Optimized width factor to allow wider lines and bigger text
+  const SAFE = 10;                
   const lm = SAFE, re = dw - SAFE, usableW = re - lm;
 
   const mrp  = (parseFloat(v.m) || 0) * 2;
@@ -297,24 +297,24 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   function centerX(str, dot) { return Math.max(lm, Math.round((dw - txtW(str, dot)) / 2)); }
   function maxCPL(dot) { return Math.floor(usableW / (dot * CW)); }
 
-  const jainDot = 24;
-  const jainH = isJain ? (jainDot + 6) : 0;
+  const jainDot = 20;
+  const jainH = isJain ? (jainDot + 2) : 0; // Reduced vertical gap
 
   // Title edge-to-edge calculation
-  const titleConfig = solveProportional(name, 4, 160 - jainH, usableW, CW, 120);
+  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, CW, 80); // Increased max dot to 80
 
   const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
   const catFull  = `Category - ${cat}`;
   const ingrFull = `(In Descending Order By Weight) ${ingr}`;
 
-  let baseDot = 30; // Start much bigger to prevent tiny text
+  let baseDot = 24; // starting large
   let compactH, catLines, ingrLines, nutriLines, baseStep, nBoxH, catH;
   const MRP_DOT = 28;
   const TAX_DOT = 18;
   const BARCODE_H = 62;     
 
-  while (baseDot >= 16) {
-    baseStep = baseDot + 4;
+  while (baseDot >= 10) {
+    baseStep = baseDot + 2; // Crucial: reduce gap from 4 to 2 to save vertical space
     const cpl = maxCPL(baseDot);
 
     catLines   = wrapText(catFull, cpl);
@@ -322,20 +322,15 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     nutriLines = wrapText(nutriStr, cpl);
 
     catH = catLines.length * baseStep;
-    
-    let bDot = Math.max(16, baseDot - 4);
-    let bCpl = Math.floor((usableW - 16) / (bDot * CW));
-    let blendLines = wrapText("Mixed Masala Powder, Spices content more than 85%, salt content more than 5%", bCpl);
-    const blendH = isBlended ? (blendLines.length * (bDot + 4) + 12) : 0;
-
-    nBoxH = 8 + nutriLines.length * baseStep + 8;
+    const blendH = isBlended ? (3 * (Math.max(10, baseDot-2) + 2) + 12) : 0;
+    nBoxH = 4 + nutriLines.length * baseStep + 4; // Reduced box padding
 
     compactH =
       12 +                                                 
       titleConfig.totalH +                                 
       jainH +                                              
       4 + catH + 2 + blendH + 4 +                          
-      baseStep + 2 + ingrLines.length * baseStep + 4 +     
+      baseStep + 2 + ingrLines.length * baseStep + 2 +     
       baseStep + baseStep + 4 + nBoxH + 4 +                
       baseStep * 4 + 4 +                                   
       MRP_DOT + 4 +                       
@@ -343,7 +338,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
       BARCODE_H;                                           
 
     if (compactH <= DH - 10) break;
-    baseDot -= 2; 
+    baseDot -= 1; // step down by 1 dot
   }
 
   const extra = Math.max(0, DH - compactH - 10);
@@ -352,10 +347,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   /* ══ 1. TITLE ══ */
   titleConfig.lines.forEach(c => {
-    const x = centerX(c.text, c.size);
-    [[0,0],[1,0],[0,1],[1,1]]
+    const x = centerX(c.text, c.dot);
+    [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]
       .forEach(([dx,dy]) => {
-        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.size},${c.size},"${c.text}"\r\n`;
+        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dot},${c.dot},"${c.text}"\r\n`;
       });
     y += c.lh;
   });
@@ -367,12 +362,12 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
       cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainDot},${jainDot},"${sub}"\r\n`
     );
-    y += jainDot + 6;
+    y += jainDot + 2;
   }
   y += gp;
 
   /* ══ 3. CATEGORY ══ */
-  const catDot = Math.min(baseDot + 4, 34);
+  const catDot = Math.min(baseDot + 2, 26);
   catLines.forEach(cl => {
     const cx = centerX(cl, catDot);
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
@@ -384,11 +379,11 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   /* ══ 3.5 BLENDED SPICES BOX ══ */
   if (isBlended) {
     y += 4;
-    const bDot = Math.max(16, baseDot - 4);
-    const bCpl = Math.floor((usableW - 16) / (bDot * CW));
-    const blendLines = wrapText("Mixed Masala Powder, Spices content more than 85%, salt content more than 5%", bCpl);
-    const bStep = bDot + 4;
-    
+    const blendTxt = "Mixed Masala Powder, Spices content more than 85%, salt content more than 5%";
+    const bDot = Math.max(10, baseDot - 2);
+    const bCpl = maxCPL(bDot) - 4; 
+    const blendLines = wrapText(blendTxt, bCpl);
+    const bStep = bDot + 2;
     const boxTop = y;
     let by = y + 4;
     blendLines.forEach(ln => {
@@ -396,8 +391,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
       cmds += `TEXT ${cx},${by},"ROMAN.TTF",0,${bDot},${bDot},"${ln}"\r\n`;
       by += bStep;
     });
-    cmds += drawBox(lm+4, boxTop, re-4, by+2, 2);
-    y = by + 8;
+    cmds += drawBox(lm+8, boxTop, re-8, by+2, 2);
+    y = by + 6;
   } else {
     y += 2;
   }
@@ -432,7 +427,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   const boxBot = y + nBoxH;
   cmds += drawBox(lm, y, re, boxBot, 2);
-  let ny = y + 5;
+  let ny = y + 4;
   nutriLines.forEach(ln => {
     cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${baseDot},${baseDot},"${tsplSafe(ln)}"\r\n`;
     ny += baseStep;
@@ -474,6 +469,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   /* ══ 8. BARCODE ══ */
   const bcode = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
+  // Standard Code128 width for 13 digits with narrow=2 is ~286 dots
   const bcodeWidth = 286; 
   const bcodeX = Math.max(lm, Math.round((dw - bcodeWidth) / 2));
   cmds += `BARCODE ${bcodeX},${y},"128",40,2,0,2,2,"${bcode}"\r\n`;
