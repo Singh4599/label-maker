@@ -172,27 +172,42 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe((name || '').toUpperCase().trim());
   const isJain = n.includes('JAIN');
-  const jainBlockH = isJain ? 40 : 0;
-  const availH = DH - 8 - jainBlockH;
+  const jainBlockH = isJain ? 36 : 0;
+  const availH = DH - jainBlockH;
 
   // Split logic based on length
+  // We force exactly the right number of lines by providing the maximum allowed chunks
   let lines = balanceLines(n, 1);
-  if (n.length > 13) {
+  if (n.length > 15 && n.length <= 26) {
+    // If it can't balance to 2, wrapText will force it
     lines = balanceLines(n, 2);
-  } else if (n.length > 25) {
+    if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')]; 
+  } else if (n.length > 26) {
     lines = balanceLines(n, 3);
+    if (lines.length < 3) {
+      // Force 3 chunks if it accidentally compressed to 2
+      const words = n.split(' ');
+      if (words.length >= 3) {
+        const third = Math.ceil(words.length / 3);
+        lines = [
+          words.slice(0, third).join(' '),
+          words.slice(third, third * 2).join(' '),
+          words.slice(third * 2).join(' ')
+        ];
+      }
+    }
   }
 
-  // Final canvas to build the TSPL image
+  // Final canvas to build the ENTIRE TSPL image (including Jain)
   const canvas = document.createElement('canvas');
   canvas.width = DW;
-  canvas.height = availH;
+  canvas.height = DH;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, DW, availH);
+  ctx.fillRect(0, 0, DW, DH);
   
-  const SAFE_X = 16; 
-  const SAFE_Y = 24; // top and bottom margin
+  const SAFE_X = 32; // Increased to 32 dots (4mm) so it NEVER gets cut on edges
+  const SAFE_Y = 24; // top and bottom margin for the main text block
   
   const usableW = DW - (SAFE_X * 2); 
   const usableH = availH - (SAFE_Y * 2);
@@ -234,10 +249,20 @@ function buildFrontTSPL(name, copies) {
     lCtx.fillText(ln, left + 5, ascent + 5);
 
     // Draw this specific line stretched to the FULL width of the label!
-    // This gives the exact 'Block Text' BarTender feel.
     ctx.drawImage(lCanvas, 5, 5, w, h, SAFE_X, currentY, usableW, lineDestH);
     
     currentY += lineDestH + gap;
+  }
+
+  // Draw Jain text directly onto the canvas
+  if (isJain) {
+    const sub = 'NO ONION NO GARLIC';
+    ctx.font = '900 24px "Arial Black", Arial, sans-serif';
+    const m = ctx.measureText(sub);
+    const sx = Math.max(SAFE_X, (DW - m.width) / 2);
+    // Draw near the bottom edge
+    ctx.fillStyle = 'black';
+    ctx.fillText(sub, sx, DH - 10);
   }
 
   // --- VISUAL PREVIEW FOR TESTING WITHOUT PRINTER ---
@@ -252,10 +277,10 @@ function buildFrontTSPL(name, copies) {
     preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Printer Bitmap Preview (TSC TSPL)</div>';
     
     const clone = document.createElement('canvas');
-    clone.width = DW; clone.height = availH;
+    clone.width = DW; clone.height = DH;
     clone.getContext('2d').drawImage(canvas, 0, 0);
     clone.style.width = '260px'; 
-    clone.style.height = (availH/2) + 'px';
+    clone.style.height = (DH/2) + 'px';
     clone.style.border = '1px dashed #333';
     
     preview.appendChild(clone);
@@ -266,13 +291,13 @@ function buildFrontTSPL(name, copies) {
   } catch(e) {}
   // ---------------------------------------------------
 
-  const imgData = ctx.getImageData(0, 0, DW, availH);
+  const imgData = ctx.getImageData(0, 0, DW, DH);
   const data = imgData.data;
   
   const widthBytes = Math.ceil(DW / 8); 
-  const buffer = new Uint8Array(widthBytes * availH);
+  const buffer = new Uint8Array(widthBytes * DH);
   
-  for (let y = 0; y < availH; y++) {
+  for (let y = 0; y < DH; y++) {
     for (let x = 0; x < DW; x++) {
       const idx = (y * DW + x) * 4;
       const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
@@ -291,22 +316,10 @@ function buildFrontTSPL(name, copies) {
     hexString += hexMap[(b >> 4) & 0x0F] + hexMap[b & 0x0F];
   }
 
-  let jainCmds = '';
-  if (isJain) {
-    const sub = 'NO ONION NO GARLIC';
-    const subDot = 22;
-    const yJain = availH + 4;
-    const subW = sub.length * subDot * 0.58 * 2.8;
-    const sx = Math.max(8, Math.round((DW - subW) / 2));
-    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      jainCmds += `TEXT ${sx+dx},${yJain+dy},"ROMAN.TTF",0,${subDot},${subDot},"${sub}"\r\n`;
-    });
-  }
-
   const printData = [];
-  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${availH},0,` });
+  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${DH},0,` });
   printData.push({ type: 'raw', format: 'hex', data: hexString });
-  printData.push({ type: 'raw', format: 'plain', data: `\r\n${jainCmds}PRINT ${copies},1\r\n` });
+  printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
   
   return printData;
 }
