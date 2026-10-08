@@ -183,7 +183,8 @@ function buildFrontTSPL(name, copies) {
   const P2D = 2.8;
 
   // Find best split (1/2/3 lines).
-  let bestScore = -9999, bestPt = 14, bestLines = [n], bestTotalH = 40;
+  // Find best split (1/2/3 lines) with independent Width & Height (Anamorphic stretch).
+  let bestScore = -9999, bestPtW = 14, bestPtH = 14, bestLines = [n], bestTotalH = 40;
 
   for (let nL = 1; nL <= 3; nL++) {
     const lines = balanceLines(n, nL);
@@ -191,29 +192,30 @@ function buildFrontTSPL(name, copies) {
     if (numL > nL) continue;
 
     const longest = Math.max(...lines.map(l => l.length));
-    const ptW = Math.floor(usableW / (longest * CW * P2D));
-    const ptH = Math.floor((availH - numL * 6) / (numL * P2D));
-    const pt  = Math.max(12, Math.min(ptW, ptH));
-    const totalH = numL * Math.round(pt * P2D + 6);
     
-    // FAST TRACK: If 1 line gives a solid large font, keep it on 1 line.
-    if (nL === 1 && pt >= 22) {
-      bestPt = 35; // User requested test
-      bestLines = lines; 
-      bestTotalH = Math.round(35 * P2D + 6); 
-      break;
-    }
-    // FAST TRACK: If 2 lines gives a good font, stop here.
-    if (nL === 2 && pt >= 18) {
-      bestPt = pt; bestLines = lines; bestTotalH = totalH; break;
-    }
+    // Calculate max width and height in points
+    let ptW = Math.floor(usableW / (longest * CW * P2D));
+    let ptH = Math.floor((availH - numL * 6) / (numL * P2D));
+    
+    // Caps so tiny words don't become comically huge
+    ptW = Math.min(ptW, 50);
+    ptH = Math.min(ptH, 65);
 
-    // Otherwise, use a heavy penalty for extra lines to force fewer lines.
-    const score  = pt - numL * 12;
+    // Limit vertical stretch so it doesn't look absurdly tall compared to its width
+    // max 2.2x taller than its width
+    ptH = Math.min(ptH, Math.round(ptW * 2.2));
+
+    const totalH = numL * Math.round(ptH * P2D + 6);
+    
+    // Heavily penalize extra lines to force 1-line for short titles
+    const score  = (ptW + ptH) - numL * 30;
 
     if (score > bestScore) {
-      bestScore = score; bestPt = pt;
-      bestLines = lines; bestTotalH = totalH;
+      bestScore = score; 
+      bestPtW = ptW; 
+      bestPtH = ptH;
+      bestLines = lines; 
+      bestTotalH = totalH;
     }
   }
 
@@ -221,13 +223,12 @@ function buildFrontTSPL(name, copies) {
   let cmds = '', y = yStart;
 
   bestLines.forEach(ln => {
-    const tW = Math.round(ln.length * bestPt * P2D * CW);
-    // Remove SAFE limit on X so it stays perfectly centered even if it bleeds off edges
-    const x  = Math.round((DW - tW) / 2);
+    const tW = Math.round(ln.length * bestPtW * P2D * CW);
+    const x  = Math.round((DW - tW) / 2); // perfectly centered, ignoring SAFE to allow full use
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${bestPt},${bestPt},"${ln}"\r\n`;
+      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${bestPtW},${bestPtH},"${ln}"\r\n`;
     });
-    y += Math.round(bestPt * P2D) + 6;
+    y += Math.round(bestPtH * P2D) + 6;
   });
 
   if (isJain) {
