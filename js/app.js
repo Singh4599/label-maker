@@ -607,23 +607,6 @@ function pF() {
   }
 }
 
-function pF_Chrome(name, copies) {
-  if (typeof generateFrontCanvas === 'function') {
-    const canvas = generateFrontCanvas(name);
-    const dataUrl = canvas.toDataURL('image/png');
-    
-    let pStyle = document.getElementById('dynamic-print-style');
-    pStyle.innerHTML = '@page{size:65mm 25mm;margin:0} .L{width:65mm;height:25mm;margin:0;padding:0;page-break-after:always;display:flex;justify-content:center;align-items:center} img{width:100%;height:100%;object-fit:contain;}';
-    
-    const printZone = document.getElementById('print-zone');
-    printZone.innerHTML = '';
-    for (let c = 0; c < copies; c++) {
-      printZone.innerHTML += `<div class="L"><img src="${dataUrl}" /></div>`;
-    }
-    setTimeout(function(){ window.print(); }, 100);
-  }
-}
-
 
 function pB() {
   let p, v, bn, pd, bb;
@@ -645,30 +628,21 @@ function pB() {
   }
   const copies = getCopies();
 
+  // ALWAY TRIGGER PREVIEW for testing
+  if (typeof buildBackTSPL === 'function') {
+    buildBackTSPL(p, v, bn, pd, bb, copies);
+  }
+
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintBack === 'function') {
     qzPrintBack(p, v, bn, pd, bb, copies).then(function(done) {
-      if (!done) pB_Chrome(p, v, bn, pd, bb, copies); // fallback
-    }).catch(function() { pB_Chrome(p, v, bn, pd, bb, copies); });
+      if (!done) {
+        showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      }
+    }).catch(function() { 
+      showToast('Testing preview mode. QZ Tray is offline.', 'info');
+    });
     return;
-  }
-  pB_Chrome(p, v, bn, pd, bb, copies);
-}
-
-function pB_Chrome(p, v, bn, pd, bb, copies) {
-  if (typeof generateBackCanvas === 'function') {
-    const canvas = generateBackCanvas(p, v, bn, pd, bb);
-    const dataUrl = canvas.toDataURL('image/png');
-    
-    let pStyle = document.getElementById('dynamic-print-style');
-    pStyle.innerHTML = '@page{size:50mm 90mm;margin:0} .L{width:50mm;height:90mm;margin:0;padding:0;page-break-after:always;display:flex;justify-content:center;align-items:center} img{width:100%;height:100%;object-fit:contain;}';
-    
-    const printZone = document.getElementById('print-zone');
-    printZone.innerHTML = '';
-    for (let c = 0; c < copies; c++) {
-      printZone.innerHTML += `<div class="L"><img src="${dataUrl}" /></div>`;
-    }
-    setTimeout(function(){ window.print(); }, 100);
   }
 }
 
