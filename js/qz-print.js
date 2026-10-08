@@ -229,7 +229,7 @@ function buildFrontTSPL(name, copies) {
   const jainBlockH = isJain ? (subDot + 10) : 0;
   
   // Calculate edge-to-edge title
-  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 90);
+  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 100);
 
   const combinedH = titleConfig.totalH + jainBlockH;
   const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
@@ -292,13 +292,13 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const jainH = isJain ? (jainDot + 6) : 0;
 
   // Title edge-to-edge calculation
-  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, CW, 70);
+  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, CW, 90);
 
   const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
   const catFull  = `Category - ${cat}`;
   const ingrFull = `(In Descending Order By Weight) ${ingr}`;
 
-  let baseDot = 22; // starting large (approx 3mm)
+  let baseDot = 24; // slightly bigger than original 22
   let compactH, catLines, ingrLines, nutriLines, baseStep, nBoxH, catH;
   const MRP_DOT = 26;
   const TAX_DOT = 16;
