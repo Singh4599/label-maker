@@ -243,6 +243,32 @@ function buildFrontTSPL(name, copies) {
   const destY = (availH - destH) / 2;
   ctx.drawImage(vCanvas, destX, destY, destW, destH);
 
+  // --- VISUAL PREVIEW FOR TESTING WITHOUT PRINTER ---
+  try {
+    const prevId = 'debug-tspl-preview';
+    const old = document.getElementById(prevId);
+    if(old) old.remove();
+    
+    const preview = document.createElement('div');
+    preview.id = prevId;
+    preview.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);';
+    preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Printer Bitmap Preview (TSC TSPL)</div>';
+    
+    const clone = document.createElement('canvas');
+    clone.width = DW; clone.height = availH;
+    clone.getContext('2d').drawImage(canvas, 0, 0);
+    clone.style.width = '260px'; 
+    clone.style.height = (availH/2) + 'px';
+    clone.style.border = '1px dashed #333';
+    
+    preview.appendChild(clone);
+    document.body.appendChild(preview);
+    
+    // Auto remove after 10 seconds
+    setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
+  } catch(e) {}
+  // ---------------------------------------------------
+
   const imgData = ctx.getImageData(0, 0, DW, availH);
   const data = imgData.data;
   
