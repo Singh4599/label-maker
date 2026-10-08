@@ -172,9 +172,9 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const CW   = 0.45;   // updated char-width factor to allow up to 32pt for 12 chars
-  const SAFE = 16;
-  const usableW = DW; // using full width, no safe margin to allow 32pt to touch edges
+  const CW   = 0.48;   // safe char-width factor so 1-line text doesn't bleed
+  const SAFE = 10;     // small safe margin (10 dots) so edges don't physically cut
+  const usableW = DW - SAFE * 2; 
 
   const subDot = 22;
   const jainBlockH = isJain ? (subDot + 8) : 0;
@@ -223,7 +223,7 @@ function buildFrontTSPL(name, copies) {
 
   bestLines.forEach(ln => {
     const tW = Math.round(ln.length * bestPt * P2D * CW);
-    const x  = Math.max(0, Math.round((DW - tW) / 2));
+    const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
     
     // EXTRA BOLD: 3x3 dot matrix offset
     [0,1,2].forEach(dx => {
