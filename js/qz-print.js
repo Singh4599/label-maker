@@ -182,8 +182,7 @@ function buildFrontTSPL(name, copies) {
 
   const P2D = 2.8;
 
-  // Find best split (1/2/3 lines) that maximises dot size.
-  // Constraint: longest line fits in usableW AND all lines fit in availH.
+  // Find best split (1/2/3 lines).
   let bestScore = -9999, bestPt = 14, bestLines = [n], bestTotalH = 40;
 
   for (let nL = 1; nL <= 3; nL++) {
@@ -193,15 +192,21 @@ function buildFrontTSPL(name, copies) {
 
     const longest = Math.max(...lines.map(l => l.length));
     const ptW = Math.floor(usableW / (longest * CW * P2D));
-    
-    // Each line takes (pt * P2D) dots in height, plus 6 dots spacing
     const ptH = Math.floor((availH - numL * 6) / (numL * P2D));
-    
     const pt  = Math.max(12, Math.min(ptW, ptH));
     const totalH = numL * Math.round(pt * P2D + 6);
     
-    // Score based on font size. We penalize extra lines slightly to prefer fewer lines if size is similar.
-    const score  = pt - numL * 2;
+    // FAST TRACK: If 1 line gives a solid large font, keep it on 1 line.
+    if (nL === 1 && pt >= 22) {
+      bestPt = pt; bestLines = lines; bestTotalH = totalH; break;
+    }
+    // FAST TRACK: If 2 lines gives a good font, stop here.
+    if (nL === 2 && pt >= 18) {
+      bestPt = pt; bestLines = lines; bestTotalH = totalH; break;
+    }
+
+    // Otherwise, use a heavy penalty for extra lines to force fewer lines.
+    const score  = pt - numL * 12;
 
     if (score > bestScore) {
       bestScore = score; bestPt = pt;
