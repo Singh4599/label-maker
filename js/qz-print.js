@@ -176,7 +176,8 @@ function balanceLines(text, maxLines) {
   return bestChunks;
 }
 
-/* ═══════ HELPER: TSPL Edge-to-Edge Line Scaler ═══════ */
+/* ═══════ HELPER: TSPL Proportional Line Scaler ═══════ */
+const CW = 0.40; // True width ratio of ROMAN.TTF on TSC is very narrow
 
 function drawBox(x1, y1, x2, y2, t) {
   let b = '';
@@ -187,7 +188,7 @@ function drawBox(x1, y1, x2, y2, t) {
   return b;
 }
 
-function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW_assume = 0.45, absoluteMaxH = 140) {
+function solveProportional(name, maxLinesLimit, maxDH, dwSafe, CW_assume = 0.40, absoluteMaxH = 140) {
   let bestConfig = null;
   let maxScore = -9999;
 
@@ -199,12 +200,10 @@ function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW_assume = 0.45, a
     let totalH = 0;
     
     for (const ln of lines) {
-      let dotW = Math.floor(dwSafe / (ln.length * CW_assume));
-      dotW = Math.min(250, dotW); 
-      
-      let dotH = Math.min(absoluteMaxH, dotW); 
-      let lh = dotH + 6; 
-      lineConfigs.push({ text: ln, dotW, dotH, lh });
+      let maxWSize = Math.floor(dwSafe / (ln.length * CW_assume));
+      let size = Math.min(absoluteMaxH, maxWSize); 
+      let lh = size + 6; 
+      lineConfigs.push({ text: ln, size, lh });
       totalH += lh;
     }
 
@@ -212,22 +211,21 @@ function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW_assume = 0.45, a
       const scale = maxDH / totalH;
       totalH = 0;
       lineConfigs.forEach(c => {
-        c.dotH = Math.max(12, Math.floor(c.dotH * scale));
-        c.lh = c.dotH + 6;
+        c.size = Math.max(16, Math.floor(c.size * scale));
+        c.lh = c.size + 6;
         totalH += c.lh;
       });
-      // WE DO NOT SCALE c.dotW! It stays stretched horizontally.
     }
 
-    const avgDotH = lineConfigs.reduce((sum, c) => sum + c.dotH, 0) / lineConfigs.length;
-    const score = avgDotH - (numLines * 4); // penalize too many lines
+    const avgSize = lineConfigs.reduce((sum, c) => sum + c.size, 0) / lineConfigs.length;
+    const score = avgSize - (numLines * 4); // penalize too many lines
     
     if (score > maxScore) {
       maxScore = score;
       bestConfig = { lines: lineConfigs, totalH: totalH };
     }
   }
-  return bestConfig || { lines: [{ text: name, dotW: 60, dotH: 40, lh: 46 }], totalH: 46 };
+  return bestConfig || { lines: [{ text: name, size: 40, lh: 46 }], totalH: 46 };
 }
 
 /* ─── FRONT label TSPL (65×25mm) ─── */
@@ -240,8 +238,8 @@ function buildFrontTSPL(name, copies) {
   const jainDot = 26;
   const jainBlockH = isJain ? (jainDot + 10) : 0;
   
-  // Calculate edge-to-edge title
-  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, 0.45, 90);
+  // Calculate proportional edge-to-edge title
+  const titleConfig = solveProportional(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 140);
 
   const combinedH = titleConfig.totalH + jainBlockH;
   const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
@@ -249,11 +247,10 @@ function buildFrontTSPL(name, copies) {
   let cmds = '', y = yStart;
 
   titleConfig.lines.forEach(c => {
-    const tW = c.text.length * (c.dotW * 0.45);
+    const tW = c.text.length * (c.size * CW);
     const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
-    const offsets = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]];
-    offsets.forEach(([dx,dy]) => {
-      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dotW},${c.dotH},"${c.text}"\r\n`;
+    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
+      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.size},${c.size},"${c.text}"\r\n`;
     });
     y += c.lh;
   });
@@ -304,7 +301,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const jainH = isJain ? (jainDot + 6) : 0;
 
   // Title edge-to-edge calculation
-  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, 0.45, 90);
+  const titleConfig = solveProportional(name, 4, 160 - jainH, usableW, CW, 120);
 
   const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
   const catFull  = `Category - ${cat}`;
@@ -355,10 +352,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   /* ══ 1. TITLE ══ */
   titleConfig.lines.forEach(c => {
-    const x = centerX(c.text, c.dotW);
-    [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]
+    const x = centerX(c.text, c.size);
+    [[0,0],[1,0],[0,1],[1,1]]
       .forEach(([dx,dy]) => {
-        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dotW},${c.dotH},"${c.text}"\r\n`;
+        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.size},${c.size},"${c.text}"\r\n`;
       });
     y += c.lh;
   });
