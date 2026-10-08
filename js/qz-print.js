@@ -170,89 +170,122 @@ function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 /* ─── FRONT label TSPL (65×25mm) ─── */
 function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
-  const n = tsplSafe(name.toUpperCase());
+  const n = tsplSafe((name || '').toUpperCase().trim());
   const isJain = n.includes('JAIN');
-  const CW   = 0.48;   // safe char-width factor so 1-line text doesn't bleed
-  const SAFE = 10;     // small safe margin (10 dots) so edges don't physically cut
-  const usableW = DW - SAFE * 2; 
+  const jainBlockH = isJain ? 40 : 0;
+  const availH = DH - 8 - jainBlockH;
 
-  const subDot = 22;
-  const jainBlockH = isJain ? (subDot + 8) : 0;
-  const availH = DH - 4 - jainBlockH;
+  // Split into lines based on length for better aspect ratio
+  let lines = balanceLines(n, 1);
+  if (n.length > 13) {
+    lines = balanceLines(n, 2);
+  } else if (n.length > 25) {
+    lines = balanceLines(n, 3);
+  }
+  
+  const vCanvas = document.createElement('canvas');
+  const vCtx = vCanvas.getContext('2d');
+  const fontSize = 100;
+  vCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
 
-  const P2D = 2.8;
+  let maxW = 1;
+  let totalH = 0;
+  const lineMetrics = [];
+  
+  for (let ln of lines) {
+    const m = vCtx.measureText(ln);
+    const w = m.width;
+    const ascent = m.actualBoundingBoxAscent || 75;
+    const descent = m.actualBoundingBoxDescent || 25;
+    const h = ascent + descent;
+    if (w > maxW) maxW = w;
+    lineMetrics.push({ w, h, ascent, descent });
+    totalH += (h + 10);
+  }
 
-  // Find best split (1/2/3 lines).
-  let bestScore = -9999, bestPt = 14, bestLines = [n], bestTotalH = 40;
+  vCanvas.width = maxW;
+  vCanvas.height = totalH;
+  vCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+  vCtx.fillStyle = 'white';
+  vCtx.fillRect(0, 0, vCanvas.width, vCanvas.height);
+  vCtx.fillStyle = 'black';
 
-  for (let nL = 1; nL <= 3; nL++) {
-    const lines = balanceLines(n, nL);
-    const numL  = lines.length;
-    if (numL > nL) continue;
+  let cy = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const m = lineMetrics[i];
+    const cx = (vCanvas.width - m.w) / 2;
+    cy += m.ascent;
+    vCtx.fillText(lines[i], cx, cy);
+    cy += m.descent + 10;
+  }
 
-    const longest = Math.max(...lines.map(l => l.length));
-    const ptW = Math.floor(usableW / (longest * CW * P2D));
-    const ptH = Math.floor((availH - numL * 6) / (numL * P2D));
-    let pt  = Math.max(12, Math.min(ptW, ptH));
-    
-    // Hard cap for 1-line very short words so they don't become comically huge
-    if (nL === 1) pt = Math.min(pt, 50);
+  const canvas = document.createElement('canvas');
+  canvas.width = DW;
+  canvas.height = availH;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, DW, availH);
+  
+  const SAFE = 16; 
+  const usableW = DW - (SAFE * 2); 
+  const targetRatio = usableW / availH;
+  const naturalRatio = vCanvas.width / vCanvas.height;
+  
+  let destW = usableW;
+  let destH = availH;
+  
+  // If it's a very short word (like "JEERA"), prevent comical horizontal stretching
+  if (naturalRatio < targetRatio / 1.8) {
+    destW = vCanvas.width * (availH / vCanvas.height) * 1.8;
+  }
+  
+  const destX = (DW - destW) / 2;
+  const destY = (availH - destH) / 2;
+  ctx.drawImage(vCanvas, destX, destY, destW, destH);
 
-    const totalH = numL * Math.round(pt * P2D + 6);
-    
-    // FAST TRACK: If 1 line gives a good font (>= 28pt), stick to it!
-    if (nL === 1 && pt >= 28) {
-      bestPt = pt; bestLines = lines; bestTotalH = totalH; break;
-    }
-    // FAST TRACK: If 2 lines gives a good font, stop here.
-    if (nL === 2 && pt >= 18) {
-      bestPt = pt; bestLines = lines; bestTotalH = totalH; break;
-    }
-
-    // Otherwise, use a heavy penalty for extra lines to force fewer lines.
-    const score  = pt - numL * 15;
-
-    if (score > bestScore) {
-      bestScore = score; bestPt = pt;
-      bestLines = lines; bestTotalH = totalH;
+  const imgData = ctx.getImageData(0, 0, DW, availH);
+  const data = imgData.data;
+  
+  const widthBytes = Math.ceil(DW / 8); 
+  const buffer = new Uint8Array(widthBytes * availH);
+  
+  for (let y = 0; y < availH; y++) {
+    for (let x = 0; x < DW; x++) {
+      const idx = (y * DW + x) * 4;
+      const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+      if (gray < 128) {
+        const byteIdx = y * widthBytes + Math.floor(x / 8);
+        const bitIdx = 7 - (x % 8);
+        buffer[byteIdx] |= (1 << bitIdx);
+      }
     }
   }
 
-  const yStart = Math.max(4, Math.round((DH - bestTotalH - jainBlockH) / 2));
-  let cmds = '', y = yStart;
+  let hexString = '';
+  const hexMap = "0123456789ABCDEF";
+  for (let i = 0; i < buffer.length; i++) {
+    const b = buffer[i];
+    hexString += hexMap[(b >> 4) & 0x0F] + hexMap[b & 0x0F];
+  }
 
-  bestLines.forEach(ln => {
-    const tW = Math.round(ln.length * bestPt * P2D * CW);
-    const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
-    
-    // EXTRA BOLD: 3x3 dot matrix offset
-    [0,1,2].forEach(dx => {
-      [0,1,2].forEach(dy => {
-        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${bestPt},${bestPt},"${ln}"\r\n`;
-      });
-    });
-    
-    y += Math.round(bestPt * P2D) + 6;
-  });
-
+  let jainCmds = '';
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
-    y += 4;
-    const subW = sub.length * subDot * CW;
-    const sx   = Math.max(SAFE, Math.round((DW - subW) / 2));
+    const subDot = 22;
+    const yJain = availH + 4;
+    const subW = sub.length * subDot * 0.58 * 2.8;
+    const sx = Math.max(8, Math.round((DW - subW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subDot},${subDot},"${sub}"\r\n`;
+      jainCmds += `TEXT ${sx+dx},${yJain+dy},"ROMAN.TTF",0,${subDot},${subDot},"${sub}"\r\n`;
     });
   }
 
-  return [
-    `SET DARKNESS 12`,
-    `DIRECTION 1`,
-    `CLS`,
-    cmds.trim(),
-    `PRINT ${copies},1`,
-    ``
-  ].join('\r\n');
+  const printData = [];
+  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${availH},0,` });
+  printData.push({ type: 'raw', format: 'hex', data: hexString });
+  printData.push({ type: 'raw', format: 'plain', data: `\r\n${jainCmds}PRINT ${copies},1\r\n` });
+  
+  return printData;
 }
 
 
@@ -483,7 +516,8 @@ async function qzPrintFront(name, copies) {
   console.log('[FRONT TSPL]\n', tspl);
   try {
     setQZStatus('printing');
-    await qz.print(_rawConfig(QZP.frontPrinter), [{ type: 'raw', format: 'plain', data: tspl }]);
+    const printData = Array.isArray(tspl) ? tspl : [{ type: 'raw', format: 'plain', data: tspl }];
+    await qz.print(_rawConfig(QZP.frontPrinter), printData);
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Front!`, 'success');
     return true;
