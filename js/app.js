@@ -381,8 +381,19 @@ function renderManual() {
     bp.innerHTML = '<span class="emptylbl">Fill in details to preview</span>';
     return;
   }
-  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${mn.toUpperCase()}</div></div>`;
-  requestAnimationFrame(fitFrontName);
+  
+  if (typeof generateFrontCanvas === 'function') {
+    const previewCanvas = generateFrontCanvas(mn);
+    previewCanvas.style.width = '100%';
+    previewCanvas.style.height = '100%';
+    previewCanvas.style.objectFit = 'contain';
+    previewCanvas.style.display = 'block';
+    fp.innerHTML = '';
+    fp.appendChild(previewCanvas);
+  } else {
+    fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${mn.toUpperCase()}</div></div>`;
+    requestAnimationFrame(fitFrontName);
+  }
   const vg = gn('m-vg');
   if (vg > 0) {
     const p = {

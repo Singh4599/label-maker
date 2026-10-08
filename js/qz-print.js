@@ -168,24 +168,20 @@ function getNutriLines(p) {
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
 /* ─── FRONT label TSPL (65×25mm) ─── */
-function buildFrontTSPL(name, copies) {
+function generateFrontCanvas(name) {
   const DW = 520, DH = 200;
   const n = tsplSafe((name || '').toUpperCase().trim());
   const isJain = n.includes('JAIN');
   const jainBlockH = isJain ? 36 : 0;
   const availH = DH - jainBlockH;
 
-  // Split logic based on length
-  // We force exactly the right number of lines by providing the maximum allowed chunks
   let lines = balanceLines(n, 1);
   if (n.length > 15 && n.length <= 26) {
-    // If it can't balance to 2, wrapText will force it
     lines = balanceLines(n, 2);
     if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')]; 
   } else if (n.length > 26) {
     lines = balanceLines(n, 3);
     if (lines.length < 3) {
-      // Force 3 chunks if it accidentally compressed to 2
       const words = n.split(' ');
       if (words.length >= 3) {
         const third = Math.ceil(words.length / 3);
@@ -198,7 +194,6 @@ function buildFrontTSPL(name, copies) {
     }
   }
 
-  // Final canvas to build the ENTIRE TSPL image (including Jain)
   const canvas = document.createElement('canvas');
   canvas.width = DW;
   canvas.height = DH;
@@ -206,14 +201,13 @@ function buildFrontTSPL(name, copies) {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, DW, DH);
   
-  const SAFE_X = 32; // Increased to 32 dots (4mm) so it NEVER gets cut on edges
-  const SAFE_Y = 24; // top and bottom margin for the main text block
+  const SAFE_X = 32; 
+  const SAFE_Y = 24; 
   
   const usableW = DW - (SAFE_X * 2); 
   const usableH = availH - (SAFE_Y * 2);
   const numLines = lines.length;
   
-  // Optional tiny gap between lines if there are multiple
   const gap = numLines > 1 ? 8 : 0;
   const totalGap = gap * (numLines - 1);
   const lineDestH = Math.floor((usableH - totalGap) / numLines);
@@ -222,8 +216,6 @@ function buildFrontTSPL(name, copies) {
 
   for (let i = 0; i < numLines; i++) {
     const ln = lines[i];
-    
-    // Create a tiny canvas just for this single line
     const lCanvas = document.createElement('canvas');
     const lCtx = lCanvas.getContext('2d');
     const fontSize = 100;
@@ -238,7 +230,6 @@ function buildFrontTSPL(name, copies) {
     const descent = m.actualBoundingBoxDescent || 25;
     const h = ascent + descent;
     
-    // Size it exactly to fit the text tightly
     lCanvas.width = w + 10;
     lCanvas.height = h + 10;
     
@@ -248,22 +239,27 @@ function buildFrontTSPL(name, copies) {
     lCtx.fillStyle = 'black';
     lCtx.fillText(ln, left + 5, ascent + 5);
 
-    // Draw this specific line stretched to the FULL width of the label!
     ctx.drawImage(lCanvas, 5, 5, w, h, SAFE_X, currentY, usableW, lineDestH);
-    
     currentY += lineDestH + gap;
   }
 
-  // Draw Jain text directly onto the canvas
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
     ctx.font = '900 24px "Arial Black", Arial, sans-serif';
     const m = ctx.measureText(sub);
     const sx = Math.max(SAFE_X, (DW - m.width) / 2);
-    // Draw near the bottom edge
     ctx.fillStyle = 'black';
     ctx.fillText(sub, sx, DH - 10);
   }
+
+  return canvas;
+}
+
+function buildFrontTSPL(name, copies) {
+  const canvas = generateFrontCanvas(name);
+  const DW = canvas.width;
+  const DH = canvas.height;
+  const ctx = canvas.getContext('2d');
 
   // --- VISUAL PREVIEW FOR TESTING WITHOUT PRINTER ---
   try {
