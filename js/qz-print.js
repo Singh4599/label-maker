@@ -156,62 +156,58 @@ function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
 /* ─── FRONT label TSPL (65×25mm) ─── */
 function buildFrontTSPL(name, copies) {
-  const W = 65, H = 25;
-  const DW  = W * 8;            // 520 dots
-  const DH  = H * 8;            // 200 dots
-  const n   = tsplSafe(name.toUpperCase());
+  const DW = 520, DH = 200;
+  const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const CW  = 0.62;             // char-width factor for ROMAN.TTF (measured)
-  const P2D = 2.8;              // pt → dots
-  const SAFE = 20;              // safe margin each side (10 dots ≈ 1.25mm)
+  const CW   = 0.58;   // proven char-width factor for ROMAN.TTF
+  const SAFE = 16;
+  const usableW = DW - SAFE * 2;  // 488 dots
 
-  /* ── pick the LARGEST font that fits without any cutting ── */
-  const tierPts = [48,44,40,36,32,28,24,20,18,16,14];
-  let ptSize = 14, lines;
+  const subDot = 22;
+  const jainBlockH = isJain ? (subDot + 8) : 0;
+  const availH = DH - 4 - jainBlockH;
 
-  for (const pt of tierPts) {
-    const charDots  = pt * P2D * CW;
-    const maxCPL    = Math.floor((DW - SAFE * 2) / charDots);   // safe chars per line
-    const wrapped   = wrapText(n, maxCPL);
-    const lineH     = Math.round(pt * P2D) + 6;
-    const totalH    = wrapped.length * lineH;
-    if (wrapped.length <= 3 && totalH <= DH - 10) {             // must fit in label height
-      ptSize = pt; lines = wrapped; break;
+  // Find best split (1/2/3 lines) that maximises dot size.
+  // Constraint: longest line fits in usableW AND all lines fit in availH.
+  let bestScore = -9999, bestDot = 20, bestLines = [n], bestTotalH = 40;
+
+  for (let nL = 1; nL <= 3; nL++) {
+    const lines = balanceLines(n, nL);
+    const numL  = lines.length;
+    if (numL > nL) continue;
+
+    const longest = Math.max(...lines.map(l => l.length));
+    const dotW = Math.floor(usableW / (longest * CW));
+    const dotH = Math.floor((availH - numL * 6) / numL);
+    const dot  = Math.max(12, Math.min(dotW, dotH));
+    const totalH = numL * (dot + 6);
+    const score  = dot - numL * 4;
+
+    if (score > bestScore) {
+      bestScore = score; bestDot = dot;
+      bestLines = lines; bestTotalH = totalH;
     }
   }
-  if (!lines) lines = wrapText(n, 20).slice(0, 3);
 
-  const titleLineH  = Math.round(ptSize * P2D) + 6;
-  const titleTotalH = lines.length * titleLineH;
-
-  const subPt = 12;
-  const jainBlockH = isJain ? (Math.round(subPt * P2D) + 12) : 0;
-
-  /* ── vertical centering ── */
-  const combinedH = titleTotalH + jainBlockH;
-  const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
-
+  const yStart = Math.max(4, Math.round((DH - bestTotalH - jainBlockH) / 2));
   let cmds = '', y = yStart;
 
-  /* ── title lines (bold via 13-point star offsets) ── */
-  lines.forEach(ln => {
-    const tW = ln.length * (ptSize * P2D * CW);
+  bestLines.forEach(ln => {
+    const tW = ln.length * bestDot * CW;
     const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
-    const offsets = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]];
-    offsets.forEach(([dx,dy]) => {
-      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${ptSize},${ptSize},"${ln}"\r\n`;
+    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
+      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${bestDot},${bestDot},"${ln}"\r\n`;
     });
-    y += titleLineH;
+    y += bestDot + 6;
   });
 
-  /* ── jain subtitle ── */
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
     y += 4;
-    const subW = sub.length * (subPt * P2D * CW);
+    const subW = sub.length * subDot * CW;
     const sx   = Math.max(SAFE, Math.round((DW - subW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subPt},${subPt},"${sub}"\r\n`;
+      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subDot},${subDot},"${sub}"\r\n`;
     });
   }
 
@@ -224,6 +220,7 @@ function buildFrontTSPL(name, copies) {
     ``
   ].join('\r\n');
 }
+
 
 /* ─── BACK label TSPL (50×90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
