@@ -172,9 +172,9 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const CW   = 0.58;   // proven char-width factor for ROMAN.TTF
+  const CW   = 0.45;   // updated char-width factor to allow up to 32pt for 12 chars
   const SAFE = 16;
-  const usableW = DW - SAFE * 2;  // 488 dots
+  const usableW = DW; // using full width, no safe margin to allow 32pt to touch edges
 
   const subDot = 22;
   const jainBlockH = isJain ? (subDot + 8) : 0;
@@ -193,12 +193,16 @@ function buildFrontTSPL(name, copies) {
     const longest = Math.max(...lines.map(l => l.length));
     const ptW = Math.floor(usableW / (longest * CW * P2D));
     const ptH = Math.floor((availH - numL * 6) / (numL * P2D));
-    const pt  = Math.max(12, Math.min(ptW, ptH));
+    let pt  = Math.max(12, Math.min(ptW, ptH));
+    
+    // Hard cap for 1-line very short words so they don't become comically huge
+    if (nL === 1) pt = Math.min(pt, 50);
+
     const totalH = numL * Math.round(pt * P2D + 6);
     
-    // FAST TRACK: Test 30pt for 1 line
-    if (nL === 1 && pt >= 20) {
-      bestPt = 30; bestLines = lines; bestTotalH = Math.round(30 * P2D + 6); break;
+    // FAST TRACK: If 1 line gives a good font (>= 28pt), stick to it!
+    if (nL === 1 && pt >= 28) {
+      bestPt = pt; bestLines = lines; bestTotalH = totalH; break;
     }
     // FAST TRACK: If 2 lines gives a good font, stop here.
     if (nL === 2 && pt >= 18) {
@@ -219,11 +223,15 @@ function buildFrontTSPL(name, copies) {
 
   bestLines.forEach(ln => {
     const tW = Math.round(ln.length * bestPt * P2D * CW);
-    // Allow X to go down to 0 (no safety margin) to give maximum room for 30pt
     const x  = Math.max(0, Math.round((DW - tW) / 2));
-    [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${bestPt},${bestPt},"${ln}"\r\n`;
+    
+    // EXTRA BOLD: 3x3 dot matrix offset
+    [0,1,2].forEach(dx => {
+      [0,1,2].forEach(dy => {
+        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${bestPt},${bestPt},"${ln}"\r\n`;
+      });
     });
+    
     y += Math.round(bestPt * P2D) + 6;
   });
 
