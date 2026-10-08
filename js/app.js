@@ -566,14 +566,22 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
+  // ALWAY TRIGGER PREVIEW for testing
+  if (typeof buildFrontTSPL === 'function') {
+    buildFrontTSPL(name, copies);
+  }
+
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintFront === 'function') {
     qzPrintFront(name, copies).then(function(done) {
-      if (!done) pF_Chrome(name, copies); // fallback
-    }).catch(function() { pF_Chrome(name, copies); });
+      if (!done) {
+        showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      }
+    }).catch(function() { 
+      showToast('Testing preview mode. QZ Tray is offline.', 'info');
+    });
     return;
   }
-  pF_Chrome(name, copies);
 }
 
 function pF_Chrome(name, copies) {
