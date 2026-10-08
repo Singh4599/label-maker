@@ -176,16 +176,7 @@ function balanceLines(text, maxLines) {
   return bestChunks;
 }
 
-/* ═══════ HELPER: TSPL Edge-to-Edge Line Scaler (DOT based) ═══════ */
-function drawBox(x1, y1, x2, y2, t) {
-  let b = '';
-  b += `BAR ${x1},${y1},${x2-x1},${t}\r\n`;
-  b += `BAR ${x1},${y2-t},${x2-x1},${t}\r\n`;
-  b += `BAR ${x1},${y1},${t},${y2-y1}\r\n`;
-  b += `BAR ${x2-t},${y1},${t},${y2-y1}\r\n`;
-  return b;
-}
-
+/* ═══════ HELPER: Edge-to-Edge Line Scaler (DOT based) ═══════ */
 function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxDot = 100) {
   let bestConfig = null;
   let maxScore = -9999;
@@ -231,14 +222,14 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const CW = 0.58; // proven stable width factor
+  const CW = 0.58; // slightly conservative width factor for Arial
   const SAFE = 20;
 
   const subDot = 20;
   const jainBlockH = isJain ? (subDot + 10) : 0;
   
-  // Calculate edge-to-edge title — hard cap at 80 dots to prevent overflow
-  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 80);
+  // Calculate edge-to-edge title
+  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 90);
 
   const combinedH = titleConfig.totalH + jainBlockH;
   const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
@@ -278,7 +269,7 @@ function buildFrontTSPL(name, copies) {
 /* ─── BACK label TSPL (50×90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const dw = 400, DH = 720;
-  const CW = 0.58; // proven stable width factor
+  const CW = 0.58;             
   const SAFE = 10;                
   const lm = SAFE, re = dw - SAFE, usableW = re - lm;
 
@@ -300,17 +291,17 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const jainDot = 20;
   const jainH = isJain ? (jainDot + 6) : 0;
 
-  // Title edge-to-edge: hard cap 60 dots max so it never overflows the 50mm label
-  const titleConfig = solveEdgeToEdge(name, 4, 150 - jainH, usableW, CW, 60);
+  // Title edge-to-edge calculation
+  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, CW, 70);
 
   const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
   const catFull  = `Category - ${cat}`;
   const ingrFull = `(In Descending Order By Weight) ${ingr}`;
 
-  let baseDot = 20; // start at a safe size, loop will shrink if needed
+  let baseDot = 22; // starting large (approx 3mm)
   let compactH, catLines, ingrLines, nutriLines, baseStep, nBoxH, catH;
-  const MRP_DOT = 24;
-  const TAX_DOT = 14;
+  const MRP_DOT = 26;
+  const TAX_DOT = 16;
   const BARCODE_H = 62;     
 
   while (baseDot >= 10) {
@@ -391,8 +382,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
       cmds += `TEXT ${cx},${by},"ROMAN.TTF",0,${bDot},${bDot},"${ln}"\r\n`;
       by += bStep;
     });
-    cmds += drawBox(lm+8, boxTop, re-8, by+2, 2);
-    y = by + 6;
+    cmds += `BOX ${lm+10},${boxTop},${re-10},${by+2},2\r\n`;
+    y = by + 8;
   } else {
     y += 2;
   }
@@ -426,8 +417,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   y += baseStep + 2;
 
   const boxBot = y + nBoxH;
-  cmds += drawBox(lm, y, re, boxBot, 2);
-  let ny = y + 4;
+  cmds += `BOX ${lm},${y},${re},${boxBot},2\r\n`;
+  let ny = y + 5;
   nutriLines.forEach(ln => {
     cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${baseDot},${baseDot},"${tsplSafe(ln)}"\r\n`;
     ny += baseStep;
