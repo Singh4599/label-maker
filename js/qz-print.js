@@ -421,41 +421,63 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   y += 12;
 
   // Ingredients
-  ctx.font = 'bold 18px Arial';
+  ctx.font = 'bold 20px Arial';
   ctx.fillText('INGREDIENTS :-', SAFE_X, y);
-  y += 24;
-  ctx.font = '18px Arial';
-  const ingrLines = wrapText(`(In Descending Order By Weight) ${ingr}`, 38);
+  y += 26;
+  ctx.font = '20px Arial';
+  
+  // Custom wrapping function for canvas pixel width
+  function wrapTextCanvas(context, text, maxWidth) {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = words[0] || '';
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      const width = context.measureText(currentLine + " " + word).width;
+      if (width < maxWidth) {
+        currentLine += " " + word;
+      } else {
+        lines.push(currentLine);
+        currentLine = word;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  }
+
+  const ingrLines = wrapTextCanvas(ctx, `(In Descending Order By Weight) ${ingr}`, usableW);
   for(let ln of ingrLines) {
     ctx.fillText(ln, SAFE_X, y);
-    y += 22;
+    y += 24;
   }
-  y += 6;
+  y += 8;
 
   // Nutrition
-  ctx.font = 'bold 18px Arial';
+  ctx.font = '900 20px "Arial Black", Arial, sans-serif';
   const n1 = 'NUTRITIONAL INFORMATION';
-  const n2 = 'Approximate Composition per 100 g';
   ctx.fillText(n1, (DW - ctx.measureText(n1).width)/2, y);
-  y += 22;
+  y += 24;
+  ctx.font = 'italic 16px Arial';
+  const n2 = 'Approximate Composition per 100 g';
   ctx.fillText(n2, (DW - ctx.measureText(n2).width)/2, y);
-  y += 28;
+  y += 26;
 
   // Box
   ctx.font = 'bold 18px Arial';
-  const nl = typeof getNutriLines === 'function' ? getNutriLines(p) : [];
+  const fullNutriStr = `Energy (${p.e||0}kcal), Protein (${p.p||0}g), Carbohydrate (${p.cb||0}g), Total Sugars (—g), Added Sugars (—g), Total Fat (${p.tf||0}g), Saturated Fat (${p.sf||0}g), Trans Fat (—g), Cholesterol (—mg), Sodium (${p.so||0}mg)`;
+  const nl = wrapTextCanvas(ctx, fullNutriStr, usableW - 16);
   const boxTop = y;
   y += 8;
   for(let ln of nl) {
     ctx.fillText(ln, SAFE_X + 8, y);
     y += 24;
   }
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1.5;
   ctx.strokeRect(SAFE_X, boxTop, usableW, y - boxTop + 4);
-  y += 20;
+  y += 24;
 
   // Details
-  ctx.font = 'bold 18px Arial';
+  ctx.font = 'bold 20px Arial';
   const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
   const details = [
     `NET WEIGHT : ${nw}`,
@@ -465,17 +487,17 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   ];
   for(let ln of details) {
     ctx.fillText(ln, SAFE_X, y);
-    y += 24;
+    y += 26;
   }
-  y += 8;
+  y += 10;
 
   // MRP
-  ctx.font = '900 24px "Arial Black", Arial, sans-serif';
+  ctx.font = '900 28px "Arial Black", Arial, sans-serif';
   ctx.fillText(`MRP : ₹ ${mrp}/-`, SAFE_X, y);
-  y += 30;
-  ctx.font = 'bold 14px Arial';
+  y += 34;
+  ctx.font = 'bold 16px Arial';
   ctx.fillText(`(INCL. OF ALL TAXES)`, SAFE_X, y);
-  y += 20;
+  y += 22;
   ctx.fillText(`FOR 1g = Rs ${pg}`, SAFE_X, y);
   y += 30;
 
