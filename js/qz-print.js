@@ -146,6 +146,19 @@ function wrapText(text, maxChars) {
   if (cur) lines.push(cur);
   return lines.length ? lines : [text];  // no truncation fallback
 }
+function balanceLines(text, numLines) {
+  text = (text || '').trim();
+  if (numLines === 1) return [text];
+  const words = text.split(' ');
+  if (words.length <= numLines) return words;
+  
+  let maxLen = text.length;
+  for (let cpl = Math.ceil(maxLen / numLines); cpl <= maxLen; cpl++) {
+    const lines = wrapText(text, cpl);
+    if (lines.length <= numLines) return lines;
+  }
+  return wrapText(text, maxLen);
+}
 function getNutriLines(p) {
   return [
     `En:${p.e||0}kcal Pro:${p.p||0}g Carb:${p.cb||0}g`,
