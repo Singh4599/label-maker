@@ -255,14 +255,15 @@ function generateFrontCanvas(name) {
   return canvas;
 }
 
-function buildFrontTSPL(name, copies) {
+function buildFrontTSPL(name, copies, disablePopup) {
   const canvas = generateFrontCanvas(name);
   const DW = canvas.width;
   const DH = canvas.height;
   const ctx = canvas.getContext('2d');
 
   // --- VISUAL PREVIEW FOR TESTING WITHOUT PRINTER ---
-  try {
+  if (!disablePopup) {
+    try {
     const prevId = 'debug-tspl-preview';
     const old = document.getElementById(prevId);
     if(old) old.remove();
@@ -284,7 +285,8 @@ function buildFrontTSPL(name, copies) {
     
     // Auto remove after 10 seconds
     setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
-  } catch(e) {}
+    } catch(e) {}
+  }
   // ---------------------------------------------------
 
   const imgData = ctx.getImageData(0, 0, DW, DH);
@@ -542,35 +544,37 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   return finalCanvas;
 }
 
-function buildBackTSPL(p, v, bn, pd, bb, copies) {
+function buildBackTSPL(p, v, bn, pd, bb, copies, disablePopup) {
   const canvas = generateBackCanvas(p, v, bn, pd, bb);
   const DW = canvas.width;
   const DH = canvas.height;
   const ctx = canvas.getContext('2d');
 
   // --- VISUAL PREVIEW FOR TESTING WITHOUT PRINTER ---
-  try {
-    const prevId = 'debug-tspl-preview-back';
-    const old = document.getElementById(prevId);
-    if(old) old.remove();
-    
-    const preview = document.createElement('div');
-    preview.id = prevId;
-    preview.style.cssText = 'position:fixed; top:20px; left:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);';
-    preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Back Bitmap Preview</div>';
-    
-    const clone = document.createElement('canvas');
-    clone.width = DW; clone.height = DH;
-    clone.getContext('2d').drawImage(canvas, 0, 0);
-    // scale to fit screen nicely
-    clone.style.width = '200px'; 
-    clone.style.height = (DH/2) + 'px';
-    clone.style.border = '1px dashed #333';
-    
-    preview.appendChild(clone);
-    document.body.appendChild(preview);
-    setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
-  } catch(e) {}
+  if (!disablePopup) {
+    try {
+      const prevId = 'debug-tspl-preview-back';
+      const old = document.getElementById(prevId);
+      if(old) old.remove();
+      
+      const preview = document.createElement('div');
+      preview.id = prevId;
+      preview.style.cssText = 'position:fixed; top:20px; left:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);';
+      preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Back Bitmap Preview</div>';
+      
+      const clone = document.createElement('canvas');
+      clone.width = DW; clone.height = DH;
+      clone.getContext('2d').drawImage(canvas, 0, 0);
+      // scale to fit screen nicely
+      clone.style.width = '200px'; 
+      clone.style.height = (DH/2) + 'px';
+      clone.style.border = '1px dashed #333';
+      
+      preview.appendChild(clone);
+      document.body.appendChild(preview);
+      setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
+    } catch(e) {}
+  }
   // ---------------------------------------------------
 
   const imgData = ctx.getImageData(0, 0, DW, DH);
@@ -622,7 +626,7 @@ function _rawConfig(printer) {
 async function qzPrintFront(name, copies) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;
-  const tspl = buildFrontTSPL(name, copies);
+  const tspl = buildFrontTSPL(name, copies, true); // true = disable popup here
   console.log('[FRONT TSPL]\n', tspl);
   try {
     setQZStatus('printing');
@@ -642,11 +646,12 @@ async function qzPrintFront(name, copies) {
 async function qzPrintBack(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;
-  const tspl = buildBackTSPL(p, v, bn, pd, bb, copies);
+  const tspl = buildBackTSPL(p, v, bn, pd, bb, copies, true); // true = disable popup here
   console.log('[BACK TSPL]\n', tspl);
   try {
     setQZStatus('printing');
-    await qz.print(_rawConfig(QZP.backPrinter), [{ type: 'raw', format: 'plain', data: tspl }]);
+    const printData = Array.isArray(tspl) ? tspl : [{ type: 'raw', format: 'plain', data: tspl }];
+    await qz.print(_rawConfig(QZP.backPrinter), printData);
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Back!`, 'success');
     return true;

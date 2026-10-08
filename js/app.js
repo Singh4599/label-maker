@@ -589,19 +589,16 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
-  // ALWAY TRIGGER PREVIEW for testing
-  if (typeof buildFrontTSPL === 'function') {
-    buildFrontTSPL(name, copies);
-  }
-
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintFront === 'function') {
     qzPrintFront(name, copies).then(function(done) {
       if (!done) {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (typeof buildFrontTSPL === 'function') buildFrontTSPL(name, copies);
       }
     }).catch(function() { 
       showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      if (typeof buildFrontTSPL === 'function') buildFrontTSPL(name, copies);
     });
     return;
   }
@@ -628,19 +625,16 @@ function pB() {
   }
   const copies = getCopies();
 
-  // ALWAY TRIGGER PREVIEW for testing
-  if (typeof buildBackTSPL === 'function') {
-    buildBackTSPL(p, v, bn, pd, bb, copies);
-  }
-
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintBack === 'function') {
     qzPrintBack(p, v, bn, pd, bb, copies).then(function(done) {
       if (!done) {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (typeof buildBackTSPL === 'function') buildBackTSPL(p, v, bn, pd, bb, copies);
       }
     }).catch(function() { 
       showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      if (typeof buildBackTSPL === 'function') buildBackTSPL(p, v, bn, pd, bb, copies);
     });
     return;
   }
