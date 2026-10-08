@@ -175,19 +175,46 @@ function buildFrontTSPL(name, copies) {
   const jainBlockH = isJain ? 40 : 0;
   const availH = DH - 8 - jainBlockH;
 
-  // Split into lines based on length for better aspect ratio
-  let lines = balanceLines(n, 1);
-  if (n.length > 13) {
-    lines = balanceLines(n, 2);
-  } else if (n.length > 25) {
-    lines = balanceLines(n, 3);
-  }
-  
+  const targetRatio = (DW - 16) / availH;
   const vCanvas = document.createElement('canvas');
   const vCtx = vCanvas.getContext('2d');
   const fontSize = 100;
   vCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
 
+  let lines = [n];
+  let bestScore = Infinity;
+  
+  for (let nL = 1; nL <= 4; nL++) {
+    const candidateLines = balanceLines(n, nL);
+    if (candidateLines.length !== nL && nL !== 1) continue; // Skip if it couldn't split to nL lines
+
+    let maxW = 1;
+    let totalH = 0;
+    
+    for (let ln of candidateLines) {
+      const m = vCtx.measureText(ln);
+      const w = m.width;
+      const ascent = m.actualBoundingBoxAscent || 75;
+      const descent = m.actualBoundingBoxDescent || 25;
+      const h = ascent + descent;
+      if (w > maxW) maxW = w;
+      totalH += (h + 10);
+    }
+    
+    const ratio = maxW / totalH;
+    
+    // Calculate how far the ratio is from target (log scale so 2x and 0.5x are penalized equally)
+    const diff = Math.abs(Math.log(ratio / targetRatio));
+    // Small penalty for adding more lines, preferring fewer lines when it's a close tie
+    const score = diff + (nL * 0.12);
+
+    if (score < bestScore) {
+      bestScore = score;
+      lines = candidateLines;
+    }
+  }
+
+  // Measure final winning lines for the canvas size
   let maxW = 1;
   let totalH = 0;
   const lineMetrics = [];
