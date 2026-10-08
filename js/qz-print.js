@@ -175,50 +175,15 @@ function buildFrontTSPL(name, copies) {
   const jainBlockH = isJain ? 40 : 0;
   const availH = DH - 8 - jainBlockH;
 
-  // Revert back to the 1-line preferred logic, only splitting for very long texts
+  // Split logic based on length
   let lines = balanceLines(n, 1);
   if (n.length > 13) {
     lines = balanceLines(n, 2);
   } else if (n.length > 25) {
     lines = balanceLines(n, 3);
   }
-  
-  const vCanvas = document.createElement('canvas');
-  const vCtx = vCanvas.getContext('2d');
-  const fontSize = 100;
-  vCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
 
-  let maxW = 1;
-  let totalH = 0;
-  const lineMetrics = [];
-  
-  for (let ln of lines) {
-    const m = vCtx.measureText(ln);
-    const w = m.width;
-    const ascent = m.actualBoundingBoxAscent || 75;
-    const descent = m.actualBoundingBoxDescent || 25;
-    const h = ascent + descent;
-    if (w > maxW) maxW = w;
-    lineMetrics.push({ w, h, ascent, descent });
-    totalH += (h + 10);
-  }
-
-  vCanvas.width = maxW;
-  vCanvas.height = totalH;
-  vCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
-  vCtx.fillStyle = 'white';
-  vCtx.fillRect(0, 0, vCanvas.width, vCanvas.height);
-  vCtx.fillStyle = 'black';
-
-  let cy = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const m = lineMetrics[i];
-    const cx = (vCanvas.width - m.w) / 2;
-    cy += m.ascent;
-    vCtx.fillText(lines[i], cx, cy);
-    cy += m.descent + 10;
-  }
-
+  // Final canvas to build the TSPL image
   const canvas = document.createElement('canvas');
   canvas.width = DW;
   canvas.height = availH;
@@ -227,24 +192,53 @@ function buildFrontTSPL(name, copies) {
   ctx.fillRect(0, 0, DW, availH);
   
   const SAFE_X = 16; 
-  const SAFE_Y = 24; // 24 dots = ~3mm top and bottom margin so it doesn't stick to the top!
+  const SAFE_Y = 24; // top and bottom margin
   
   const usableW = DW - (SAFE_X * 2); 
   const usableH = availH - (SAFE_Y * 2);
-  const targetRatio = usableW / usableH;
-  const naturalRatio = vCanvas.width / vCanvas.height;
+  const numLines = lines.length;
   
-  let destW = usableW;
-  let destH = usableH;
-  
-  // If it's a very short word (like "JEERA"), prevent comical horizontal stretching
-  if (naturalRatio < targetRatio / 1.8) {
-    destW = vCanvas.width * (usableH / vCanvas.height) * 1.8;
+  // Optional tiny gap between lines if there are multiple
+  const gap = numLines > 1 ? 8 : 0;
+  const totalGap = gap * (numLines - 1);
+  const lineDestH = Math.floor((usableH - totalGap) / numLines);
+
+  let currentY = SAFE_Y;
+
+  for (let i = 0; i < numLines; i++) {
+    const ln = lines[i];
+    
+    // Create a tiny canvas just for this single line
+    const lCanvas = document.createElement('canvas');
+    const lCtx = lCanvas.getContext('2d');
+    const fontSize = 100;
+    lCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+    
+    const m = lCtx.measureText(ln);
+    const left = m.actualBoundingBoxLeft || 0;
+    const right = m.actualBoundingBoxRight || m.width;
+    const w = left + right;
+    
+    const ascent = m.actualBoundingBoxAscent || 75;
+    const descent = m.actualBoundingBoxDescent || 25;
+    const h = ascent + descent;
+    
+    // Size it exactly to fit the text tightly
+    lCanvas.width = w + 10;
+    lCanvas.height = h + 10;
+    
+    lCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+    lCtx.fillStyle = 'white';
+    lCtx.fillRect(0, 0, lCanvas.width, lCanvas.height);
+    lCtx.fillStyle = 'black';
+    lCtx.fillText(ln, left + 5, ascent + 5);
+
+    // Draw this specific line stretched to the FULL width of the label!
+    // This gives the exact 'Block Text' BarTender feel.
+    ctx.drawImage(lCanvas, 5, 5, w, h, SAFE_X, currentY, usableW, lineDestH);
+    
+    currentY += lineDestH + gap;
   }
-  
-  const destX = (DW - destW) / 2;
-  const destY = (availH - destH) / 2;
-  ctx.drawImage(vCanvas, destX, destY, destW, destH);
 
   // --- VISUAL PREVIEW FOR TESTING WITHOUT PRINTER ---
   try {
