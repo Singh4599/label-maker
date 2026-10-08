@@ -176,8 +176,20 @@ function balanceLines(text, maxLines) {
   return bestChunks;
 }
 
-/* ═══════ HELPER: Edge-to-Edge Line Scaler (STRETCH based) ═══════ */
-function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxH = 100) {
+/* ═══════ HELPER: TSPL TrueType Physical Mapper ═══════ */
+const H_RATIO = 0.50; // physical height in dots = TSPL_H * 0.50
+const W_RATIO = 0.48; // physical width in dots = TSPL_W * 0.48
+
+function drawBox(x1, y1, x2, y2, t) {
+  let b = '';
+  b += `BAR ${x1},${y1},${x2-x1},${t}\r\n`; // top
+  b += `BAR ${x1},${y2-t},${x2-x1},${t}\r\n`; // bottom
+  b += `BAR ${x1},${y1},${t},${y2-y1}\r\n`; // left
+  b += `BAR ${x2-t},${y1},${t},${y2-y1}\r\n`; // right
+  return b;
+}
+
+function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, absoluteMaxTsplH = 200) {
   let bestConfig = null;
   let maxScore = -9999;
 
@@ -189,12 +201,13 @@ function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxH = 
     let totalH = 0;
     
     for (const ln of lines) {
-      let dotW = Math.floor(dwSafe / (ln.length * CW));
-      dotW = Math.min(250, dotW); // Don't let it become ridiculously wide
+      let tsplW = Math.floor(dwSafe / (ln.length * W_RATIO));
+      tsplW = Math.min(300, tsplW); // Don't let it become ridiculously wide
       
-      let dotH = Math.min(absoluteMaxH, dotW); // Natural proportion capped at max height
-      let lh = dotH + 6; // line spacing
-      lineConfigs.push({ text: ln, dotW: dotW, dotH: dotH, lh: lh });
+      let tsplH = Math.min(absoluteMaxTsplH, tsplW); 
+      let physH = tsplH * H_RATIO;
+      let lh = Math.round(physH) + 6; 
+      lineConfigs.push({ text: ln, tsplW, tsplH, physH, lh });
       totalH += lh;
     }
 
@@ -202,22 +215,23 @@ function solveEdgeToEdge(name, maxLinesLimit, maxDH, dwSafe, CW, absoluteMaxH = 
       const scale = maxDH / totalH;
       totalH = 0;
       lineConfigs.forEach(c => {
-        c.dotH = Math.max(12, Math.floor(c.dotH * scale));
-        c.lh = c.dotH + 6;
+        c.physH = Math.max(12, c.physH * scale);
+        c.tsplH = Math.round(c.physH / H_RATIO);
+        c.lh = Math.round(c.physH) + 6;
         totalH += c.lh;
       });
-      // WE DO NOT SCALE c.dotW! It stays stretched horizontally.
+      // WE DO NOT SCALE c.tsplW! It stays stretched horizontally.
     }
 
-    const avgDotH = lineConfigs.reduce((sum, c) => sum + c.dotH, 0) / lineConfigs.length;
-    const score = avgDotH - (numLines * 4); // penalize too many lines
+    const avgTsplH = lineConfigs.reduce((sum, c) => sum + c.tsplH, 0) / lineConfigs.length;
+    const score = avgTsplH - (numLines * 4); // penalize too many lines
     
     if (score > maxScore) {
       maxScore = score;
       bestConfig = { lines: lineConfigs, totalH: totalH };
     }
   }
-  return bestConfig || { lines: [{ text: name, dotW: 30, dotH: 20, lh: 26 }], totalH: 26 };
+  return bestConfig || { lines: [{ text: name, tsplW: 60, tsplH: 40, lh: 26 }], totalH: 26 };
 }
 
 /* ─── FRONT label TSPL (65×25mm) ─── */
@@ -225,14 +239,14 @@ function buildFrontTSPL(name, copies) {
   const DW = 520, DH = 200;
   const n = tsplSafe(name.toUpperCase());
   const isJain = n.includes('JAIN');
-  const CW = 0.50; // Calibrated for maximum edge-to-edge stretch
   const SAFE = 12; // Push closer to edges
 
-  const subDot = 20;
-  const jainBlockH = isJain ? (subDot + 10) : 0;
+  const jainTspl = 30;
+  const jainPhysH = jainTspl * H_RATIO;
+  const jainBlockH = isJain ? Math.round(jainPhysH + 10) : 0;
   
   // Calculate edge-to-edge title
-  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, CW, 90);
+  const titleConfig = solveEdgeToEdge(n, 4, DH - 10 - jainBlockH, DW - SAFE * 2, 160);
 
   const combinedH = titleConfig.totalH + jainBlockH;
   const yStart    = Math.max(4, Math.round((DH - combinedH) / 2));
@@ -240,11 +254,11 @@ function buildFrontTSPL(name, copies) {
   let cmds = '', y = yStart;
 
   titleConfig.lines.forEach(c => {
-    const tW = c.text.length * (c.dotW * CW);
-    const x  = Math.max(SAFE, Math.round((DW - tW) / 2));
+    const physW = c.text.length * (c.tsplW * W_RATIO);
+    const x  = Math.max(SAFE, Math.round((DW - physW) / 2));
     const offsets = [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]];
     offsets.forEach(([dx,dy]) => {
-      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dotW},${c.dotH},"${c.text}"\r\n`;
+      cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.tsplW},${c.tsplH},"${c.text}"\r\n`;
     });
     y += c.lh;
   });
@@ -252,10 +266,10 @@ function buildFrontTSPL(name, copies) {
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
     y += 4;
-    const subW = sub.length * (subDot * CW);
-    const sx   = Math.max(SAFE, Math.round((DW - subW) / 2));
+    const physW = sub.length * (jainTspl * W_RATIO);
+    const sx   = Math.max(SAFE, Math.round((DW - physW) / 2));
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) => {
-      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${subDot},${subDot},"${sub}"\r\n`;
+      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainTspl},${jainTspl},"${sub}"\r\n`;
     });
   }
 
@@ -272,7 +286,6 @@ function buildFrontTSPL(name, copies) {
 /* ─── BACK label TSPL (50×90mm) ─── */
 function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const dw = 400, DH = 720;
-  const CW = 0.50;             
   const SAFE = 12;                
   const lm = SAFE, re = dw - SAFE, usableW = re - lm;
 
@@ -287,36 +300,45 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   const isJain = name.includes('JAIN');
   const isBlended = (p.c || '').toLowerCase().includes('blended');
 
-  function txtW(str, dot) { return str.length * dot * CW; }
-  function centerX(str, dot) { return Math.max(lm, Math.round((dw - txtW(str, dot)) / 2)); }
-  function maxCPL(dot) { return Math.floor(usableW / (dot * CW)); }
+  function txtW(str, tsplVal) { return str.length * tsplVal * W_RATIO; }
+  function centerX(str, tsplVal) { return Math.max(lm, Math.round((dw - txtW(str, tsplVal)) / 2)); }
 
-  const jainDot = 20;
-  const jainH = isJain ? (jainDot + 6) : 0;
+  const jainTspl = 30;
+  const jainPhysH = Math.round(jainTspl * H_RATIO);
+  const jainH = isJain ? (jainPhysH + 6) : 0;
 
-  // Title edge-to-edge calculation
-  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, CW, 70);
+  // Title edge-to-edge calculation (max TSPL height 140)
+  const titleConfig = solveEdgeToEdge(name, 4, 160 - jainH, usableW, 140);
 
   const nutriStr = typeof getNutrition === 'function' ? getNutrition(p) : getNutriLines(p).join(', ');
   const catFull  = `Category - ${cat}`;
   const ingrFull = `(In Descending Order By Weight) ${ingr}`;
 
-  let baseDot = 22; // starting large (approx 3mm)
+  let baseVal = 44; // approx 2.75mm physical height
   let compactH, catLines, ingrLines, nutriLines, baseStep, nBoxH, catH;
-  const MRP_DOT = 26;
-  const TAX_DOT = 16;
+  const MRP_VAL = 52; 
+  const TAX_VAL = 32; 
   const BARCODE_H = 62;     
 
-  while (baseDot >= 10) {
-    baseStep = baseDot + 4;
-    const cpl = maxCPL(baseDot);
+  while (baseVal >= 20) {
+    let physH = Math.round(baseVal * H_RATIO);
+    baseStep = physH + 4;
+    
+    const cpl = Math.floor(usableW / (baseVal * W_RATIO));
 
     catLines   = wrapText(catFull, cpl);
     ingrLines  = wrapText(ingrFull, cpl).slice(0, 10);
     nutriLines = wrapText(nutriStr, cpl);
 
     catH = catLines.length * baseStep;
-    const blendH = isBlended ? (3 * (Math.max(10, baseDot-2) + 4) + 12) : 0;
+    
+    let bVal = Math.max(20, baseVal - 4);
+    let bPhysH = Math.round(bVal * H_RATIO);
+    let bStep = bPhysH + 4;
+    let bCpl = Math.floor((usableW - 16) / (bVal * W_RATIO));
+    let blendLines = wrapText("Mixed Masala Powder, Spices content more than 85%, salt content more than 5%", bCpl);
+    const blendH = isBlended ? (blendLines.length * bStep + 12) : 0;
+
     nBoxH = 8 + nutriLines.length * baseStep + 8;
 
     compactH =
@@ -327,12 +349,12 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
       baseStep + 2 + ingrLines.length * baseStep + 4 +     
       baseStep + baseStep + 4 + nBoxH + 4 +                
       baseStep * 4 + 4 +                                   
-      MRP_DOT + 4 +                       
-      TAX_DOT * 2 + 8 +                   
+      Math.round(MRP_VAL * H_RATIO) + 4 +                       
+      Math.round(TAX_VAL * H_RATIO) * 2 + 8 +                   
       BARCODE_H;                                           
 
     if (compactH <= DH - 10) break;
-    baseDot -= 1; // step down by 1 dot
+    baseVal -= 2;
   }
 
   const extra = Math.max(0, DH - compactH - 10);
@@ -341,10 +363,10 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   /* ══ 1. TITLE ══ */
   titleConfig.lines.forEach(c => {
-    const x = centerX(c.text, c.dotW);
+    const x = centerX(c.text, c.tsplW);
     [[0,0],[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1],[-2,0],[2,0],[0,-2],[0,2]]
       .forEach(([dx,dy]) => {
-        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.dotW},${c.dotH},"${c.text}"\r\n`;
+        cmds += `TEXT ${x+dx},${y+dy},"ROMAN.TTF",0,${c.tsplW},${c.tsplH},"${c.text}"\r\n`;
       });
     y += c.lh;
   });
@@ -352,20 +374,20 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   /* ══ 2. JAIN subtitle ══ */
   if (isJain) {
     const sub = 'NO ONION NO GARLIC';
-    const sx  = centerX(sub, jainDot);
+    const sx  = centerX(sub, jainTspl);
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainDot},${jainDot},"${sub}"\r\n`
+      cmds += `TEXT ${sx+dx},${y+dy},"ROMAN.TTF",0,${jainTspl},${jainTspl},"${sub}"\r\n`
     );
-    y += jainDot + 6;
+    y += jainPhysH + 6;
   }
   y += gp;
 
   /* ══ 3. CATEGORY ══ */
-  const catDot = Math.min(baseDot + 2, 26);
+  const catVal = Math.min(baseVal + 4, 48);
   catLines.forEach(cl => {
-    const cx = centerX(cl, catDot);
+    const cx = centerX(cl, catVal);
     [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-      cmds += `TEXT ${cx+dx},${y+dy},"ROMAN.TTF",0,${catDot},${catDot},"${cl}"\r\n`
+      cmds += `TEXT ${cx+dx},${y+dy},"ROMAN.TTF",0,${catVal},${catVal},"${cl}"\r\n`
     );
     y += baseStep;
   });
@@ -373,19 +395,20 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   /* ══ 3.5 BLENDED SPICES BOX ══ */
   if (isBlended) {
     y += 4;
-    const blendTxt = "Mixed Masala Powder, Spices content more than 85%, salt content more than 5%";
-    const bDot = Math.max(10, baseDot - 2);
-    const bCpl = maxCPL(bDot) - 4; 
-    const blendLines = wrapText(blendTxt, bCpl);
-    const bStep = bDot + 4;
+    const bVal = Math.max(20, baseVal - 4);
+    const bPhysH = Math.round(bVal * H_RATIO);
+    const bCpl = Math.floor((usableW - 16) / (bVal * W_RATIO));
+    const blendLines = wrapText("Mixed Masala Powder, Spices content more than 85%, salt content more than 5%", bCpl);
+    const bStep = bPhysH + 4;
+    
     const boxTop = y;
     let by = y + 4;
     blendLines.forEach(ln => {
-      const cx = centerX(ln, bDot);
-      cmds += `TEXT ${cx},${by},"ROMAN.TTF",0,${bDot},${bDot},"${ln}"\r\n`;
+      const cx = centerX(ln, bVal);
+      cmds += `TEXT ${cx},${by},"ROMAN.TTF",0,${bVal},${bVal},"${ln}"\r\n`;
       by += bStep;
     });
-    cmds += `BOX ${lm+10},${boxTop},${re-10},${by+2},2\r\n`;
+    cmds += drawBox(lm+4, boxTop, re-4, by+2, 2);
     y = by + 8;
   } else {
     y += 2;
@@ -396,11 +419,11 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
 
   /* ══ 4. INGREDIENTS ══ */
   [[0,0],[1,0]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${baseDot},${baseDot},"INGREDIENTS :-"\r\n`
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${baseVal},${baseVal},"INGREDIENTS :-"\r\n`
   );
   y += baseStep + 2;
   ingrLines.forEach(ln => {
-    cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${baseDot},${baseDot},"${tsplSafe(ln)}"\r\n`;
+    cmds += `TEXT ${lm},${y},"ROMAN.TTF",0,${baseVal},${baseVal},"${tsplSafe(ln)}"\r\n`;
     y += baseStep;
   });
   y += 2 + gp;
@@ -408,28 +431,28 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   /* ══ 5. NUTRITIONAL INFORMATION ══ */
   const nTitle1 = 'NUTRITIONAL INFORMATION';
   const nTitle2 = 'Approximate Composition per 100 g';
-  const t1x = centerX(nTitle1, baseDot);
-  const t2x = centerX(nTitle2, baseDot);
+  const t1x = centerX(nTitle1, baseVal);
+  const t2x = centerX(nTitle2, baseVal);
   [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${t1x+dx},${y+dy},"ROMAN.TTF",0,${baseDot},${baseDot},"${nTitle1}"\r\n`
+    cmds += `TEXT ${t1x+dx},${y+dy},"ROMAN.TTF",0,${baseVal},${baseVal},"${nTitle1}"\r\n`
   );
   y += baseStep;
   [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${t2x+dx},${y+dy},"ROMAN.TTF",0,${baseDot},${baseDot},"${nTitle2}"\r\n`
+    cmds += `TEXT ${t2x+dx},${y+dy},"ROMAN.TTF",0,${baseVal},${baseVal},"${nTitle2}"\r\n`
   );
   y += baseStep + 2;
 
   const boxBot = y + nBoxH;
-  cmds += `BOX ${lm},${y},${re},${boxBot},2\r\n`;
+  cmds += drawBox(lm, y, re, boxBot, 2);
   let ny = y + 5;
   nutriLines.forEach(ln => {
-    cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${baseDot},${baseDot},"${tsplSafe(ln)}"\r\n`;
+    cmds += `TEXT ${lm+4},${ny},"ROMAN.TTF",0,${baseVal},${baseVal},"${tsplSafe(ln)}"\r\n`;
     ny += baseStep;
   });
   y = boxBot + 4 + gp;
 
   /* ══ 6. DETAILS ══ */
-  const detDot = baseDot;
+  const detVal = baseVal;
   const detStep = baseStep;
   const details = [
     `NET WEIGHT : ${nw}`,
@@ -439,7 +462,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   ];
   details.forEach(line => {
     [[0,0],[1,0]].forEach(([dx,dy]) =>
-      cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${detDot},${detDot},"${line}"\r\n`
+      cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${detVal},${detVal},"${line}"\r\n`
     );
     y += detStep;
   });
@@ -448,22 +471,21 @@ function buildBackTSPL(p, v, bn, pd, bb, copies) {
   /* ══ 7. MRP ══ */
   const mrpTxt = `MRP : Rs.${mrp}/-`;
   [[0,0],[1,0],[0,1],[1,1]].forEach(([dx,dy]) =>
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${MRP_DOT},${MRP_DOT},"${mrpTxt}"\r\n`
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${MRP_VAL},${MRP_VAL},"${mrpTxt}"\r\n`
   );
-  y += MRP_DOT + 4;
+  y += Math.round(MRP_VAL * H_RATIO) + 4;
 
   [[0,0],[1,0]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_DOT},${TAX_DOT},"(INCL. OF ALL TAXES)"\r\n`;
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_VAL},${TAX_VAL},"(INCL. OF ALL TAXES)"\r\n`;
   });
-  y += TAX_DOT + 3;
+  y += Math.round(TAX_VAL * H_RATIO) + 3;
   [[0,0],[1,0]].forEach(([dx,dy]) => {
-    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_DOT},${TAX_DOT},"FOR 1g = Rs.${pg}"\r\n`;
+    cmds += `TEXT ${lm+dx},${y+dy},"ROMAN.TTF",0,${TAX_VAL},${TAX_VAL},"FOR 1g = Rs.${pg}"\r\n`;
   });
-  y += TAX_DOT + 6;
+  y += Math.round(TAX_VAL * H_RATIO) + 6;
 
   /* ══ 8. BARCODE ══ */
   const bcode = (p.barcode) ? tsplSafe(String(p.barcode)) : '8905606000007';
-  // Standard Code128 width for 13 digits with narrow=2 is ~286 dots
   const bcodeWidth = 286; 
   const bcodeX = Math.max(lm, Math.round((dw - bcodeWidth) / 2));
   cmds += `BARCODE ${bcodeX},${y},"128",40,2,0,2,2,"${bcode}"\r\n`;
