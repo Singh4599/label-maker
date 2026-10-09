@@ -339,8 +339,9 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const SAFE_X = 24;
-  const usableW = DW - (SAFE_X * 2);
+  const leftPad = 8; // shift left to balance physical printer margins
+  const rightPad = 40;
+  const usableW = DW - (leftPad + rightPad);
   let y = 16;
   
   const mrp  = (parseFloat(v.m) || 0) * 2;
@@ -390,7 +391,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     lCtx.font = `900 100px "Arial Black", Arial, sans-serif`;
     lCtx.fillStyle = 'white'; lCtx.fillRect(0,0,lCanvas.width,lCanvas.height);
     lCtx.fillStyle = 'black'; lCtx.fillText(ln, left+5, ascent+5);
-    ctx.drawImage(lCanvas, 5, 5, w, h, SAFE_X, y, usableW, titleLineH);
+    ctx.drawImage(lCanvas, 5, 5, w, h, leftPad, y, usableW, titleLineH);
     y += titleLineH + 6;
   }
   y += 4;
@@ -415,19 +416,19 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     const bl1 = 'Mixed Masala Powder, Spices content';
     const bl2 = 'more than 85%, salt content more than 5%';
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(SAFE_X, y, usableW, 46);
+    ctx.strokeRect(leftPad, y, usableW, 46);
     ctx.fillText(bl1, (DW - ctx.measureText(bl1).width)/2, y + 6);
     ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 24);
     y += 56;
   }
 
   // HR
-  ctx.fillRect(SAFE_X, y, usableW, 2);
+  ctx.fillRect(leftPad, y, usableW, 2);
   y += 12;
 
   // Ingredients
   ctx.font = 'bold 20px Arial';
-  ctx.fillText('INGREDIENTS :-', SAFE_X, y);
+  ctx.fillText('INGREDIENTS :-', leftPad, y);
   y += 26;
   ctx.font = '20px Arial';
   
@@ -452,7 +453,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
 
   const ingrLines = wrapTextCanvas(ctx, `(In Descending Order By Weight) ${ingr}`, usableW);
   for(let ln of ingrLines) {
-    ctx.fillText(ln, SAFE_X, y);
+    ctx.fillText(ln, leftPad, y);
     y += 24;
   }
   y += 8;
@@ -474,11 +475,11 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   const boxTop = y;
   y += 8;
   for(let ln of nl) {
-    ctx.fillText(ln, SAFE_X + 8, y);
+    ctx.fillText(ln, leftPad + 8, y);
     y += 24;
   }
   ctx.lineWidth = 1.5;
-  ctx.strokeRect(SAFE_X, boxTop, usableW, y - boxTop + 4);
+  ctx.strokeRect(leftPad, boxTop, usableW, y - boxTop + 4);
   y += 24;
 
   // Details
@@ -491,19 +492,19 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     `BEST BEFORE : ${bbClean}`
   ];
   for(let ln of details) {
-    ctx.fillText(ln, SAFE_X, y);
+    ctx.fillText(ln, leftPad, y);
     y += 26;
   }
   y += 10;
 
   // MRP
   ctx.font = '900 28px "Arial Black", Arial, sans-serif';
-  ctx.fillText(`MRP : ₹ ${mrp}/-`, SAFE_X, y);
+  ctx.fillText(`MRP : ₹ ${mrp}/-`, leftPad, y);
   y += 34;
   ctx.font = 'bold 16px Arial';
-  ctx.fillText(`(INCL. OF ALL TAXES)`, SAFE_X, y);
+  ctx.fillText(`(INCL. OF ALL TAXES)`, leftPad, y);
   y += 22;
-  ctx.fillText(`FOR 1g = Rs ${pg}`, SAFE_X, y);
+  ctx.fillText(`FOR 1g = Rs ${pg}`, leftPad, y);
   y += 30;
 
   // Barcode
@@ -518,7 +519,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
       fontSize: 18,
       margin: 0
     });
-    const bcX = Math.max(SAFE_X, (DW - bcCanvas.width) / 2);
+    const bcX = Math.max(leftPad, (DW - bcCanvas.width) / 2);
     ctx.drawImage(bcCanvas, bcX, y);
     y += bcCanvas.height;
   }
@@ -608,8 +609,8 @@ function buildBackTSPL(p, v, bn, pd, bb, copies, disablePopup) {
   }
 
   const printData = [];
-  // Shift entire bitmap 12 dots (1.5mm) right on the physical paper for centering
-  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 12,4,${widthBytes},${DH},0,` });
+  // Reset BITMAP X to 0 (default) to shift physical print leftwards
+  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${DH},0,` });
   printData.push({ type: 'raw', format: 'hex', data: hexString });
   printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
   
