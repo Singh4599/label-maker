@@ -97,29 +97,32 @@ function setMode(mode) {
   } else if (mode === 'new32') {
     ST.db = typeof NEW32_DB !== 'undefined' ? NEW32_DB : { p: {}, v: {} };
   } else if (mode === 'parties') {
-    ST.db = { p: {}, v: {} };
+    ST.db = typeof PARTIES_DB !== 'undefined' ? PARTIES_DB : { p: {}, v: {} };
   }
 
   // Update UI texts and visibility based on mode
   const isNew32 = mode === 'new32';
   const isDukan = mode === 'dukan';
 
+  const isParties = mode === 'parties';
+
   // Front Labels and Buttons
-  const frontSizeText = isDukan ? '80×25 MM' : '65×25 MM'; // new32 front is 65x25
+  let frontSizeText = isDukan ? '80×25 MM' : '65×25 MM'; // new32 front is 65x25
+  if (isParties) frontSizeText = '104×152 MM';
   document.querySelectorAll('.preview-section')[0].querySelector('.preview-lbl-size').textContent = frontSizeText;
   document.querySelectorAll('.btn-print-f').forEach(btn => {
-    btn.innerHTML = `🖨️ Front — ${frontSizeText}`;
+    btn.innerHTML = `🖨️ ${isParties ? 'Print' : 'Front'} — ${frontSizeText}`;
   });
 
   // Back Labels and Buttons
   const backSizeText = isNew32 ? '32×25 MM' : '50×90 MM';
   const backSection = document.querySelectorAll('.preview-section')[1];
   if (backSection) {
-    backSection.style.display = ''; // ALWAYS SHOW
+    backSection.style.display = isParties ? 'none' : ''; // Hide for parties since it's a single label
     backSection.querySelector('.preview-lbl-size').textContent = backSizeText;
   }
   document.querySelectorAll('.btn-print-b').forEach(btn => {
-    btn.style.display = 'inline-block'; // ALWAYS SHOW
+    btn.style.display = isParties ? 'none' : 'inline-block';
     btn.innerHTML = `🖨️ Back — ${backSizeText}`;
   });
 
@@ -129,7 +132,7 @@ function setMode(mode) {
     if (mode === 'db') desc.textContent = 'Search from our 365 Spicery product library';
     else if (mode === 'dukan') desc.textContent = 'Search from Dukan Bai products';
     else if (mode === 'new32') desc.textContent = 'Search from 32x25 label products';
-    else if (mode === 'parties') desc.textContent = 'Search from Parties data (Coming Soon)';
+    else if (mode === 'parties') desc.textContent = 'Search from YELLOW 365 products (104x152 mm)';
     else desc.textContent = 'Search from products';
   }
 
@@ -394,6 +397,20 @@ function render() {
 function renderFront() {
   const fp = $('fp'); if (!fp) return;
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
+  if (ST.mode === 'parties') {
+    if (ST.vi < 0) { fp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
+    const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    if (typeof generatePartiesCanvas === 'function') {
+      const c = generatePartiesCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+      c.style.width = '100%';
+      c.style.height = 'auto'; // allow it to scale naturally based on width
+      c.style.objectFit = 'contain';
+      fp.innerHTML = '';
+      fp.appendChild(c);
+    }
+    return;
+  }
+
   // Standard front label (html preview fallback if canvas is not used)
     const isJain = ST.prod.n.toUpperCase().includes('JAIN');
     const jainSub = isJain
@@ -656,6 +673,22 @@ function pF() {
   const copies = getCopies();
 
 
+  if (ST.mode === 'parties') {
+    if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
+    const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    if (typeof qzPrintParties === 'function') {
+      qzPrintParties(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
+        if (!done) {
+          showToast('Testing preview mode. QZ Tray is offline.', 'info');
+          if (typeof buildPartiesTSPL === 'function') buildPartiesTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+        }
+      }).catch(() => {
+        showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (typeof buildPartiesTSPL === 'function') buildPartiesTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+      });
+    }
+    return;
+  }
 
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintFront === 'function') {

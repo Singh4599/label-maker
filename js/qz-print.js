@@ -870,3 +870,237 @@ async function testPrint() {
     showToast('Test print failed: ' + e.message, 'error');
   }
 }
+
+// ─────────────────────────────────────────────────────────
+// PARTIES MODE (YELLOW 365) - 104.1 x 152.4 mm (4x6)
+// ─────────────────────────────────────────────────────────
+
+function generatePartiesCanvas(p, v, bn, pd, bb) {
+  const DW = 832;
+  const DH = 1218; // 4" x 6"
+  const canvas = document.createElement('canvas');
+  canvas.width = DW;
+  canvas.height = DH;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, DW, DH);
+  ctx.fillStyle = 'black';
+  ctx.textBaseline = 'top';
+
+  const leftPad = 48;
+  const rightPad = 48;
+  const usableW = DW - (leftPad + rightPad);
+  let y = 300; 
+  
+  function drawLine(label, value, isBold = false) {
+    if (!value && label !== 'NON-RETAIL CONTAINER – NOT FOR DIRECT SALE TO CONSUMER') return; 
+    ctx.font = 'bold 26px Arial, sans-serif';
+    const labelW = ctx.measureText(label).width;
+    ctx.fillText(label, leftPad, y);
+    
+    if (value) {
+      ctx.font = isBold ? 'bold 26px Arial, sans-serif' : '26px Arial, sans-serif';
+      const maxW = usableW - labelW - 10;
+      const words = value.split(' ');
+      let line = '';
+      let firstLine = true;
+      for (let i = 0; i < words.length; i++) {
+        let testLine = line + words[i] + ' ';
+        if (ctx.measureText(testLine).width > (firstLine ? maxW : usableW) && i > 0) {
+          ctx.fillText(line, firstLine ? leftPad + labelW + 10 : leftPad, y);
+          y += 34;
+          line = words[i] + ' ';
+          firstLine = false;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, firstLine ? leftPad + labelW + 10 : leftPad, y);
+    }
+    y += 48; 
+  }
+
+  // Calculate Expiry Date (1 year from PD)
+  let edStr = '';
+  if (pd && pd.includes('/')) {
+    const parts = pd.split('/');
+    if (parts.length === 3) {
+      const edYear = parseInt(parts[2], 10) + 1;
+      let edDay = parseInt(parts[0], 10) - 1;
+      let edMonth = parseInt(parts[1], 10);
+      let yearAdj = edYear;
+      if (edDay === 0) {
+        edMonth -= 1;
+        if (edMonth === 0) {
+          edMonth = 12;
+          yearAdj -= 1;
+        }
+        const daysInMonth = new Date(yearAdj, edMonth, 0).getDate();
+        edDay = daysInMonth;
+      }
+      edStr = `${String(edDay).padStart(2,'0')}/${String(edMonth).padStart(2,'0')}/${yearAdj}`;
+    }
+  }
+
+  const batchCode = bn || v.bn || p.b || '';
+
+  drawLine('Product Name -', p.n.toUpperCase(), true);
+  y += 8;
+  
+  if (p.i) {
+    drawLine("Ingredient's -", p.i);
+    y += 8;
+  }
+  
+  drawLine('Net Quantity -', v.d.toUpperCase(), true);
+  y += 8;
+  
+  drawLine('Batch No -', batchCode, true);
+  y += 8;
+  
+  drawLine('Date of Manufacturing -', pd, true);
+  y += 8;
+  
+  if (edStr) {
+    drawLine('Expiry Date -', edStr, true);
+    y += 8;
+  }
+  
+  const mrp = parseFloat(v.m) || 10000;
+  drawLine('MRP -', `₹ ${mrp.toFixed(2)}`);
+  y += 8;
+
+  drawLine('Storage Instructions -', 'Store in a cool, dry, and hygienic place & Keep away from moisture and direct sunlight.');
+  y += 8;
+
+  drawLine('Allergen Information -', 'Processed in a facility that also contains Milk, Sesame and Mustard.');
+  y += 24;
+
+  ctx.font = 'bold 28px Arial, sans-serif';
+  ctx.fillText('NON-RETAIL CONTAINER – NOT FOR DIRECT SALE TO CONSUMER', leftPad, y);
+  y += 60;
+
+  // Bottom block
+  ctx.font = 'bold 26px Arial, sans-serif';
+  ctx.fillText('Manufactured & Marketed by:', leftPad, y);
+  
+  ctx.font = '24px Arial, sans-serif';
+  ctx.fillText('Consumer Care:', DW/2 + 20, y);
+  y += 34;
+  
+  ctx.font = 'bold 26px Arial, sans-serif';
+  ctx.fillText('LV SPICES', leftPad, y);
+  
+  ctx.font = '24px Arial, sans-serif';
+  ctx.fillText('📧 365@365spicery.com', DW/2 + 20, y);
+  y += 34;
+  
+  ctx.font = '24px Arial, sans-serif';
+  ctx.fillText('11-Marine house, 93 Dr Maheshwari Road.', leftPad, y);
+  
+  ctx.font = '24px Arial, sans-serif';
+  ctx.fillText('📞 +91- 7279 900 400', DW/2 + 20, y);
+  y += 34;
+  
+  ctx.font = '24px Arial, sans-serif';
+  ctx.fillText('Mumbai - 400009', leftPad, y);
+  y += 50;
+
+  // fssai Lic No
+  ctx.font = 'italic bold 32px Arial, sans-serif';
+  const fssaiText = 'fssai';
+  const fssaiW = ctx.measureText(fssaiText).width;
+  ctx.fillText(fssaiText, (DW - fssaiW)/2, y);
+  y += 40;
+
+  ctx.font = 'bold 26px Arial, sans-serif';
+  const licText = 'Lic No: 11521001000597';
+  const licW = ctx.measureText(licText).width;
+  ctx.fillText(licText, (DW - licW)/2, y);
+
+  return canvas;
+}
+
+function buildPartiesTSPL(p, v, bn, pd, bb, copies, disablePopup) {
+  const canvas = generatePartiesCanvas(p, v, bn, pd, bb);
+  const DW = canvas.width;
+  const DH = canvas.height;
+  const ctx = canvas.getContext('2d');
+
+  if (!disablePopup) {
+    try {
+      const prevId = 'debug-tspl-preview-parties';
+      const old = document.getElementById(prevId);
+      if(old) old.remove();
+      
+      const preview = document.createElement('div');
+      preview.id = prevId;
+      preview.style.cssText = 'position:fixed; top:20px; left:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;';
+      preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Parties Preview</div>';
+      
+      const clone = document.createElement('canvas');
+      clone.width = DW; clone.height = DH;
+      clone.getContext('2d').drawImage(canvas, 0, 0);
+      clone.style.width = '300px'; 
+      clone.style.height = 'auto';
+      clone.style.border = '1px dashed #333';
+      
+      preview.appendChild(clone);
+      document.body.appendChild(preview);
+      setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
+    } catch(e) {}
+  }
+
+  const imgData = ctx.getImageData(0, 0, DW, DH);
+  const data = imgData.data;
+  
+  const widthBytes = Math.ceil(DW / 8); 
+  const buffer = new Uint8Array(widthBytes * DH);
+  buffer.fill(255); 
+  
+  for (let cy = 0; cy < DH; cy++) {
+    for (let cx = 0; cx < DW; cx++) {
+      const idx = (cy * DW + cx) * 4;
+      if (data[idx+3] < 128) continue; 
+      const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+      if (gray < 128) {
+        const byteIdx = cy * widthBytes + Math.floor(cx / 8);
+        const bitIdx = 7 - (cx % 8);
+        buffer[byteIdx] &= ~(1 << bitIdx); 
+      }
+    }
+  }
+
+  let hexString = '';
+  const hexMap = "0123456789ABCDEF";
+  for (let i = 0; i < buffer.length; i++) {
+    const b = buffer[i];
+    hexString += hexMap[(b >> 4) & 0x0F] + hexMap[b & 0x0F];
+  }
+
+  const printData = [];
+  printData.push({ type: 'raw', format: 'plain', data: `SIZE 104.1 mm, 152.4 mm\r\nGAP 3 mm, 0 mm\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,0,${widthBytes},${DH},0,` });
+  printData.push({ type: 'raw', format: 'hex', data: hexString });
+  printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
+  
+  return printData;
+}
+
+async function qzPrintParties(p, v, bn, pd, bb, copies) {
+  if (typeof qz === 'undefined') return false;
+  if (!await _ensureConnected()) return false;
+  const printData = buildPartiesTSPL(p, v, bn, pd, bb, copies, true);
+  try {
+    setQZStatus('printing');
+    await qz.print(_rawConfig(QZP.frontPrinter), printData); 
+    setQZStatus('connected');
+    showToast(`✓ ${copies} label(s) sent to Printer!`, 'success');
+    return true;
+  } catch (err) {
+    QZP.connected = qz.websocket.isActive();
+    setQZStatus(QZP.connected ? 'connected' : 'disconnected');
+    showToast('Print error: ' + err.message, 'error');
+    return false;
+  }
+}
