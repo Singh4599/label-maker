@@ -656,7 +656,7 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
   try {
     bcCanvas = document.createElement('canvas');
     // Use CODE128 to completely bypass EAN13 checksum exceptions
-    let bcVal = p.barcode ? String(p.barcode) : '8905606' + Math.abs(hashCode(p.n)).toString().slice(0, 6); 
+    let bcVal = p.barcode ? String(p.barcode) : '8905606000007'; 
     JsBarcode(bcCanvas, bcVal, { format: 'CODE128', width: 2, height: 25, displayValue: true, fontSize: 12, margin: 0 });
   } catch(e) { console.error('Barcode error', e); }
 
