@@ -123,7 +123,7 @@ function setMode(mode) {
 
   // Back Labels and Buttons (Hide if new32)
   const backSection = document.querySelectorAll('.preview-section')[1];
-  if (backSection) backSection.style.display = isNew32 ? 'none' : 'flex';
+  if (backSection) backSection.style.display = isNew32 ? 'none' : '';
   document.querySelectorAll('.btn-print-b').forEach(btn => {
     btn.style.display = isNew32 ? 'none' : 'inline-block';
   });
@@ -139,6 +139,17 @@ function setMode(mode) {
   }
 
   clearProduct();
+  
+  // Handle Category Wrapper Visibility
+  const catWrap = $('cat-wrap');
+  if (catWrap) {
+    if (isDukan || isNew32 || mode === 'parties') {
+      catWrap.style.display = 'none';
+    } else {
+      catWrap.style.display = 'block';
+    }
+  }
+
   populateCategories();
   render();
 }
