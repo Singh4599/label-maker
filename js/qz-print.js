@@ -663,18 +663,17 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
   offsets.forEach(startX => {
     const w32 = 256; // 32mm = 256 dots
     const centerX = startX + (w32 / 2);
-    let y = 12;
+    let y = 6;
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
     // 100g ( 3.5oz )
-    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.font = 'bold 26px Arial, sans-serif';
     ctx.fillText(`${v.d} ( ${v.oz} )`, centerX, y);
     y += 28;
 
     // KCP100 (Batch)
-    ctx.font = '900 24px "Arial Black", Arial, sans-serif';
     ctx.fillText(bn || '—', centerX, y);
     y += 28;
     
@@ -683,24 +682,25 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
     y += 28;
 
     // EXPIRY DATE: 01/10/2027
+    const bbClean = (bb || '—').replace(/\s*\(.*$/, ''); // strip (12 Months)
     ctx.font = 'bold 18px Arial, sans-serif';
-    ctx.fillText(`EXPIRY DATE: ${bb || '—'}`, centerX, y);
-    y += 24;
+    ctx.fillText(`EXPIRY DATE: ${bbClean}`, centerX, y);
+    y += 20;
 
     // ₹160. (1.60/g)
-    ctx.font = '900 22px "Arial Black", Arial, sans-serif';
+    ctx.font = 'bold 28px Arial, sans-serif';
     const mrp = parseFloat(v.m) || 0;
     const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
     ctx.fillText(`₹${mrp}. (${pg}/g)`, centerX, y);
-    y += 24;
+    y += 30;
 
     // (INC. OF ALL TAXES)
     ctx.font = 'bold 14px Arial, sans-serif';
     ctx.fillText('(INC. OF ALL TAXES)', centerX, y);
-    y += 18;
+    y += 16;
 
     if (bcCanvas) {
-      const bcW = 220; // fit within 256
+      const bcW = 230; // wider barcode to fit 32mm well
       const bcX = centerX - (bcW / 2);
       ctx.drawImage(bcCanvas, bcX, y, bcW, bcCanvas.height);
     }
