@@ -655,8 +655,9 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
   let bcCanvas = null;
   try {
     bcCanvas = document.createElement('canvas');
-    let bcVal = '8905606' + Math.abs(hashCode(p.n)).toString().slice(0, 6).padStart(6, '0');
-    if (bcVal.length > 13) bcVal = bcVal.substring(0,13);
+    // EAN13 needs exactly 12 digits (13th is auto-calculated checksum)
+    let hashVal = Math.abs(hashCode(p.n)).toString().slice(0, 5).padStart(5, '0');
+    let bcVal = '8905606' + hashVal; 
     JsBarcode(bcCanvas, bcVal, { format: 'EAN13', width: 2, height: 35, displayValue: true, fontSize: 16, margin: 0 });
   } catch(e) { console.error('Barcode error', e); }
 
