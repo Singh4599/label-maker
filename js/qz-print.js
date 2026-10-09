@@ -201,10 +201,11 @@ function generateFrontCanvas(name) {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, DW, DH);
   
-  const SAFE_X = 32; 
+  const leftPad = 48; // shift right by 2mm (16 dots)
+  const rightPad = 16;
   const SAFE_Y = 24; 
   
-  const usableW = DW - (SAFE_X * 2); 
+  const usableW = DW - (leftPad + rightPad); 
   const usableH = availH - (SAFE_Y * 2);
   const numLines = lines.length;
   
@@ -239,7 +240,7 @@ function generateFrontCanvas(name) {
     lCtx.fillStyle = 'black';
     lCtx.fillText(ln, left + 5, ascent + 5);
 
-    ctx.drawImage(lCanvas, 5, 5, w, h, SAFE_X, currentY, usableW, lineDestH);
+    ctx.drawImage(lCanvas, 5, 5, w, h, leftPad, currentY, usableW, lineDestH);
     currentY += lineDestH + gap;
   }
 
@@ -247,7 +248,7 @@ function generateFrontCanvas(name) {
     const sub = 'NO ONION NO GARLIC';
     ctx.font = '900 24px "Arial Black", Arial, sans-serif';
     const m = ctx.measureText(sub);
-    const sx = Math.max(SAFE_X, (DW - m.width) / 2);
+    const sx = Math.max(leftPad, (DW - m.width) / 2);
     ctx.fillStyle = 'black';
     ctx.fillText(sub, sx, DH - 10);
   }
@@ -294,15 +295,17 @@ function buildFrontTSPL(name, copies, disablePopup) {
   
   const widthBytes = Math.ceil(DW / 8); 
   const buffer = new Uint8Array(widthBytes * DH);
+  buffer.fill(255); // initialize with WHITE
   
   for (let y = 0; y < DH; y++) {
     for (let x = 0; x < DW; x++) {
       const idx = (y * DW + x) * 4;
+      if (data[idx+3] < 128) continue; // skip transparent
       const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
       if (gray < 128) {
         const byteIdx = y * widthBytes + Math.floor(x / 8);
         const bitIdx = 7 - (x % 8);
-        buffer[byteIdx] |= (1 << bitIdx);
+        buffer[byteIdx] &= ~(1 << bitIdx); // clear bit to 0 (BLACK)
       }
     }
   }
@@ -582,15 +585,17 @@ function buildBackTSPL(p, v, bn, pd, bb, copies, disablePopup) {
   
   const widthBytes = Math.ceil(DW / 8); 
   const buffer = new Uint8Array(widthBytes * DH);
+  buffer.fill(255); // initialize with WHITE
   
   for (let cy = 0; cy < DH; cy++) {
     for (let cx = 0; cx < DW; cx++) {
       const idx = (cy * DW + cx) * 4;
+      if (data[idx+3] < 128) continue; // skip transparent
       const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
       if (gray < 128) {
         const byteIdx = cy * widthBytes + Math.floor(cx / 8);
         const bitIdx = 7 - (cx % 8);
-        buffer[byteIdx] |= (1 << bitIdx);
+        buffer[byteIdx] &= ~(1 << bitIdx); // clear bit to 0 (BLACK)
       }
     }
   }
@@ -603,6 +608,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies, disablePopup) {
   }
 
   const printData = [];
+  // Center by shifting 8 dots if needed, but wait! The user said "FRONT ME BHI SAME DIKKT AND ALSO FRONT ME CENTER KRNA H". So I shifted front. Did they say back was shifted? "BACK LAYOUT STRUCTURE IS PERFECT JST TEXT BLACK OR NO BACKGROUND". So I won't shift back.
   printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${DH},0,` });
   printData.push({ type: 'raw', format: 'hex', data: hexString });
   printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
