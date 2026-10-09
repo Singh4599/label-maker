@@ -110,6 +110,24 @@ function setMode(mode) {
     ST.db = { p: {}, v: {} };
   }
 
+  // Update UI texts and visibility based on mode
+  const isNew32 = mode === 'new32';
+  const isDukan = mode === 'dukan';
+
+  // Front Labels and Buttons
+  const frontSizeText = isNew32 ? '32×25 MM' : (isDukan ? '80×25 MM' : '65×25 MM');
+  document.querySelectorAll('.preview-section')[0].querySelector('.preview-lbl-size').textContent = frontSizeText;
+  document.querySelectorAll('.btn-print-f').forEach(btn => {
+    btn.innerHTML = `🖨️ ${isNew32 ? 'Print' : 'Front'} — ${frontSizeText}`;
+  });
+
+  // Back Labels and Buttons (Hide if new32)
+  const backSection = document.querySelectorAll('.preview-section')[1];
+  if (backSection) backSection.style.display = isNew32 ? 'none' : 'flex';
+  document.querySelectorAll('.btn-print-b').forEach(btn => {
+    btn.style.display = isNew32 ? 'none' : 'inline-block';
+  });
+
   // Update step description
   const desc = $('step1-desc');
   if (desc) {
