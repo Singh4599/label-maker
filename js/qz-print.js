@@ -664,33 +664,35 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
     let y = 8;
 
     // 100g (3.5oz)
-    ctx.font = 'bold 24px "Arial Black", Arial, sans-serif';
+    ctx.font = 'bold 20px "Arial Black", Arial, sans-serif';
     const wText = `${v.d} (${v.oz})`;
     ctx.fillText(wText, padX, y);
     
     const m = ctx.measureText(wText);
     ctx.lineWidth = 2;
-    ctx.strokeRect(padX - 4, y - 2, m.width + 8, 28);
-    y += 32;
+    ctx.strokeRect(padX - 4, y - 2, m.width + 8, 24);
+    y += 30;
 
-    ctx.font = 'bold 22px "Arial Black", Arial, sans-serif';
+    ctx.font = 'bold 18px "Arial Black", Arial, sans-serif';
     ctx.fillText(bn || '—', padX, y);
-    y += 24;
+    y += 22;
     
     ctx.fillText(pd || '—', padX, y);
-    y += 24;
+    y += 22;
 
+    ctx.font = 'bold 16px Arial, sans-serif';
     ctx.fillText(`EXPIRY DATE : ${bb || '—'}`, padX, y);
-    y += 24;
+    y += 20;
 
+    ctx.font = 'bold 18px "Arial Black", Arial, sans-serif';
     const mrp = parseFloat(v.m) || 0;
     const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
     ctx.fillText(`₹${mrp}. (${pg}/g)`, padX, y);
-    y += 26;
+    y += 22;
 
-    ctx.font = 'bold 12px Arial, sans-serif';
+    ctx.font = 'bold 10px Arial, sans-serif';
     ctx.fillText('(INC. OF ALL TAXES)', padX, y);
-    y += 16;
+    y += 14;
 
     if (bcCanvas) {
       ctx.drawImage(bcCanvas, padX, y, 240, bcCanvas.height);
@@ -700,39 +702,95 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
   return canvas;
 }
 
-function buildNew32TSPL(p, v, bn, pd, bb, copies = 1, disablePopup = false) {
-  let finalTSPL = "";
+function canvasToTSPL_PrintData(canvas, copies) {
+  const DW = canvas.width;
+  const DH = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, DW, DH);
+  const data = imgData.data;
   
-  // Calculate how many full 2-UP prints we need, and if we need one 1-UP print
+  const widthBytes = Math.ceil(DW / 8); 
+  const buffer = new Uint8Array(widthBytes * DH);
+  buffer.fill(255); // initialize with WHITE
+  
+  for (let y = 0; y < DH; y++) {
+    for (let x = 0; x < DW; x++) {
+      const idx = (y * DW + x) * 4;
+      if (data[idx+3] < 128) continue; // skip transparent
+      const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+      if (gray < 128) {
+        const byteIdx = y * widthBytes + Math.floor(x / 8);
+        const bitIdx = 7 - (x % 8);
+        buffer[byteIdx] &= ~(1 << bitIdx); // clear bit to 0 (BLACK)
+      }
+    }
+  }
+
+  let hexString = '';
+  const hexMap = "0123456789ABCDEF";
+  for (let i = 0; i < buffer.length; i++) {
+    const b = buffer[i];
+    hexString += hexMap[(b >> 4) & 0x0F] + hexMap[b & 0x0F];
+  }
+
+  const printData = [];
+  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,0,${widthBytes},${DH},0,` });
+  printData.push({ type: 'raw', format: 'hex', data: hexString });
+  printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
+  
+  return printData;
+}
+
+function buildNew32TSPL(p, v, bn, pd, bb, copies = 1, disablePopup = false) {
+  let allPrintData = [];
+  
   const fullPrints = Math.floor(copies / 2);
   const remainder = copies % 2;
 
+  let canvasToShow = null;
+
   if (fullPrints > 0) {
     const c2 = generateNew32Canvas(p, v, bn, pd, bb, 2);
-    // Convert canvas to TSPL, but pass copies=fullPrints
-    finalTSPL += canvasToTSPL(c2, fullPrints, 68, 25, true); 
+    if (!canvasToShow) canvasToShow = c2;
+    allPrintData = allPrintData.concat(canvasToTSPL_PrintData(c2, fullPrints)); 
   }
   
   if (remainder === 1) {
     const c1 = generateNew32Canvas(p, v, bn, pd, bb, 1);
-    finalTSPL += canvasToTSPL(c1, 1, 68, 25, true);
+    if (!canvasToShow) canvasToShow = c1;
+    allPrintData = allPrintData.concat(canvasToTSPL_PrintData(c1, 1));
   }
 
-  if (!disablePopup) {
-    openPrintPopup(finalTSPL);
+  // Fallback visual preview popup
+  if (!disablePopup && canvasToShow) {
+    try {
+      const prevId = 'debug-tspl-preview-32';
+      const old = document.getElementById(prevId);
+      if(old) old.remove();
+      const preview = document.createElement('div');
+      preview.id = prevId;
+      preview.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);';
+      preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Printer Bitmap Preview (32x25)</div>';
+      const clone = document.createElement('canvas');
+      clone.width = canvasToShow.width; clone.height = canvasToShow.height;
+      clone.getContext('2d').drawImage(canvasToShow, 0, 0);
+      clone.style.width = '260px'; 
+      clone.style.border = '1px dashed #333';
+      preview.appendChild(clone);
+      document.body.appendChild(preview);
+      setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
+    } catch(e) {}
   }
 
-  return finalTSPL;
+  return allPrintData;
 }
 
 async function qzPrintNew32(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;
-  const tspl = buildNew32TSPL(p, v, bn, pd, bb, copies, true);
-  console.log('[NEW32 TSPL]\n', tspl);
+  const printData = buildNew32TSPL(p, v, bn, pd, bb, copies, true);
   try {
     setQZStatus('printing');
-    const printData = [{ type: 'raw', format: 'plain', data: tspl }];
     await qz.print(_rawConfig(QZP.frontPrinter), printData); // Uses front printer TE244 Copy 1
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Printer!`, 'success');
@@ -753,7 +811,8 @@ async function qzPrintFront(name, copies) {
   try {
     const printData = Array.isArray(tspl) ? tspl : [{ type: 'raw', format: 'plain', data: tspl }];
     let printerToUse = QZP.frontPrinter;
-    if (window.ST && window.ST.mode === 'dukan') printerToUse = 'TSC TA210'; // hardcoded per user req
+    const currentMode = typeof ST !== 'undefined' ? ST.mode : null;
+    if (currentMode === 'dukan') printerToUse = 'TSC TA210'; // hardcoded per user req
     await qz.print(_rawConfig(printerToUse), printData);
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Front!`, 'success');
