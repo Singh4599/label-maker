@@ -875,7 +875,7 @@ async function testPrint() {
 // PARTIES MODE (YELLOW 365) - 104.1 x 152.4 mm (4x6)
 // ─────────────────────────────────────────────────────────
 
-function generatePartiesCanvas(p, v, bn, pd, bb) {
+function generateYellowCanvas(p, v, bn, pd, bb) {
   const DW = 832;
   const DH = 1218; // 4" x 6"
   const canvas = document.createElement('canvas');
@@ -979,65 +979,26 @@ function generatePartiesCanvas(p, v, bn, pd, bb) {
 
   ctx.font = 'bold 28px Arial, sans-serif';
   ctx.fillText('NON-RETAIL CONTAINER – NOT FOR DIRECT SALE TO CONSUMER', leftPad, y);
-  y += 60;
-
-  // Bottom block
-  ctx.font = 'bold 26px Arial, sans-serif';
-  ctx.fillText('Manufactured & Marketed by:', leftPad, y);
   
-  ctx.font = '24px Arial, sans-serif';
-  ctx.fillText('Consumer Care:', DW/2 + 20, y);
-  y += 34;
-  
-  ctx.font = 'bold 26px Arial, sans-serif';
-  ctx.fillText('LV SPICES', leftPad, y);
-  
-  ctx.font = '24px Arial, sans-serif';
-  ctx.fillText('📧 365@365spicery.com', DW/2 + 20, y);
-  y += 34;
-  
-  ctx.font = '24px Arial, sans-serif';
-  ctx.fillText('11-Marine house, 93 Dr Maheshwari Road.', leftPad, y);
-  
-  ctx.font = '24px Arial, sans-serif';
-  ctx.fillText('📞 +91- 7279 900 400', DW/2 + 20, y);
-  y += 34;
-  
-  ctx.font = '24px Arial, sans-serif';
-  ctx.fillText('Mumbai - 400009', leftPad, y);
-  y += 50;
-
-  // fssai Lic No
-  ctx.font = 'italic bold 32px Arial, sans-serif';
-  const fssaiText = 'fssai';
-  const fssaiW = ctx.measureText(fssaiText).width;
-  ctx.fillText(fssaiText, (DW - fssaiW)/2, y);
-  y += 40;
-
-  ctx.font = 'bold 26px Arial, sans-serif';
-  const licText = 'Lic No: 11521001000597';
-  const licW = ctx.measureText(licText).width;
-  ctx.fillText(licText, (DW - licW)/2, y);
-
   return canvas;
 }
 
-function buildPartiesTSPL(p, v, bn, pd, bb, copies, disablePopup) {
-  const canvas = generatePartiesCanvas(p, v, bn, pd, bb);
+function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup) {
+  const canvas = generateYellowCanvas(p, v, bn, pd, bb);
   const DW = canvas.width;
   const DH = canvas.height;
   const ctx = canvas.getContext('2d');
 
   if (!disablePopup) {
     try {
-      const prevId = 'debug-tspl-preview-parties';
+      const prevId = 'debug-tspl-preview-yellow';
       const old = document.getElementById(prevId);
       if(old) old.remove();
       
       const preview = document.createElement('div');
       preview.id = prevId;
       preview.style.cssText = 'position:fixed; top:20px; left:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;';
-      preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Parties Preview</div>';
+      preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Yellow 365 Preview</div>';
       
       const clone = document.createElement('canvas');
       clone.width = DW; clone.height = DH;
@@ -1087,10 +1048,10 @@ function buildPartiesTSPL(p, v, bn, pd, bb, copies, disablePopup) {
   return printData;
 }
 
-async function qzPrintParties(p, v, bn, pd, bb, copies) {
+async function qzPrintYellow(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;
-  const printData = buildPartiesTSPL(p, v, bn, pd, bb, copies, true);
+  const printData = buildYellowTSPL(p, v, bn, pd, bb, copies, true);
   try {
     setQZStatus('printing');
     await qz.print(_rawConfig(QZP.frontPrinter), printData); 

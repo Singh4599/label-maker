@@ -85,7 +85,7 @@ function setMode(mode) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
   // All list-based modes use mode-db panel
-  const isListMode = ['db', 'excel', 'dukan', 'new32', 'parties'].includes(mode);
+  const isListMode = ['db', 'excel', 'dukan', 'new32', 'parties', 'yellow365'].includes(mode);
   const mDb = $('mode-db'); if (mDb) mDb.classList.toggle('active', isListMode);
   const mMnl = $('mode-manual'); if (mMnl) mMnl.classList.toggle('active', mode === 'manual');
 
@@ -97,32 +97,33 @@ function setMode(mode) {
   } else if (mode === 'new32') {
     ST.db = typeof NEW32_DB !== 'undefined' ? NEW32_DB : { p: {}, v: {} };
   } else if (mode === 'parties') {
+    ST.db = { p: {}, v: {} };
+  } else if (mode === 'yellow365') {
     ST.db = typeof PARTIES_DB !== 'undefined' ? PARTIES_DB : { p: {}, v: {} };
   }
 
   // Update UI texts and visibility based on mode
   const isNew32 = mode === 'new32';
   const isDukan = mode === 'dukan';
-
-  const isParties = mode === 'parties';
+  const isYellow = mode === 'yellow365';
 
   // Front Labels and Buttons
   let frontSizeText = isDukan ? '80×25 MM' : '65×25 MM'; // new32 front is 65x25
-  if (isParties) frontSizeText = '104×152 MM';
+  if (isYellow) frontSizeText = '104×152 MM';
   document.querySelectorAll('.preview-section')[0].querySelector('.preview-lbl-size').textContent = frontSizeText;
   document.querySelectorAll('.btn-print-f').forEach(btn => {
-    btn.innerHTML = `🖨️ ${isParties ? 'Print' : 'Front'} — ${frontSizeText}`;
+    btn.innerHTML = `🖨️ ${isYellow ? 'Print' : 'Front'} — ${frontSizeText}`;
   });
 
   // Back Labels and Buttons
   const backSizeText = isNew32 ? '32×25 MM' : '50×90 MM';
   const backSection = document.querySelectorAll('.preview-section')[1];
   if (backSection) {
-    backSection.style.display = isParties ? 'none' : ''; // Hide for parties since it's a single label
+    backSection.style.display = isYellow ? 'none' : ''; // Hide for yellow365 since it's a single label
     backSection.querySelector('.preview-lbl-size').textContent = backSizeText;
   }
   document.querySelectorAll('.btn-print-b').forEach(btn => {
-    btn.style.display = isParties ? 'none' : 'inline-block';
+    btn.style.display = isYellow ? 'none' : 'inline-block';
     btn.innerHTML = `🖨️ Back — ${backSizeText}`;
   });
 
@@ -132,7 +133,8 @@ function setMode(mode) {
     if (mode === 'db') desc.textContent = 'Search from our 365 Spicery product library';
     else if (mode === 'dukan') desc.textContent = 'Search from Dukan Bai products';
     else if (mode === 'new32') desc.textContent = 'Search from 32x25 label products';
-    else if (mode === 'parties') desc.textContent = 'Search from YELLOW 365 products (104x152 mm)';
+    else if (mode === 'parties') desc.textContent = 'Search from Parties data (Coming Soon)';
+    else if (mode === 'yellow365') desc.textContent = 'Search from YELLOW 365 products (104x152 mm)';
     else desc.textContent = 'Search from products';
   }
 
@@ -141,7 +143,7 @@ function setMode(mode) {
   // Handle Category Wrapper Visibility
   const catWrap = $('cat-wrap');
   if (catWrap) {
-    if (isDukan || isNew32 || mode === 'parties') {
+    if (isDukan || isNew32 || mode === 'parties' || isYellow) {
       catWrap.style.display = 'none';
     } else {
       catWrap.style.display = 'block';
@@ -397,11 +399,11 @@ function render() {
 function renderFront() {
   const fp = $('fp'); if (!fp) return;
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
-  if (ST.mode === 'parties') {
+  if (ST.mode === 'yellow365') {
     if (ST.vi < 0) { fp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
-    if (typeof generatePartiesCanvas === 'function') {
-      const c = generatePartiesCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+    if (typeof generateYellowCanvas === 'function') {
+      const c = generateYellowCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
       c.style.width = '100%';
       c.style.height = 'auto'; // allow it to scale naturally based on width
       c.style.objectFit = 'contain';
@@ -673,18 +675,18 @@ function pF() {
   const copies = getCopies();
 
 
-  if (ST.mode === 'parties') {
+  if (ST.mode === 'yellow365') {
     if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
-    if (typeof qzPrintParties === 'function') {
-      qzPrintParties(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
+    if (typeof qzPrintYellow === 'function') {
+      qzPrintYellow(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
         if (!done) {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
-          if (typeof buildPartiesTSPL === 'function') buildPartiesTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
         }
       }).catch(() => {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
-        if (typeof buildPartiesTSPL === 'function') buildPartiesTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
       });
     }
     return;
