@@ -206,9 +206,9 @@ function generateFrontCanvas(name) {
   ctx.fillRect(0, 0, DW, DH);
   
   let leftPad = 8, rightPad = 48; // Shifted further left and squeezed to prevent right cutoff for long names
-  if (currentMode === 'dukan') { leftPad = 32; rightPad = 32; } // Equal margins for 80mm
+  if (currentMode === 'dukan') { leftPad = 16; rightPad = 16; } // Equal and smaller margins for 80mm so text is BIGGER
   if (currentMode === 'new32') { leftPad = 8; rightPad = 8; }  // adjust for 32mm
-  const SAFE_Y = 24; 
+  const SAFE_Y = 16; // reduced Y padding to make text taller
   
   const usableW = DW - (leftPad + rightPad); 
   const usableH = availH - (SAFE_Y * 2);
@@ -661,42 +661,48 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
   } catch(e) { console.error('Barcode error', e); }
 
   offsets.forEach(startX => {
-    const padX = startX + 8;
-    let y = 8;
+    const w32 = 256; // 32mm = 256 dots
+    const centerX = startX + (w32 / 2);
+    let y = 12;
 
-    // 100g (3.5oz)
-    ctx.font = 'bold 20px "Arial Black", Arial, sans-serif';
-    const wText = `${v.d} (${v.oz})`;
-    ctx.fillText(wText, padX, y);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    // 100g ( 3.5oz )
+    ctx.font = 'bold 22px Arial, sans-serif';
+    ctx.fillText(`${v.d} ( ${v.oz} )`, centerX, y);
+    y += 28;
+
+    // KCP100 (Batch)
+    ctx.font = '900 24px "Arial Black", Arial, sans-serif';
+    ctx.fillText(bn || '—', centerX, y);
+    y += 28;
     
-    const m = ctx.measureText(wText);
-    ctx.lineWidth = 2;
-    ctx.strokeRect(padX - 4, y - 2, m.width + 8, 24);
-    y += 30;
+    // 02/10/2026 (Date of Packing)
+    ctx.fillText(pd || '—', centerX, y);
+    y += 28;
 
-    ctx.font = 'bold 18px "Arial Black", Arial, sans-serif';
-    ctx.fillText(bn || '—', padX, y);
-    y += 22;
-    
-    ctx.fillText(pd || '—', padX, y);
-    y += 22;
+    // EXPIRY DATE: 01/10/2027
+    ctx.font = 'bold 18px Arial, sans-serif';
+    ctx.fillText(`EXPIRY DATE: ${bb || '—'}`, centerX, y);
+    y += 24;
 
-    ctx.font = 'bold 16px Arial, sans-serif';
-    ctx.fillText(`EXPIRY DATE : ${bb || '—'}`, padX, y);
-    y += 20;
-
-    ctx.font = 'bold 18px "Arial Black", Arial, sans-serif';
+    // ₹160. (1.60/g)
+    ctx.font = '900 22px "Arial Black", Arial, sans-serif';
     const mrp = parseFloat(v.m) || 0;
     const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-    ctx.fillText(`₹${mrp}. (${pg}/g)`, padX, y);
-    y += 22;
+    ctx.fillText(`₹${mrp}. (${pg}/g)`, centerX, y);
+    y += 24;
 
-    ctx.font = 'bold 10px Arial, sans-serif';
-    ctx.fillText('(INC. OF ALL TAXES)', padX, y);
-    y += 14;
+    // (INC. OF ALL TAXES)
+    ctx.font = 'bold 14px Arial, sans-serif';
+    ctx.fillText('(INC. OF ALL TAXES)', centerX, y);
+    y += 18;
 
     if (bcCanvas) {
-      ctx.drawImage(bcCanvas, padX, y, 240, bcCanvas.height);
+      const bcW = 220; // fit within 256
+      const bcX = centerX - (bcW / 2);
+      ctx.drawImage(bcCanvas, bcX, y, bcW, bcCanvas.height);
     }
   });
 
