@@ -634,10 +634,10 @@ function _rawConfig(printer) {
 }
 
 /* ─── NEW 32x25 LABEL (2-UP FORMAT) ─── */
-function generateNew32Canvas(p, v, bn, pd, bb) {
-  // Total width of the roll is ~68mm, but printer driver is set to 65mm.
-  // 520 dots = 65mm. We draw two 256-dot (32mm) labels with a gap.
-  const DW = 520, DH = 200;
+function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
+  // Total width of the roll is 32 + 4 + 32 = 68mm.
+  // 68mm * 8 = 544 dots.
+  const DW = 544, DH = 200;
   const canvas = document.createElement('canvas');
   canvas.width = DW; canvas.height = DH;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -647,12 +647,8 @@ function generateNew32Canvas(p, v, bn, pd, bb) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  // Draw identical label twice (Left at X=0, Right at X=264)
-  // 264 = 256 (32mm) + 8 (1mm gap, just to fit within 520. Actual physical gap is 4mm, but we fit it in 520 dots).
-  // Actually, let's use exact offsets: Left=0, Right=288 (36mm). But 288+256 = 544 > 520.
-  // We'll squeeze the gap slightly to fit 520 dots, or just let it offset.
-  // Let's use left offset = 0, right offset = 264.
-  const offsets = [0, 264];
+  // Left offset = 0, Right offset = 288 (32mm + 4mm = 36mm = 288 dots)
+  const offsets = count === 1 ? [0] : [0, 288];
 
   // Barcode value is same for both
   let bcCanvas = null;
@@ -704,16 +700,35 @@ function generateNew32Canvas(p, v, bn, pd, bb) {
   return canvas;
 }
 
-function buildNew32TSPL(p, v, bn, pd, bb, copies) {
-  const c = generateNew32Canvas(p, v, bn, pd, bb);
-  if (!c) return '';
-  return canvasToTSPL(c, copies, 32, 25);
+function buildNew32TSPL(p, v, bn, pd, bb, copies = 1, disablePopup = false) {
+  let finalTSPL = "";
+  
+  // Calculate how many full 2-UP prints we need, and if we need one 1-UP print
+  const fullPrints = Math.floor(copies / 2);
+  const remainder = copies % 2;
+
+  if (fullPrints > 0) {
+    const c2 = generateNew32Canvas(p, v, bn, pd, bb, 2);
+    // Convert canvas to TSPL, but pass copies=fullPrints
+    finalTSPL += canvasToTSPL(c2, fullPrints, 68, 25, true); 
+  }
+  
+  if (remainder === 1) {
+    const c1 = generateNew32Canvas(p, v, bn, pd, bb, 1);
+    finalTSPL += canvasToTSPL(c1, 1, 68, 25, true);
+  }
+
+  if (!disablePopup) {
+    openPrintPopup(finalTSPL);
+  }
+
+  return finalTSPL;
 }
 
 async function qzPrintNew32(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;
-  const tspl = buildNew32TSPL(p, v, bn, pd, bb, copies);
+  const tspl = buildNew32TSPL(p, v, bn, pd, bb, copies, true);
   console.log('[NEW32 TSPL]\n', tspl);
   try {
     setQZStatus('printing');

@@ -488,14 +488,25 @@ function buildBackHTML(p, v, bn, pd, bb) {
     ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.72em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:1px;">No Onion No Garlic</div>`
     : '';
 
-  const blendedBox = isBlended
-    ? `<div style="border:0.8pt solid #000;padding:1mm 1.5mm;margin:1mm 0;font-size:0.52em;text-align:center;line-height:1.3;font-weight:600;">Mixed Masala Powder, Spices content more than 85%, salt content more than 5%</div>`
+  const isSeasoning = (p.c || '').toLowerCase().includes('seasoning');
+  const catLine = isSeasoning ? `<div class="blcat">SEASONING</div>` : '';
+
+  // Use p.sc from excel, or fallback to default text if blended
+  let blendedBoxText = '';
+  if (p.sc) {
+    blendedBoxText = p.sc;
+  } else if (isBlended) {
+    blendedBoxText = 'Mixed Masala Powder, Spices content more than 85%, salt content more than 5%';
+  }
+  
+  const blendedBox = blendedBoxText
+    ? `<div style="border:0.8pt solid #000;padding:1mm 1.5mm;margin:1mm 0;font-size:0.52em;text-align:center;line-height:1.3;font-weight:600;">${blendedBoxText}</div>`
     : '';
 
   return `<div class="bl-wrap">
     <div class="bltit" id="bltit-el">${p.n.toUpperCase()}</div>
     ${jainLine}
-    <div class="blcat">Category - ${p.c || '—'}</div>
+    ${catLine}
     ${blendedBox}
     <hr class="blhr">
     <div class="blsec">INGREDIENTS :-</div>
@@ -645,8 +656,14 @@ function pF() {
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintNew32 === 'function') {
       qzPrintNew32(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
-        if (!done) showToast('Testing preview mode. QZ Tray is offline.', 'info');
-      }).catch(() => showToast('Testing preview mode. QZ Tray is offline.', 'info'));
+        if (!done) {
+          showToast('Testing preview mode. QZ Tray is offline.', 'info');
+          if (typeof buildNew32TSPL === 'function') buildNew32TSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies);
+        }
+      }).catch(() => {
+        showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (typeof buildNew32TSPL === 'function') buildNew32TSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies);
+      });
     }
     return;
   }

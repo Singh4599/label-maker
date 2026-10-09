@@ -79,6 +79,22 @@ def parse_excel(filename, var_name, js_file, has_cat=True):
             i_str = str(r.get(col_map.get('INGREDIENT', ''))).strip()
             p['i'] = '' if i_str == 'nan' else i_str
             
+            # Find the 6th column dynamically or by unnamed
+            keys = list(r.keys())
+            if len(keys) >= 6:
+                sc = str(r[keys[5]]).strip()
+                if sc != 'nan' and sc:
+                    p['sc'] = sc
+            
+            # Arbitrary nutrients for Dukan Bai (user requested)
+            p['e'] = 310
+            p['p'] = 12
+            p['cb'] = 45
+            p['tf'] = 14
+            p['so'] = 80
+            p['ts'] = 2
+            p['as'] = 0
+            
         valid_p[name] = p
         valid_v[name] = parse_rates_string(rates_str, b)
         

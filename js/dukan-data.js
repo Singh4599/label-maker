@@ -4,151 +4,350 @@ const DUKAN_DB = {
       "n": "GOLDEN TURMERIC POWDER",
       "b": "GTP-1026",
       "c": "",
-      "i": "TURMERIC"
+      "i": "TURMERIC",
+      "sc": "TURMERIC",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "SELAM TURMERIC POWDER": {
       "n": "SELAM TURMERIC POWDER",
       "b": "STP-1026",
       "c": "",
-      "i": "TURMERIC"
+      "i": "TURMERIC",
+      "sc": "TURMERIC",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "CHILLI POWDER KASHMIRI": {
       "n": "CHILLI POWDER KASHMIRI",
       "b": "CPKKMU1-1026",
       "c": "",
-      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]"
+      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "sc": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "MALVANI MIX SPECIAL MASALA": {
       "n": "MALVANI MIX SPECIAL MASALA",
       "b": "MMSM-1026",
       "c": "",
-      "i": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt."
+      "i": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt.",
+      "sc": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "CORIANDER GREEN SEASONING": {
       "n": "CORIANDER GREEN SEASONING",
       "b": "CGSKMU1-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "DHANAJEERA (MIX MASALA POWDER)": {
       "n": "DHANAJEERA (MIX MASALA POWDER)",
       "b": "DJMMPKMU1-1026",
       "c": "",
-      "i": "(In Descending Order By Weight) CORIANDER, CUMIN, TURMERIC,"
+      "i": "(In Descending Order By Weight) CORIANDER, CUMIN, TURMERIC,",
+      "sc": "(In Descending Order By Weight) CORIANDER, CUMIN, TURMERIC,",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "CORIANDER SARAS SEASONING": {
       "n": "CORIANDER SARAS SEASONING",
       "b": "CSS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING": {
       "n": "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING",
       "b": "RKCBS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "sc": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "DANDICUT KHANDELA CHILLI BLEND SEASONING": {
       "n": "DANDICUT KHANDELA CHILLI BLEND SEASONING",
       "b": "DKCBS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "sc": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "PALITANA KHANDELA CHILLI BLEND SEASONING": {
       "n": "PALITANA KHANDELA CHILLI BLEND SEASONING",
       "b": "PKCBS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "sc": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "KASHMIRI KHANDELA CHILLI BLEND SEASONING": {
       "n": "KASHMIRI KHANDELA CHILLI BLEND SEASONING",
       "b": "KKCBS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "sc": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "CHILLI POWDER SP  LAL": {
       "n": "CHILLI POWDER SP  LAL",
       "b": "CPSPLV-1026",
       "c": "",
-      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]"
+      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "sc": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "CHILLI POWDER SP LAL UNCHA": {
       "n": "CHILLI POWDER SP LAL UNCHA",
       "b": "CPSPLCCV-1026",
       "c": "",
-      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]"
+      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "sc": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "GINGER SEASONING": {
       "n": "GINGER SEASONING",
       "b": "GSM-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) GINGER, RICE, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) GINGER, RICE, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) GINGER, RICE, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "CUMIN SEASONING": {
       "n": "CUMIN SEASONING",
       "b": "CSM-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) CUMIN, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) CUMIN, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) CUMIN, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "DRY MANGO SEASONING": {
       "n": "DRY MANGO SEASONING",
       "b": "DMSM-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "BLACK PEPPER SEASONING": {
       "n": "BLACK PEPPER SEASONING",
       "b": "BPS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) BLACK PEPPER, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) BLACK PEPPER, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) BLACK PEPPER, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "METHI SEASONING": {
       "n": "METHI SEASONING",
       "b": "MS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) FENUGREEK SEED, TURMERIC, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) FENUGREEK SEED, TURMERIC, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) FENUGREEK SEED, TURMERIC, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "CORIANDER SEASONING": {
       "n": "CORIANDER SEASONING",
       "b": "CS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL"
+      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "SAMBHAR CHILLI BLEND SEASONING": {
       "n": "SAMBHAR CHILLI BLEND SEASONING",
       "b": "SCBS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida."
+      "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida.",
+      "sc": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "SAMBHAR KASHMIRI CHILLI BLEND SEASONING": {
       "n": "SAMBHAR KASHMIRI CHILLI BLEND SEASONING",
       "b": "SKCBS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida."
+      "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida.",
+      "sc": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "JEERA SUPER": {
       "n": "JEERA SUPER",
       "b": "JS1026",
       "c": "",
-      "i": "(cumin seeds"
+      "i": "(cumin seeds",
+      "sc": "(cumin seeds",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "RAI": {
       "n": "RAI",
       "b": "R1026",
       "c": "",
-      "i": "mustard seeds"
+      "i": "mustard seeds",
+      "sc": "mustard seeds",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "RAJWADI GARAM MASALA": {
       "n": "RAJWADI GARAM MASALA",
       "b": "RGM-1026",
       "c": "",
-      "i": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace."
+      "i": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace.",
+      "sc": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace.",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     },
     "STICKER SIZE- 50 X 90 MM": {
       "n": "STICKER SIZE- 50 X 90 MM",
       "b": "STICKER SIZE- 80 X 25 MM",
       "c": "",
-      "i": ""
+      "i": "",
+      "e": 310,
+      "p": 12,
+      "cb": 45,
+      "tf": 14,
+      "so": 80,
+      "ts": 2,
+      "as": 0
     }
   },
   "v": {
