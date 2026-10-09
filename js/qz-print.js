@@ -655,55 +655,53 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
   let bcCanvas = null;
   try {
     bcCanvas = document.createElement('canvas');
-    // EAN13 needs exactly 12 digits (13th is auto-calculated checksum)
-    let hashVal = Math.abs(hashCode(p.n)).toString().slice(0, 5).padStart(5, '0');
-    let bcVal = '8905606' + hashVal; 
-    JsBarcode(bcCanvas, bcVal, { format: 'EAN13', width: 2, height: 35, displayValue: true, fontSize: 16, margin: 0 });
+    // Use CODE128 to completely bypass EAN13 checksum exceptions
+    let bcVal = p.barcode ? String(p.barcode) : '8905606' + Math.abs(hashCode(p.n)).toString().slice(0, 6); 
+    JsBarcode(bcCanvas, bcVal, { format: 'CODE128', width: 2, height: 25, displayValue: true, fontSize: 12, margin: 0 });
   } catch(e) { console.error('Barcode error', e); }
 
   offsets.forEach(startX => {
     const w32 = 256; // 32mm = 256 dots
-    const centerX = startX + (w32 / 2);
+    const leftX = startX + 16; // 2mm padding from left
     let y = 6;
 
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left'; // User requested left alignment
     ctx.textBaseline = 'top';
 
     // 100g ( 3.5oz )
     ctx.font = 'bold 26px Arial, sans-serif';
-    ctx.fillText(`${v.d} ( ${v.oz} )`, centerX, y);
+    ctx.fillText(`${v.d} ( ${v.oz} )`, leftX, y);
     y += 28;
 
     // KCP100 (Batch)
-    ctx.fillText(bn || '—', centerX, y);
+    ctx.fillText(bn || '—', leftX, y);
     y += 28;
     
     // 02/10/2026 (Date of Packing)
-    ctx.fillText(pd || '—', centerX, y);
+    ctx.fillText(pd || '—', leftX, y);
     y += 28;
 
     // EXPIRY DATE: 01/10/2027
     const bbClean = (bb || '—').replace(/\s*\(.*$/, ''); // strip (12 Months)
-    ctx.font = 'bold 18px Arial, sans-serif';
-    ctx.fillText(`EXPIRY DATE: ${bbClean}`, centerX, y);
+    ctx.font = '16px Arial, sans-serif'; // Not bold, slightly smaller
+    ctx.fillText(`EXPIRY DATE: ${bbClean}`, leftX, y);
     y += 20;
 
     // ₹160. (1.60/g)
     ctx.font = 'bold 28px Arial, sans-serif';
     const mrp = parseFloat(v.m) || 0;
     const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-    ctx.fillText(`₹${mrp}. (${pg}/g)`, centerX, y);
+    ctx.fillText(`₹${mrp}. (${pg}/g)`, leftX, y);
     y += 30;
 
     // (INC. OF ALL TAXES)
-    ctx.font = 'bold 14px Arial, sans-serif';
-    ctx.fillText('(INC. OF ALL TAXES)', centerX, y);
+    ctx.font = 'bold 12px Arial, sans-serif';
+    ctx.fillText('(INC. OF ALL TAXES)', leftX, y);
     y += 16;
 
     if (bcCanvas) {
-      const bcW = 230; // wider barcode to fit 32mm well
-      const bcX = centerX - (bcW / 2);
-      ctx.drawImage(bcCanvas, bcX, y, bcW, bcCanvas.height);
+      const bcW = 210; // width of barcode
+      ctx.drawImage(bcCanvas, leftX, y, bcW, bcCanvas.height);
     }
   });
 
