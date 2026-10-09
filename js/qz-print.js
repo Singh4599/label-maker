@@ -201,8 +201,8 @@ function generateFrontCanvas(name) {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, DW, DH);
   
-  const leftPad = 48; // shift right by 2mm (16 dots)
-  const rightPad = 16;
+  const leftPad = 16; // Shift text left to prevent right cutoff
+  const rightPad = 32;
   const SAFE_Y = 24; 
   
   const usableW = DW - (leftPad + rightPad); 
@@ -318,7 +318,7 @@ function buildFrontTSPL(name, copies, disablePopup) {
   }
 
   const printData = [];
-  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${DH},0,` });
+  printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,0,${widthBytes},${DH},0,` });
   printData.push({ type: 'raw', format: 'hex', data: hexString });
   printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
   
@@ -339,8 +339,8 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const leftPad = 8; // shift left to balance physical printer margins
-  const rightPad = 40;
+  const leftPad = 24; // perfect middle ground between 8 and 36
+  const rightPad = 24;
   const usableW = DW - (leftPad + rightPad);
   let y = 36; // Increased top margin so title doesn't get cut
   
@@ -609,7 +609,6 @@ function buildBackTSPL(p, v, bn, pd, bb, copies, disablePopup) {
   }
 
   const printData = [];
-  // Reset BITMAP X to 0 (default) to shift physical print leftwards
   printData.push({ type: 'raw', format: 'plain', data: `SET DARKNESS 12\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,4,${widthBytes},${DH},0,` });
   printData.push({ type: 'raw', format: 'hex', data: hexString });
   printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
