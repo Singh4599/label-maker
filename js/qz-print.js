@@ -342,7 +342,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   const leftPad = 8; // shift left to balance physical printer margins
   const rightPad = 40;
   const usableW = DW - (leftPad + rightPad);
-  let y = 16;
+  let y = 36; // Increased top margin so title doesn't get cut
   
   const mrp  = (parseFloat(v.m) || 0) * 2;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
