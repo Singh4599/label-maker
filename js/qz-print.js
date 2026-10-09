@@ -170,8 +170,9 @@ function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 /* ─── FRONT label TSPL ─── */
 function generateFrontCanvas(name) {
   let DW = 520, DH = 200; // default 65x25mm
-  if (window.ST && window.ST.mode === 'dukan') DW = 640; // 80x25mm
-  if (window.ST && window.ST.mode === 'new32') DW = 256; // 32x25mm
+  const currentMode = typeof ST !== 'undefined' ? ST.mode : null;
+  if (currentMode === 'dukan') DW = 640; // 80x25mm
+  if (currentMode === 'new32') DW = 256; // 32x25mm
 
   const n = tsplSafe((name || '').toUpperCase().trim());
   const isJain = n.includes('JAIN');
@@ -205,8 +206,8 @@ function generateFrontCanvas(name) {
   ctx.fillRect(0, 0, DW, DH);
   
   let leftPad = 8, rightPad = 48; // Shifted further left and squeezed to prevent right cutoff for long names
-  if (window.ST && window.ST.mode === 'dukan') { leftPad = 24; rightPad = 48; } // adjust for 80mm
-  if (window.ST && window.ST.mode === 'new32') { leftPad = 8; rightPad = 8; }  // adjust for 32mm
+  if (currentMode === 'dukan') { leftPad = 32; rightPad = 32; } // Equal margins for 80mm
+  if (currentMode === 'new32') { leftPad = 8; rightPad = 8; }  // adjust for 32mm
   const SAFE_Y = 24; 
   
   const usableW = DW - (leftPad + rightPad); 
