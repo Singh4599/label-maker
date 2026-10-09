@@ -663,7 +663,7 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
   offsets.forEach(startX => {
     const w32 = 256; // 32mm = 256 dots
     const leftX = startX + 16; // 2mm padding from left
-    let y = 6;
+    let y = 2; // Shift up
 
     ctx.textAlign = 'left'; // User requested left alignment
     ctx.textBaseline = 'top';
@@ -671,33 +671,33 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
     // 100g ( 3.5oz )
     ctx.font = 'bold 26px Arial, sans-serif';
     ctx.fillText(`${v.d} ( ${v.oz} )`, leftX, y);
-    y += 28;
+    y += 26;
 
     // KCP100 (Batch)
     ctx.fillText(bn || '—', leftX, y);
-    y += 28;
+    y += 26;
     
     // 02/10/2026 (Date of Packing)
     ctx.fillText(pd || '—', leftX, y);
-    y += 28;
+    y += 26;
 
     // EXPIRY DATE: 01/10/2027
     const bbClean = (bb || '—').replace(/\s*\(.*$/, ''); // strip (12 Months)
     ctx.font = '16px Arial, sans-serif'; // Not bold, slightly smaller
     ctx.fillText(`EXPIRY DATE: ${bbClean}`, leftX, y);
-    y += 20;
+    y += 18;
 
     // ₹160. (1.60/g)
     ctx.font = 'bold 28px Arial, sans-serif';
     const mrp = parseFloat(v.m) || 0;
     const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
     ctx.fillText(`₹${mrp}. (${pg}/g)`, leftX, y);
-    y += 30;
+    y += 26;
 
     // (INC. OF ALL TAXES)
     ctx.font = 'bold 12px Arial, sans-serif';
     ctx.fillText('(INC. OF ALL TAXES)', leftX, y);
-    y += 16;
+    y += 14;
 
     if (bcCanvas) {
       const bcW = 210; // width of barcode
