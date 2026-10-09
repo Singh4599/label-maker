@@ -79,14 +79,16 @@ def make_variants(name, price_1kg=0):
     if p1kg > 0:
         p100  = round5(p1kg * 0.122)   # 100g with ~22% premium
         p200  = round5(p1kg * 0.23)    # 200g with ~15% premium
+        p250  = round5(p1kg * 0.28)    # 250g with ~12% premium
         p500  = round5(p1kg * 0.56)    # 500g with ~12% premium
         p1000 = round5(p1kg)
     else:
-        p100 = p200 = p500 = p1000 = 0
+        p100 = p200 = p250 = p500 = p1000 = 0
 
     return [
         { 'd': '100g',  'g': 100,  'oz': '3.53oz',  'm': p100,  'bn': f'{prefix}0001' },
         { 'd': '200g',  'g': 200,  'oz': '7.05oz',  'm': p200,  'bn': f'{prefix}0001' },
+        { 'd': '250g',  'g': 250,  'oz': '8.82oz',  'm': p250,  'bn': f'{prefix}0001' },
         { 'd': '500g',  'g': 500,  'oz': '17.64oz', 'm': p500,  'bn': f'{prefix}0001' },
         { 'd': '1 Kg',  'g': 1000, 'oz': '35.27oz', 'm': p1000, 'bn': f'{prefix}0001' },
     ]
