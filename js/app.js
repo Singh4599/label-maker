@@ -84,27 +84,44 @@ function setMode(mode) {
   closeSidebar();
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
-  // DB and Excel both use mode-db panel
-  $('mode-db').classList.toggle('active', mode === 'db' || mode === 'excel');
-  $('mode-manual').classList.toggle('active', mode === 'manual');
+  // All list-based modes use mode-db panel
+  const isListMode = ['db', 'excel', 'dukan', 'new32', 'parties'].includes(mode);
+  const mDb = $('mode-db'); if (mDb) mDb.classList.toggle('active', isListMode);
+  const mMnl = $('mode-manual'); if (mMnl) mMnl.classList.toggle('active', mode === 'manual');
 
-  // Excel strip visibility
-  const strip = $('excel-strip');
-  if (strip) strip.style.display = mode === 'excel' ? 'block' : 'none';
+  // Load the correct data into ST.db
+  if (mode === 'db') {
+    ST.db = { p: SPICERY_DB.p, v: SPICERY_DB.v };
+  } else if (mode === 'dukan') {
+    const pObj = {}, vObj = {};
+    (typeof dukanProducts !== 'undefined' ? dukanProducts : []).forEach(prod => {
+      pObj[prod.n] = prod;
+      vObj[prod.n] = [{ d: 'Standard Pack', bn: prod.b }];
+    });
+    ST.db = { p: pObj, v: vObj };
+  } else if (mode === 'new32') {
+    const pObj = {}, vObj = {};
+    (typeof new32Products !== 'undefined' ? new32Products : []).forEach(prod => {
+      pObj[prod.n] = prod;
+      vObj[prod.n] = [{ d: 'Standard Pack', bn: prod.b }];
+    });
+    ST.db = { p: pObj, v: vObj };
+  } else if (mode === 'parties') {
+    ST.db = { p: {}, v: {} };
+  }
 
-  // Update step description for excel mode
+  // Update step description
   const desc = $('step1-desc');
   if (desc) {
-    desc.textContent = mode === 'excel'
-      ? 'Search from your uploaded Excel product data'
-      : 'Search from our 365 Spicery product library';
+    if (mode === 'db') desc.textContent = 'Search from our 365 Spicery product library';
+    else if (mode === 'dukan') desc.textContent = 'Search from Dukan Bai products';
+    else if (mode === 'new32') desc.textContent = 'Search from 32x25 label products';
+    else if (mode === 'parties') desc.textContent = 'Search from Parties data (Coming Soon)';
+    else desc.textContent = 'Search from products';
   }
 
-  // Reset if switching from manual
-  if (mode !== 'manual') {
-    // Keep ST.db as is (loaded DB or Excel), but don't clear product selection
-  }
-
+  clearProduct();
+  populateCategories();
   render();
 }
 

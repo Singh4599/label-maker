@@ -167,9 +167,12 @@ function getNutriLines(p) {
 }
 function getNutritionShort(p) { return getNutriLines(p).join(' | '); }
 
-/* ─── FRONT label TSPL (65×25mm) ─── */
+/* ─── FRONT label TSPL ─── */
 function generateFrontCanvas(name) {
-  const DW = 520, DH = 200;
+  let DW = 520, DH = 200; // default 65x25mm
+  if (window.ST && window.ST.mode === 'dukan') DW = 640; // 80x25mm
+  if (window.ST && window.ST.mode === 'new32') DW = 256; // 32x25mm
+
   const n = tsplSafe((name || '').toUpperCase().trim());
   const isJain = n.includes('JAIN');
   const jainBlockH = isJain ? 36 : 0;
@@ -201,8 +204,9 @@ function generateFrontCanvas(name) {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, DW, DH);
   
-  const leftPad = 16; // Shift text left to prevent right cutoff
-  const rightPad = 32;
+  let leftPad = 8, rightPad = 48; // Shifted further left and squeezed to prevent right cutoff for long names
+  if (window.ST && window.ST.mode === 'dukan') { leftPad = 24; rightPad = 48; } // adjust for 80mm
+  if (window.ST && window.ST.mode === 'new32') { leftPad = 8; rightPad = 8; }  // adjust for 32mm
   const SAFE_Y = 24; 
   
   const usableW = DW - (leftPad + rightPad); 
@@ -635,9 +639,10 @@ async function qzPrintFront(name, copies) {
   const tspl = buildFrontTSPL(name, copies, true); // true = disable popup here
   console.log('[FRONT TSPL]\n', tspl);
   try {
-    setQZStatus('printing');
     const printData = Array.isArray(tspl) ? tspl : [{ type: 'raw', format: 'plain', data: tspl }];
-    await qz.print(_rawConfig(QZP.frontPrinter), printData);
+    let printerToUse = QZP.frontPrinter;
+    if (window.ST && window.ST.mode === 'dukan') printerToUse = 'TSC TA210'; // hardcoded per user req
+    await qz.print(_rawConfig(printerToUse), printData);
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Front!`, 'success');
     return true;

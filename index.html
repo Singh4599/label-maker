@@ -67,11 +67,25 @@
             <span class="nav-sub">10 pre-loaded products</span>
           </div>
         </button>
-        <button class="nav-item" data-mode="excel" onclick="setMode('excel')">
-          <div class="nav-icon">📊</div>
+        <button class="nav-item" data-mode="dukan" onclick="setMode('dukan')">
+          <div class="nav-icon">🏪</div>
           <div>
-            <span class="nav-title">Upload Excel</span>
-            <span class="nav-sub">Custom .xlsx file</span>
+            <span class="nav-title">Dukan Bai Data</span>
+            <span class="nav-sub">80x25 / 50x90 Labels</span>
+          </div>
+        </button>
+        <button class="nav-item" data-mode="new32" onclick="setMode('new32')">
+          <div class="nav-icon">🏷️</div>
+          <div>
+            <span class="nav-title">New 32x25 Label</span>
+            <span class="nav-sub">Single 32x25 Print</span>
+          </div>
+        </button>
+        <button class="nav-item" data-mode="parties" onclick="setMode('parties')">
+          <div class="nav-icon">🤝</div>
+          <div>
+            <span class="nav-title">Parties Data</span>
+            <span class="nav-sub">Coming Soon</span>
           </div>
         </button>
         <button class="nav-item" data-mode="manual" onclick="setMode('manual')">
@@ -436,10 +450,11 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="js/JsBarcode.all.min.js"></script>
 <script src="js/data.js"></script>
+<script src="js/dukan-data.js?v=1"></script>
+<script src="js/new32-data.js?v=1"></script>
 <script src="js/qz-tray.js"></script>
-<script src="js/qz-print.js?v=26"></script>
-<script src="js/app.js?v=26"></script>
+<script src="js/qz-print.js?v=28"></script>
+<script src="js/app.js?v=28"></script>
 </body>
 </html>
