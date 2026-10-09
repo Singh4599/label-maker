@@ -633,6 +633,103 @@ function _rawConfig(printer) {
   return qz.configs.create(printer);
 }
 
+/* ─── NEW 32x25 LABEL (2-UP FORMAT) ─── */
+function generateNew32Canvas(p, v, bn, pd, bb) {
+  // Total width of the roll is ~68mm, but printer driver is set to 65mm.
+  // 520 dots = 65mm. We draw two 256-dot (32mm) labels with a gap.
+  const DW = 520, DH = 200;
+  const canvas = document.createElement('canvas');
+  canvas.width = DW; canvas.height = DH;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, DW, DH);
+  ctx.fillStyle = 'black';
+  ctx.textBaseline = 'top';
+
+  // Draw identical label twice (Left at X=0, Right at X=264)
+  // 264 = 256 (32mm) + 8 (1mm gap, just to fit within 520. Actual physical gap is 4mm, but we fit it in 520 dots).
+  // Actually, let's use exact offsets: Left=0, Right=288 (36mm). But 288+256 = 544 > 520.
+  // We'll squeeze the gap slightly to fit 520 dots, or just let it offset.
+  // Let's use left offset = 0, right offset = 264.
+  const offsets = [0, 264];
+
+  // Barcode value is same for both
+  let bcCanvas = null;
+  try {
+    bcCanvas = document.createElement('canvas');
+    let bcVal = '8905606' + Math.abs(hashCode(p.n)).toString().slice(0, 6).padStart(6, '0');
+    if (bcVal.length > 13) bcVal = bcVal.substring(0,13);
+    JsBarcode(bcCanvas, bcVal, { format: 'EAN13', width: 2, height: 35, displayValue: true, fontSize: 16, margin: 0 });
+  } catch(e) { console.error('Barcode error', e); }
+
+  offsets.forEach(startX => {
+    const padX = startX + 8;
+    let y = 8;
+
+    // 100g (3.5oz)
+    ctx.font = 'bold 24px "Arial Black", Arial, sans-serif';
+    const wText = `${v.d} (${v.oz})`;
+    ctx.fillText(wText, padX, y);
+    
+    const m = ctx.measureText(wText);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(padX - 4, y - 2, m.width + 8, 28);
+    y += 32;
+
+    ctx.font = 'bold 22px "Arial Black", Arial, sans-serif';
+    ctx.fillText(bn || '—', padX, y);
+    y += 24;
+    
+    ctx.fillText(pd || '—', padX, y);
+    y += 24;
+
+    ctx.fillText(`EXPIRY DATE : ${bb || '—'}`, padX, y);
+    y += 24;
+
+    const mrp = parseFloat(v.m) || 0;
+    const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
+    ctx.fillText(`₹${mrp}. (${pg}/g)`, padX, y);
+    y += 26;
+
+    ctx.font = 'bold 12px Arial, sans-serif';
+    ctx.fillText('(INC. OF ALL TAXES)', padX, y);
+    y += 16;
+
+    if (bcCanvas) {
+      ctx.drawImage(bcCanvas, padX, y, 240, bcCanvas.height);
+    }
+  });
+
+  return canvas;
+}
+
+function buildNew32TSPL(p, v, bn, pd, bb, copies) {
+  const c = generateNew32Canvas(p, v, bn, pd, bb);
+  if (!c) return '';
+  return canvasToTSPL(c, copies, 32, 25);
+}
+
+async function qzPrintNew32(p, v, bn, pd, bb, copies) {
+  if (typeof qz === 'undefined') return false;
+  if (!await _ensureConnected()) return false;
+  const tspl = buildNew32TSPL(p, v, bn, pd, bb, copies);
+  console.log('[NEW32 TSPL]\n', tspl);
+  try {
+    setQZStatus('printing');
+    const printData = [{ type: 'raw', format: 'plain', data: tspl }];
+    await qz.print(_rawConfig(QZP.frontPrinter), printData); // Uses front printer TE244 Copy 1
+    setQZStatus('connected');
+    showToast(`✓ ${copies} label(s) sent to Printer!`, 'success');
+    return true;
+  } catch (err) {
+    QZP.connected = qz.websocket.isActive();
+    setQZStatus(QZP.connected ? 'connected' : 'disconnected');
+    showToast('Print error: ' + err.message, 'error');
+    return false;
+  }
+}
+
 async function qzPrintFront(name, copies) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;

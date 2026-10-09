@@ -1,314 +1,717 @@
-const dukanProducts = [
-  {
-    "n": "GOLDEN TURMERIC POWDER",
-    "b": "GTP-1026",
-    "c": "",
-    "i": "TURMERIC",
-    "rates": "100 gm-80,         250 gms-200,       500 gms-400,   1 kg-800",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
+const DUKAN_DB = {
+  "p": {
+    "GOLDEN TURMERIC POWDER": {
+      "n": "GOLDEN TURMERIC POWDER",
+      "b": "GTP-1026",
+      "c": "",
+      "i": "TURMERIC"
+    },
+    "SELAM TURMERIC POWDER": {
+      "n": "SELAM TURMERIC POWDER",
+      "b": "STP-1026",
+      "c": "",
+      "i": "TURMERIC"
+    },
+    "CHILLI POWDER KASHMIRI": {
+      "n": "CHILLI POWDER KASHMIRI",
+      "b": "CPKKMU1-1026",
+      "c": "",
+      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]"
+    },
+    "MALVANI MIX SPECIAL MASALA": {
+      "n": "MALVANI MIX SPECIAL MASALA",
+      "b": "MMSM-1026",
+      "c": "",
+      "i": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt."
+    },
+    "CORIANDER GREEN SEASONING": {
+      "n": "CORIANDER GREEN SEASONING",
+      "b": "CGSKMU1-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL"
+    },
+    "DHANAJEERA (MIX MASALA POWDER)": {
+      "n": "DHANAJEERA (MIX MASALA POWDER)",
+      "b": "DJMMPKMU1-1026",
+      "c": "",
+      "i": "(In Descending Order By Weight) CORIANDER, CUMIN, TURMERIC,"
+    },
+    "CORIANDER SARAS SEASONING": {
+      "n": "CORIANDER SARAS SEASONING",
+      "b": "CSS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL"
+    },
+    "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING": {
+      "n": "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING",
+      "b": "RKCBS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+    },
+    "DANDICUT KHANDELA CHILLI BLEND SEASONING": {
+      "n": "DANDICUT KHANDELA CHILLI BLEND SEASONING",
+      "b": "DKCBS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+    },
+    "PALITANA KHANDELA CHILLI BLEND SEASONING": {
+      "n": "PALITANA KHANDELA CHILLI BLEND SEASONING",
+      "b": "PKCBS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+    },
+    "KASHMIRI KHANDELA CHILLI BLEND SEASONING": {
+      "n": "KASHMIRI KHANDELA CHILLI BLEND SEASONING",
+      "b": "KKCBS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil."
+    },
+    "CHILLI POWDER SP  LAL": {
+      "n": "CHILLI POWDER SP  LAL",
+      "b": "CPSPLV-1026",
+      "c": "",
+      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]"
+    },
+    "CHILLI POWDER SP LAL UNCHA": {
+      "n": "CHILLI POWDER SP LAL UNCHA",
+      "b": "CPSPLCCV-1026",
+      "c": "",
+      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]"
+    },
+    "GINGER SEASONING": {
+      "n": "GINGER SEASONING",
+      "b": "GSM-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) GINGER, RICE, EDIBLE RICE BRAN OIL"
+    },
+    "CUMIN SEASONING": {
+      "n": "CUMIN SEASONING",
+      "b": "CSM-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) CUMIN, EDIBLE RICE BRAN OIL"
+    },
+    "DRY MANGO SEASONING": {
+      "n": "DRY MANGO SEASONING",
+      "b": "DMSM-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, EDIBLE RICE BRAN OIL"
+    },
+    "BLACK PEPPER SEASONING": {
+      "n": "BLACK PEPPER SEASONING",
+      "b": "BPS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) BLACK PEPPER, EDIBLE RICE BRAN OIL"
+    },
+    "METHI SEASONING": {
+      "n": "METHI SEASONING",
+      "b": "MS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) FENUGREEK SEED, TURMERIC, EDIBLE RICE BRAN OIL"
+    },
+    "CORIANDER SEASONING": {
+      "n": "CORIANDER SEASONING",
+      "b": "CS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL"
+    },
+    "SAMBHAR CHILLI BLEND SEASONING": {
+      "n": "SAMBHAR CHILLI BLEND SEASONING",
+      "b": "SCBS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida."
+    },
+    "SAMBHAR KASHMIRI CHILLI BLEND SEASONING": {
+      "n": "SAMBHAR KASHMIRI CHILLI BLEND SEASONING",
+      "b": "SKCBS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida."
+    },
+    "JEERA SUPER": {
+      "n": "JEERA SUPER",
+      "b": "JS1026",
+      "c": "",
+      "i": "(cumin seeds"
+    },
+    "RAI": {
+      "n": "RAI",
+      "b": "R1026",
+      "c": "",
+      "i": "mustard seeds"
+    },
+    "RAJWADI GARAM MASALA": {
+      "n": "RAJWADI GARAM MASALA",
+      "b": "RGM-1026",
+      "c": "",
+      "i": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace."
+    },
+    "STICKER SIZE- 50 X 90 MM": {
+      "n": "STICKER SIZE- 50 X 90 MM",
+      "b": "STICKER SIZE- 80 X 25 MM",
+      "c": "",
+      "i": ""
+    }
   },
-  {
-    "n": "SELAM TURMERIC POWDER",
-    "b": "STP-1026",
-    "c": "",
-    "i": "TURMERIC",
-    "rates": "100 gm-72,         250 gms-180,       500 gms-360,   1 kg- 720",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "CHILLI POWDER KASHMIRI",
-    "b": "CPKKMU1-1026",
-    "c": "",
-    "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
-    "rates": "100 gm-160,         250 gms-400,       500 gms-800,   1 kg-1600",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "MALVANI MIX SPECIAL MASALA",
-    "b": "MMSM-1026",
-    "c": "",
-    "i": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt.",
-    "rates": "100 gm-90,         250 gms-225,       500 gms-450,   1 kg- 900",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "CORIANDER GREEN SEASONING",
-    "b": "CGSKMU1-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-72,         250 gms-180,       500 gms-360,   1 kg- 720",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "DHANAJEERA (MIX MASALA POWDER)",
-    "b": "DJMMPKMU1-1026",
-    "c": "",
-    "i": "(In Descending Order By Weight) CORIANDER, CUMIN, TURMERIC,",
-    "rates": "100 gm-88,         250 gms-220,       500 gms-440,   1 kg- 880",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "CORIANDER SARAS SEASONING",
-    "b": "CSS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-60         250 gms-150       500 gms-300   1 kg-600",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING",
-    "b": "RKCBS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
-    "rates": "100 gm-90,         250 gms-225,       500 gms-450,   1 kg- 900",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "DANDICUT KHANDELA CHILLI BLEND SEASONING",
-    "b": "DKCBS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
-    "rates": "100 gm-90,         250 gms-225,       500 gms-450,   1 kg- 900",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "PALITANA KHANDELA CHILLI BLEND SEASONING",
-    "b": "PKCBS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
-    "rates": "100 gm-72,         250 gms-180,       500 gms-360,   1 kg- 720",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "KASHMIRI KHANDELA CHILLI BLEND SEASONING",
-    "b": "KKCBS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) Chilli, Salt, Edible Rice Bran Oil.",
-    "rates": "100 gm-160,         250 gms-400,       500 gms-800,   1 kg-1600",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "CHILLI POWDER SP  LAL",
-    "b": "CPSPLV-1026",
-    "c": "",
-    "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
-    "rates": "100 gm-100         250 gms-250       500 gms-500   1 kg- 1000",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "CHILLI POWDER SP LAL UNCHA",
-    "b": "CPSPLCCV-1026",
-    "c": "",
-    "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
-    "rates": "100 gm-100         250 gms-250       500 gms-500   1 kg- 1000",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "GINGER SEASONING",
-    "b": "GSM-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) GINGER, RICE, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-100         250 gms-250       500 gms-500   1 kg- 1000",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "CUMIN SEASONING",
-    "b": "CSM-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) CUMIN, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-80,         250 gms-200,       500 gms-400,   1 kg-800",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "DRY MANGO SEASONING",
-    "b": "DMSM-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-60         250 gms-150       500 gms-300   1 kg-600",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "BLACK PEPPER SEASONING",
-    "b": "BPS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) BLACK PEPPER, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-140    , 250 gms-350  , 500 gms-  700   , 1 kg- 1400",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "METHI SEASONING",
-    "b": "MS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) FENUGREEK SEED, TURMERIC, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-40         250 gms-100       500 gms-200   1 kg- 400",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "CORIANDER SEASONING",
-    "b": "CS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
-    "rates": "100 gm-40         250 gms-100       500 gms-200   1 kg- 400",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "SAMBHAR CHILLI BLEND SEASONING",
-    "b": "SCBS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida.",
-    "rates": "100 gm-80,         250 gms-200,       500 gms-400,   1 kg-800",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "SAMBHAR KASHMIRI CHILLI BLEND SEASONING",
-    "b": "SKCBS-1026",
-    "c": "category - seasoning",
-    "i": "(In Descending Order By Weight) Chilli, Salt, Split Mustard seeds, Split fenugreek seeds, mustard oil, asafoetida.",
-    "rates": "100 gm-140    , 250 gms-350  , 500 gms-  700   , 1 kg- 1400",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "JEERA SUPER",
-    "b": "JS1026",
-    "c": "",
-    "i": "(cumin seeds",
-    "rates": "100 gm-90,         250 gms-225,       500 gms-450,   1 kg- 900",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "RAI",
-    "b": "R1026",
-    "c": "",
-    "i": "mustard seeds",
-    "rates": "100 gm-40         250 gms-100       500 gms-200   1 kg- 400",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
-  },
-  {
-    "n": "STICKER SIZE- 50 X 90 MM",
-    "b": "STICKER SIZE- 80 X 25 MM",
-    "c": "",
-    "i": "",
-    "rates": "",
-    "e": 0,
-    "p": 0,
-    "cb": 0,
-    "tf": 0,
-    "sf": 0,
-    "so": 0
+  "v": {
+    "GOLDEN TURMERIC POWDER": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 80,
+        "bn": "GTP-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 200,
+        "bn": "GTP-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 400,
+        "bn": "GTP-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 800,
+        "bn": "GTP-1026"
+      }
+    ],
+    "SELAM TURMERIC POWDER": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 72,
+        "bn": "STP-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 180,
+        "bn": "STP-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 360,
+        "bn": "STP-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 720,
+        "bn": "STP-1026"
+      }
+    ],
+    "CHILLI POWDER KASHMIRI": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 160,
+        "bn": "CPKKMU1-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 400,
+        "bn": "CPKKMU1-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 800,
+        "bn": "CPKKMU1-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1600,
+        "bn": "CPKKMU1-1026"
+      }
+    ],
+    "MALVANI MIX SPECIAL MASALA": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 90,
+        "bn": "MMSM-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 225,
+        "bn": "MMSM-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 450,
+        "bn": "MMSM-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 900,
+        "bn": "MMSM-1026"
+      }
+    ],
+    "CORIANDER GREEN SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 72,
+        "bn": "CGSKMU1-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 180,
+        "bn": "CGSKMU1-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 360,
+        "bn": "CGSKMU1-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 720,
+        "bn": "CGSKMU1-1026"
+      }
+    ],
+    "DHANAJEERA (MIX MASALA POWDER)": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 88,
+        "bn": "DJMMPKMU1-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 220,
+        "bn": "DJMMPKMU1-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 440,
+        "bn": "DJMMPKMU1-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 880,
+        "bn": "DJMMPKMU1-1026"
+      }
+    ],
+    "CORIANDER SARAS SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 60,
+        "bn": "CSS-1026"
+      }
+    ],
+    "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 90,
+        "bn": "RKCBS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 225,
+        "bn": "RKCBS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 450,
+        "bn": "RKCBS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 900,
+        "bn": "RKCBS-1026"
+      }
+    ],
+    "DANDICUT KHANDELA CHILLI BLEND SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 90,
+        "bn": "DKCBS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 225,
+        "bn": "DKCBS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 450,
+        "bn": "DKCBS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 900,
+        "bn": "DKCBS-1026"
+      }
+    ],
+    "PALITANA KHANDELA CHILLI BLEND SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 72,
+        "bn": "PKCBS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 180,
+        "bn": "PKCBS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 360,
+        "bn": "PKCBS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 720,
+        "bn": "PKCBS-1026"
+      }
+    ],
+    "KASHMIRI KHANDELA CHILLI BLEND SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 160,
+        "bn": "KKCBS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 400,
+        "bn": "KKCBS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 800,
+        "bn": "KKCBS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1600,
+        "bn": "KKCBS-1026"
+      }
+    ],
+    "CHILLI POWDER SP  LAL": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 100,
+        "bn": "CPSPLV-1026"
+      }
+    ],
+    "CHILLI POWDER SP LAL UNCHA": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 100,
+        "bn": "CPSPLCCV-1026"
+      }
+    ],
+    "GINGER SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 100,
+        "bn": "GSM-1026"
+      }
+    ],
+    "CUMIN SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 80,
+        "bn": "CSM-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 200,
+        "bn": "CSM-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 400,
+        "bn": "CSM-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 800,
+        "bn": "CSM-1026"
+      }
+    ],
+    "DRY MANGO SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 60,
+        "bn": "DMSM-1026"
+      }
+    ],
+    "BLACK PEPPER SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 140,
+        "bn": "BPS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 350,
+        "bn": "BPS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 700,
+        "bn": "BPS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1400,
+        "bn": "BPS-1026"
+      }
+    ],
+    "METHI SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 40,
+        "bn": "MS-1026"
+      }
+    ],
+    "CORIANDER SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 40,
+        "bn": "CS-1026"
+      }
+    ],
+    "SAMBHAR CHILLI BLEND SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 80,
+        "bn": "SCBS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 200,
+        "bn": "SCBS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 400,
+        "bn": "SCBS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 800,
+        "bn": "SCBS-1026"
+      }
+    ],
+    "SAMBHAR KASHMIRI CHILLI BLEND SEASONING": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 140,
+        "bn": "SKCBS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 350,
+        "bn": "SKCBS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 700,
+        "bn": "SKCBS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1400,
+        "bn": "SKCBS-1026"
+      }
+    ],
+    "JEERA SUPER": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 90,
+        "bn": "JS1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 225,
+        "bn": "JS1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 450,
+        "bn": "JS1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 900,
+        "bn": "JS1026"
+      }
+    ],
+    "RAI": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 40,
+        "bn": "R1026"
+      }
+    ],
+    "RAJWADI GARAM MASALA": [
+      {
+        "d": "100g",
+        "g": 100,
+        "oz": "3.53oz",
+        "m": 120,
+        "bn": "RGM-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 300,
+        "bn": "RGM-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 600,
+        "bn": "RGM-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1200,
+        "bn": "RGM-1026"
+      }
+    ],
+    "STICKER SIZE- 50 X 90 MM": [
+      {
+        "d": "Standard Pack",
+        "g": 100,
+        "oz": "3.5oz",
+        "m": 0,
+        "bn": "STICKER SIZE- 80 X 25 MM"
+      }
+    ]
   }
-];
+};

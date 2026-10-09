@@ -93,19 +93,9 @@ function setMode(mode) {
   if (mode === 'db') {
     ST.db = { p: SPICERY_DB.p, v: SPICERY_DB.v };
   } else if (mode === 'dukan') {
-    const pObj = {}, vObj = {};
-    (typeof dukanProducts !== 'undefined' ? dukanProducts : []).forEach(prod => {
-      pObj[prod.n] = prod;
-      vObj[prod.n] = [{ d: 'Standard Pack', bn: prod.b }];
-    });
-    ST.db = { p: pObj, v: vObj };
+    ST.db = typeof DUKAN_DB !== 'undefined' ? DUKAN_DB : { p: {}, v: {} };
   } else if (mode === 'new32') {
-    const pObj = {}, vObj = {};
-    (typeof new32Products !== 'undefined' ? new32Products : []).forEach(prod => {
-      pObj[prod.n] = prod;
-      vObj[prod.n] = [{ d: 'Standard Pack', bn: prod.b }];
-    });
-    ST.db = { p: pObj, v: vObj };
+    ST.db = typeof NEW32_DB !== 'undefined' ? NEW32_DB : { p: {}, v: {} };
   } else if (mode === 'parties') {
     ST.db = { p: {}, v: {} };
   }
@@ -399,12 +389,27 @@ function render() {
 function renderFront() {
   const fp = $('fp'); if (!fp) return;
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
-  const isJain = ST.prod.n.toUpperCase().includes('JAIN');
-  const jainSub = isJain
-    ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.55em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:2px;line-height:1;">No Onion No Garlic</div>`
-    : '';
-  fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div>${jainSub}</div>`;
-  requestAnimationFrame(fitFrontName);
+  
+  if (ST.mode === 'new32') {
+    if (ST.vi < 0) { fp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
+    const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    if (typeof generateNew32Canvas === 'function') {
+      const c = generateNew32Canvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+      c.style.width = '100%';
+      c.style.height = '100%';
+      c.style.objectFit = 'contain';
+      fp.innerHTML = '';
+      fp.appendChild(c);
+    }
+  } else {
+    // Standard front label (html preview fallback if canvas is not used)
+    const isJain = ST.prod.n.toUpperCase().includes('JAIN');
+    const jainSub = isJain
+      ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.55em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:2px;line-height:1;">No Onion No Garlic</div>`
+      : '';
+    fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div>${jainSub}</div>`;
+    requestAnimationFrame(fitFrontName);
+  }
 }
 
 function renderBack() {
@@ -634,6 +639,17 @@ function pF() {
   if (!pname) { showToast('No product name entered', 'error'); return; }
   const name = pname.toUpperCase();
   const copies = getCopies();
+
+  if (ST.mode === 'new32') {
+    if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
+    const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    if (typeof qzPrintNew32 === 'function') {
+      qzPrintNew32(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
+        if (!done) showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      }).catch(() => showToast('Testing preview mode. QZ Tray is offline.', 'info'));
+    }
+    return;
+  }
 
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintFront === 'function') {
