@@ -105,17 +105,22 @@ function setMode(mode) {
   const isDukan = mode === 'dukan';
 
   // Front Labels and Buttons
-  const frontSizeText = isNew32 ? '32×25 MM' : (isDukan ? '80×25 MM' : '65×25 MM');
+  const frontSizeText = isDukan ? '80×25 MM' : '65×25 MM'; // new32 front is 65x25
   document.querySelectorAll('.preview-section')[0].querySelector('.preview-lbl-size').textContent = frontSizeText;
   document.querySelectorAll('.btn-print-f').forEach(btn => {
-    btn.innerHTML = `🖨️ ${isNew32 ? 'Print' : 'Front'} — ${frontSizeText}`;
+    btn.innerHTML = `🖨️ Front — ${frontSizeText}`;
   });
 
-  // Back Labels and Buttons (Hide if new32)
+  // Back Labels and Buttons
+  const backSizeText = isNew32 ? '32×25 MM' : '50×90 MM';
   const backSection = document.querySelectorAll('.preview-section')[1];
-  if (backSection) backSection.style.display = isNew32 ? 'none' : '';
+  if (backSection) {
+    backSection.style.display = ''; // ALWAYS SHOW
+    backSection.querySelector('.preview-lbl-size').textContent = backSizeText;
+  }
   document.querySelectorAll('.btn-print-b').forEach(btn => {
-    btn.style.display = isNew32 ? 'none' : 'inline-block';
+    btn.style.display = 'inline-block'; // ALWAYS SHOW
+    btn.innerHTML = `🖨️ Back — ${backSizeText}`;
   });
 
   // Update step description
@@ -389,33 +394,32 @@ function render() {
 function renderFront() {
   const fp = $('fp'); if (!fp) return;
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
-  
-  if (ST.mode === 'new32') {
-    if (ST.vi < 0) { fp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
-    const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
-    if (typeof generateNew32Canvas === 'function') {
-      const c = generateNew32Canvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
-      c.style.width = '100%';
-      c.style.height = '100%';
-      c.style.objectFit = 'contain';
-      fp.innerHTML = '';
-      fp.appendChild(c);
-    }
-  } else {
-    // Standard front label (html preview fallback if canvas is not used)
+  // Standard front label (html preview fallback if canvas is not used)
     const isJain = ST.prod.n.toUpperCase().includes('JAIN');
     const jainSub = isJain
       ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.55em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:2px;line-height:1;">No Onion No Garlic</div>`
       : '';
     fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div>${jainSub}</div>`;
     requestAnimationFrame(fitFrontName);
-  }
 }
 
 function renderBack() {
   const bp = $('bp'); if (!bp) return;
   if (!ST.prod || ST.vi < 0) { bp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
   const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+
+  if (ST.mode === 'new32') {
+    if (typeof generateNew32Canvas === 'function') {
+      const c = generateNew32Canvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+      c.style.width = '100%';
+      c.style.height = '100%';
+      c.style.objectFit = 'contain';
+      bp.innerHTML = '';
+      bp.appendChild(c);
+    }
+    return;
+  }
+
   bp.innerHTML = buildBackHTML(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
   requestAnimationFrame(() => { fitBackTitle(); setTimeout(() => renderBarcode(ST.prod), 30); });
 }
@@ -651,22 +655,7 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
-  if (ST.mode === 'new32') {
-    if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
-    const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
-    if (typeof qzPrintNew32 === 'function') {
-      qzPrintNew32(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
-        if (!done) {
-          showToast('Testing preview mode. QZ Tray is offline.', 'info');
-          if (typeof buildNew32TSPL === 'function') buildNew32TSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies);
-        }
-      }).catch(() => {
-        showToast('Testing preview mode. QZ Tray is offline.', 'info');
-        if (typeof buildNew32TSPL === 'function') buildNew32TSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies);
-      });
-    }
-    return;
-  }
+
 
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintFront === 'function') {
@@ -703,6 +692,21 @@ function pB() {
     bn = gv('bn'); pd = fmtDate(gv('pd')); bb = getBBValue('bb-sel','bb');
   }
   const copies = getCopies();
+
+  if (ST.mode === 'new32') {
+    if (typeof qzPrintNew32 === 'function') {
+      qzPrintNew32(p, v, bn, pd, bb, copies).then(function(done) {
+        if (!done) {
+          showToast('Testing preview mode. QZ Tray is offline.', 'info');
+          if (typeof buildNew32TSPL === 'function') buildNew32TSPL(p, v, bn, pd, bb, copies);
+        }
+      }).catch(function() { 
+        showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (typeof buildNew32TSPL === 'function') buildNew32TSPL(p, v, bn, pd, bb, copies);
+      });
+    }
+    return;
+  }
 
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintBack === 'function') {

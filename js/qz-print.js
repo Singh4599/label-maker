@@ -172,7 +172,6 @@ function generateFrontCanvas(name) {
   let DW = 520, DH = 200; // default 65x25mm
   const currentMode = typeof ST !== 'undefined' ? ST.mode : null;
   if (currentMode === 'dukan') DW = 640; // 80x25mm
-  if (currentMode === 'new32') DW = 256; // 32x25mm
 
   const n = tsplSafe((name || '').toUpperCase().trim());
   const isJain = n.includes('JAIN');
@@ -207,7 +206,6 @@ function generateFrontCanvas(name) {
   
   let leftPad = 8, rightPad = 48; // Shifted further left and squeezed to prevent right cutoff for long names
   if (currentMode === 'dukan') { leftPad = 16; rightPad = 16; } // Equal and smaller margins for 80mm so text is BIGGER
-  if (currentMode === 'new32') { leftPad = 8; rightPad = 8; }  // adjust for 32mm
   const SAFE_Y = 16; // reduced Y padding to make text taller
   
   const usableW = DW - (leftPad + rightPad); 
