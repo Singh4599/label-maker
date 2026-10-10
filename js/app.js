@@ -283,6 +283,7 @@ function selectVariant(idx) {
   const mrp = parseFloat(v.m) || 0, pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const mv = $('mrp-val'); if (mv) mv.value = mrp;
   const pgEl = $('per-g'); if (pgEl) pgEl.textContent = `(Incl. all taxes) · For 1g = ₹ ${pg}`;
+  const cwt = $('custom-wt'); if (cwt) cwt.value = v.d;
   render();
 }
 
@@ -303,6 +304,31 @@ function attachDateListeners() {
       const v = ST.db.v[ST.prod.n][ST.vi];
       v.m = this.value;
       const pg = (parseFloat(this.value) || 0) / (parseFloat(v.g) || 1);
+      const pgEl = $('per-g'); if (pgEl) pgEl.textContent = `(Incl. all taxes) · For 1g = ₹ ${pg.toFixed(2)}`;
+    }
+    render();
+  });
+  if ($('custom-wt')) $('custom-wt').addEventListener('input', function() {
+    if (ST.prod && ST.vi >= 0) {
+      const v = ST.db.v[ST.prod.n][ST.vi];
+      const val = this.value.trim();
+      v.d = val || '100g';
+      
+      const lower = val.toLowerCase();
+      let grams = v.g;
+      const numMatch = lower.match(/^([\d\.]+)/);
+      if (numMatch) {
+         let num = parseFloat(numMatch[1]);
+         if (lower.includes('kg')) {
+            grams = num * 1000;
+         } else {
+            grams = num;
+         }
+      }
+      v.g = grams;
+      v.oz = (grams * 0.035274).toFixed(2) + 'oz';
+      
+      const pg = (parseFloat(v.m) || 0) / (parseFloat(v.g) || 1);
       const pgEl = $('per-g'); if (pgEl) pgEl.textContent = `(Incl. all taxes) · For 1g = ₹ ${pg.toFixed(2)}`;
     }
     render();
