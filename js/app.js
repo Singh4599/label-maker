@@ -761,17 +761,18 @@ function pF() {
   }
   
   if (ST.mode === 'internal') {
-    if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
+    const dummyV = {d:'10 Kg', g:10000, m:0};
+    const v = ST.vi >= 0 && ST.db.v[ST.prod.n] ? ST.db.v[ST.prod.n][ST.vi] : dummyV;
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintInternal === 'function') {
-      qzPrintInternal(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, true).then(done => {
+      qzPrintInternal(ST.prod, v, bn, pd, bb, copies, true).then(done => {
         if (!done) {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
-          if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi]), copies, false, 'inner');
+          if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, v), copies, false, 'inner');
         }
       }).catch(() => {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
-        if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi]), copies, false, 'inner');
+        if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, v), copies, false, 'inner');
       });
     }
     return;

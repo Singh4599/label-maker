@@ -1113,11 +1113,10 @@ function generateInternalInnerCanvas(p, v) {
   const availH = (DH - 220) - startY; // Leave space for bottom text
   const numLines = nameLines.length;
   
-  const gap = numLines > 1 ? 15 : 0;
-  const totalGap = gap * (numLines - 1);
-  const lineDestH = Math.floor((availH - totalGap) / numLines);
+  const gap = numLines > 1 ? -10 : 0; // Negative gap to pull lines closer
   
-  let currentY = startY;
+  const lineData = [];
+  let totalH = 0;
 
   for (let i = 0; i < numLines; i++) {
     const ln = nameLines[i];
@@ -1134,20 +1133,46 @@ function generateInternalInnerCanvas(p, v) {
     const descent = m.actualBoundingBoxDescent || (fontSize * 0.2);
     const h = ascent + descent;
     
-    lCanvas.width = Math.ceil(w + 20);
-    lCanvas.height = Math.ceil(h + 20);
+    lCanvas.width = Math.ceil(w + 10);
+    lCanvas.height = Math.ceil(h + 10);
     lCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
     lCtx.fillStyle = 'black';
     lCtx.textBaseline = 'alphabetic';
-    lCtx.fillText(ln, left + 10, ascent + 10);
+    lCtx.fillText(ln, left + 5, ascent + 5);
     
     let destW = usableW;
-    const shrinkRatio = Math.min(1, destW / w); 
-    if (shrinkRatio < 1) destW = w * shrinkRatio;
-    const xPos = leftPad + (usableW - destW) / 2;
+    let shrinkRatio = destW / w; 
+    // Don't stretch small words too insanely huge
+    if (shrinkRatio > 1.3) shrinkRatio = 1.3;
+    destW = w * shrinkRatio;
     
-    ctx.drawImage(lCanvas, 0, 0, lCanvas.width, lCanvas.height, xPos, currentY, destW, lineDestH);
-    currentY += lineDestH + gap;
+    // Maintain aspect ratio
+    let destH = h * shrinkRatio;
+    
+    lineData.push({ canvas: lCanvas, destW, destH });
+    totalH += destH;
+  }
+  
+  totalH += gap * (numLines - 1);
+  
+  // If it's too tall, scale everything down
+  if (totalH > availH) {
+    const scale = availH / totalH;
+    lineData.forEach(ld => {
+      ld.destW *= scale;
+      ld.destH *= scale;
+    });
+    totalH = availH;
+  }
+  
+  // Center vertically
+  let currentY = startY + (availH - totalH) / 2;
+  
+  for (let i = 0; i < numLines; i++) {
+    const ld = lineData[i];
+    const xPos = leftPad + (usableW - ld.destW) / 2;
+    ctx.drawImage(ld.canvas, 0, 0, ld.canvas.width, ld.canvas.height, xPos, currentY, ld.destW, ld.destH);
+    currentY += ld.destH + gap;
   }
 
   y = DH - 200;
