@@ -849,28 +849,6 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
   }
 }
 
-/* ─── Test print ─── */
-async function testPrint() {
-  if (typeof qz === 'undefined' || !QZP.connected) {
-    showToast('QZ Tray not connected!', 'error'); return;
-  }
-  const tspl = [
-    `SIZE 65 mm,25 mm`,
-    `GAP 3 mm,0 mm`,
-    `DIRECTION 1`,
-    `CLS`,
-    `TEXT 68,76,"3",0,2,2,"TEST OK"`,
-    `PRINT 1,1`,
-    ``
-  ].join('\r\n');
-  try {
-    await qz.print(_rawConfig(QZP.frontPrinter), [{ type: 'raw', format: 'plain', data: tspl }]);
-    showToast('✓ Test print sent!', 'success');
-  } catch (e) {
-    showToast('Test print failed: ' + e.message, 'error');
-  }
-}
-
 // ─────────────────────────────────────────────────────────
 // PARTIES MODE (YELLOW 365) - 104.1 x 152.4 mm (4x6)
 // ─────────────────────────────────────────────────────────
