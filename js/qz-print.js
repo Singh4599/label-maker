@@ -866,7 +866,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const leftPad = 48;
+  const leftPad = 72;
   const rightPad = 48;
   const usableW = DW - (leftPad + rightPad);
   let y = 300; 
