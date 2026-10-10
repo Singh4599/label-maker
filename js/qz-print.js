@@ -1088,21 +1088,67 @@ function generateInternalInnerCanvas(p, v) {
   const leftPad = 40;
   let y = 60; 
 
-  const name = (p.n || '').toUpperCase();
-  
-  ctx.font = 'bold 110px Arial Black, sans-serif';
-  let lines = wrapTextCanvas(ctx, name, DW - 80);
-  
-  while (lines.length > 3 && parseInt(ctx.font.match(/\d+/)[0]) > 40) {
-    let currentSize = parseInt(ctx.font.match(/\d+/)[0]);
-    ctx.font = `bold ${currentSize - 10}px Arial Black, sans-serif`;
-    lines = wrapTextCanvas(ctx, name, DW - 80);
+  const name = (p.n || '').toUpperCase().trim();
+  let nameLines = balanceLines(name, 1);
+  if (name.length > 15 && name.length <= 26) {
+    nameLines = balanceLines(name, 2);
+    if (nameLines.length > 2) nameLines = [nameLines[0], nameLines.slice(1).join(' ')]; 
+  } else if (name.length > 26) {
+    nameLines = balanceLines(name, 3);
+    if (nameLines.length < 3) {
+      const words = name.split(' ');
+      if (words.length >= 3) {
+        const third = Math.ceil(words.length / 3);
+        nameLines = [
+          words.slice(0, third).join(' '),
+          words.slice(third, third * 2).join(' '),
+          words.slice(third * 2).join(' ')
+        ];
+      }
+    }
   }
+
+  const usableW = DW - (leftPad * 2);
+  const startY = 40;
+  const availH = (DH - 220) - startY; // Leave space for bottom text
+  const numLines = nameLines.length;
   
-  lines.forEach(line => {
-    ctx.fillText(line, leftPad, y);
-    y += parseInt(ctx.font.match(/\d+/)[0]) * 1.1;
-  });
+  const gap = numLines > 1 ? 15 : 0;
+  const totalGap = gap * (numLines - 1);
+  const lineDestH = Math.floor((availH - totalGap) / numLines);
+  
+  let currentY = startY;
+
+  for (let i = 0; i < numLines; i++) {
+    const ln = nameLines[i];
+    const lCanvas = document.createElement('canvas');
+    const lCtx = lCanvas.getContext('2d');
+    const fontSize = 120;
+    lCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+    
+    const m = lCtx.measureText(ln);
+    const left = m.actualBoundingBoxLeft || 0;
+    const right = m.actualBoundingBoxRight || m.width;
+    const w = left + right;
+    const ascent = m.actualBoundingBoxAscent || fontSize;
+    const descent = m.actualBoundingBoxDescent || (fontSize * 0.2);
+    const h = ascent + descent;
+    
+    lCanvas.width = Math.ceil(w + 20);
+    lCanvas.height = Math.ceil(h + 20);
+    lCtx.font = `900 ${fontSize}px "Arial Black", Arial, sans-serif`;
+    lCtx.fillStyle = 'black';
+    lCtx.textBaseline = 'alphabetic';
+    lCtx.fillText(ln, left + 10, ascent + 10);
+    
+    let destW = usableW;
+    const shrinkRatio = Math.min(1, destW / w); 
+    if (shrinkRatio < 1) destW = w * shrinkRatio;
+    const xPos = leftPad + (usableW - destW) / 2;
+    
+    ctx.drawImage(lCanvas, 0, 0, lCanvas.width, lCanvas.height, xPos, currentY, destW, lineDestH);
+    currentY += lineDestH + gap;
+  }
 
   y = DH - 200;
   ctx.font = 'bold 28px Arial, sans-serif';
