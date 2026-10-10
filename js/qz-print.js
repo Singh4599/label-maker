@@ -1314,7 +1314,7 @@ async function qzPrintInternal(p, v, bn, pd, bb, copies, isInner) {
   if (!await _ensureConnected()) return false;
   
   const canvas = isInner ? generateInternalInnerCanvas(p, v) : generateInternalOuterCanvas(p, v, bn, pd, bb);
-  const printData = buildInternalTSPL(canvas, copies, false, isInner ? 'inner' : 'outer');
+  const printData = buildInternalTSPL(canvas, copies, true, isInner ? 'inner' : 'outer');
   
   try {
     const printerName = 'TSC TA210';
