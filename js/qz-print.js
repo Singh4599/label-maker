@@ -347,7 +347,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   const usableW = DW - (leftPad + rightPad);
   let y = 36; // Increased top margin so title doesn't get cut
   
-  const mrp  = (parseFloat(v.m) || 0) * 2;
+  const mrp  = parseFloat(v.m) || 0;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const name = tsplSafe((p.n || '').toUpperCase().trim());
   const cat  = tsplSafe(p.c || '-');

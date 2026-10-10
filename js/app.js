@@ -508,7 +508,7 @@ function renderManual() {
 }
 
 function buildBackHTML(p, v, bn, pd, bb) {
-  const mrp = (parseFloat(v.m)||0) * 2;  // ×2: pricelist is wholesale 1kg, retail is 2×
+  const mrp = parseFloat(v.m) || 0;
   const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const ns = getNutrition(p);
   const isJain = p.n.toUpperCase().includes('JAIN');
