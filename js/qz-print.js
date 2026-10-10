@@ -1061,9 +1061,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     y += 8;
   }
   
-  drawLine('Serving Size -', '7g');
-  y += 8;
-  
+
   drawLine('Net Quantity -', v.d.toUpperCase(), true);
   y += 8;
   
