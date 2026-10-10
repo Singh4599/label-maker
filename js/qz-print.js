@@ -885,10 +885,10 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const leftPad = 72;
+  const leftPad = 48;
   const rightPad = 48;
   const usableW = DW - (leftPad + rightPad);
-  let y = 300; 
+  let y = 350; // Increased top margin to prevent overlapping the pre-printed logo
   
   function drawLine(label, value, isBold = false) {
     if (!value && label !== 'NON-RETAIL CONTAINER – NOT FOR DIRECT SALE TO CONSUMER') return; 
