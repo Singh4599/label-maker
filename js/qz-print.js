@@ -464,8 +464,6 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   let blendedBoxText = '';
   if (cLower.includes('mix masala') || cLower.includes('blended') || nLower.includes('mix masala') || nLower.includes('blended') || nLower.includes('mixed masala')) {
     blendedBoxText = 'Spice content more than 40%, Salt content more than 5%';
-  } else if (p.sc) {
-    blendedBoxText = p.sc;
   }
 
   if (blendedBoxText) {
@@ -496,8 +494,14 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   ctx.font = '20px Arial';
   
   // wrapTextCanvas is now globally scoped
+  
+  let prependWeight = true;
+  if (isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA')) {
+    prependWeight = false;
+  }
+  const finalIngrStr = prependWeight ? `(In Descending Order By Weight) ${ingr}` : ingr;
 
-  const ingrLines = wrapTextCanvas(ctx, `(In Descending Order By Weight) ${ingr}`, usableW);
+  const ingrLines = wrapTextCanvas(ctx, finalIngrStr, usableW);
   for(let ln of ingrLines) {
     ctx.fillText(ln, leftPad, y);
     y += 24;

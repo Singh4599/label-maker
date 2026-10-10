@@ -677,7 +677,7 @@ function buildBackHTML(p, v, bn, pd, bb) {
     ${dukanLine}
     <hr class="blhr">
     <div class="blsec">INGREDIENTS :-</div>
-    <div class="blingr">(In Descending Order By Weight) ${ingrStr}</div>
+    <div class="blingr">${isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA') ? '' : '(In Descending Order By Weight) '}${ingrStr}</div>
     ${nutritionBlock}
     <div class="blsp"></div>
     <div class="blr">NET WEIGHT : ${v.d} (${v.oz})</div>
