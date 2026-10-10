@@ -85,7 +85,7 @@ function setMode(mode) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
   // All list-based modes use mode-db panel
-  const isListMode = ['db', 'excel', 'dukan', 'new32', 'parties', 'yellow365'].includes(mode);
+  const isListMode = ['db', 'excel', 'dukan', 'new32', 'parties', 'yellow365', 'internal'].includes(mode);
   const mDb = $('mode-db'); if (mDb) mDb.classList.toggle('active', isListMode);
   const mMnl = $('mode-manual'); if (mMnl) mMnl.classList.toggle('active', mode === 'manual');
 
@@ -100,31 +100,39 @@ function setMode(mode) {
     ST.db = { p: {}, v: {} };
   } else if (mode === 'yellow365') {
     ST.db = typeof PARTIES_DB !== 'undefined' ? PARTIES_DB : { p: {}, v: {} };
+  } else if (mode === 'internal') {
+    ST.db = typeof INTERNAL_DB !== 'undefined' ? INTERNAL_DB : { p: {}, v: {} };
   }
 
   // Update UI texts and visibility based on mode
   const isNew32 = mode === 'new32';
   const isDukan = mode === 'dukan';
   const isYellow = mode === 'yellow365';
+  const isInternal = mode === 'internal';
 
   // Front Labels and Buttons
   let frontSizeText = isDukan ? '80×25 MM' : '65×25 MM'; // new32 front is 65x25
   if (isYellow) frontSizeText = '104×152 MM';
+  if (isInternal) frontSizeText = '90×85 MM';
   document.querySelectorAll('.preview-section')[0].querySelector('.preview-lbl-size').textContent = frontSizeText;
   document.querySelectorAll('.btn-print-f').forEach(btn => {
-    btn.innerHTML = `🖨️ ${isYellow ? 'Print' : 'Front'} — ${frontSizeText}`;
+    if (isYellow) btn.innerHTML = `🖨️ Print — ${frontSizeText}`;
+    else if (isInternal) btn.innerHTML = `🖨️ Inner — ${frontSizeText}`;
+    else btn.innerHTML = `🖨️ Front — ${frontSizeText}`;
   });
 
   // Back Labels and Buttons
-  const backSizeText = isNew32 ? '32×25 MM' : '50×90 MM';
+  let backSizeText = isNew32 ? '32×25 MM' : '50×90 MM';
+  if (isInternal) backSizeText = '90×85 MM';
   const backSection = document.querySelectorAll('.preview-section')[1];
   if (backSection) {
     backSection.style.display = isYellow ? 'none' : ''; // Hide for yellow365 since it's a single label
-    backSection.querySelector('.preview-lbl-size').textContent = backSizeText;
+    if (!isYellow) backSection.querySelector('.preview-lbl-size').textContent = backSizeText;
   }
   document.querySelectorAll('.btn-print-b').forEach(btn => {
     btn.style.display = isYellow ? 'none' : 'inline-block';
-    btn.innerHTML = `🖨️ Back — ${backSizeText}`;
+    if (isInternal) btn.innerHTML = `🖨️ Outer — ${backSizeText}`;
+    else btn.innerHTML = `🖨️ Back — ${backSizeText}`;
   });
 
   // Update step description
@@ -135,6 +143,7 @@ function setMode(mode) {
     else if (mode === 'new32') desc.textContent = 'Search from 32x25 label products';
     else if (mode === 'parties') desc.textContent = 'Search from Parties data (Coming Soon)';
     else if (mode === 'yellow365') desc.textContent = 'Search from YELLOW 365 products (104x152 mm)';
+    else if (mode === 'internal') desc.textContent = 'Search from Internal Material products (90x85 mm)';
     else desc.textContent = 'Search from products';
   }
 
@@ -726,6 +735,19 @@ function pF() {
     }
     return;
   }
+  
+  if (ST.mode === 'internal') {
+    if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
+    const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    if (typeof qzPrintInternal === 'function') {
+      qzPrintInternal(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, true).then(done => {
+        if (!done) showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      }).catch(() => {
+        showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      });
+    }
+    return;
+  }
 
   // ── Try QZ Tray first (direct RAW print) ──
   if (typeof qzPrintFront === 'function') {
@@ -773,6 +795,17 @@ function pB() {
       }).catch(function() { 
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildNew32TSPL === 'function') buildNew32TSPL(p, v, bn, pd, bb, copies);
+      });
+    }
+    return;
+  }
+
+  if (ST.mode === 'internal') {
+    if (typeof qzPrintInternal === 'function') {
+      qzPrintInternal(p, v, bn, pd, bb, copies, false).then(function(done) {
+        if (!done) showToast('Testing preview mode. QZ Tray is offline.', 'info');
+      }).catch(function() { 
+        showToast('Testing preview mode. QZ Tray is offline.', 'info');
       });
     }
     return;

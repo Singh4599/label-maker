@@ -1066,3 +1066,220 @@ async function qzPrintYellow(p, v, bn, pd, bb, copies) {
     return false;
   }
 }
+
+// INTERNAL MATERIAL (90x85 mm)
+// ─────────────────────────────────────────────────────────
+
+function generateInternalInnerCanvas(p, v) {
+  const DW = 720;
+  const DH = 680;
+  const canvas = document.createElement('canvas');
+  canvas.width = DW;
+  canvas.height = DH;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, DW, DH);
+  ctx.fillStyle = 'black';
+  ctx.textBaseline = 'top';
+
+  const leftPad = 40;
+  let y = 60; 
+
+  const name = (p.n || '').toUpperCase();
+  
+  ctx.font = 'bold 110px Arial Black, sans-serif';
+  let lines = wrapTextCanvas(ctx, name, DW - 80);
+  
+  while (lines.length > 3 && parseInt(ctx.font.match(/\d+/)[0]) > 40) {
+    let currentSize = parseInt(ctx.font.match(/\d+/)[0]);
+    ctx.font = `bold ${currentSize - 10}px Arial Black, sans-serif`;
+    lines = wrapTextCanvas(ctx, name, DW - 80);
+  }
+  
+  lines.forEach(line => {
+    ctx.fillText(line, leftPad, y);
+    y += parseInt(ctx.font.match(/\d+/)[0]) * 1.1;
+  });
+
+  y = DH - 200;
+  ctx.font = 'bold 28px Arial, sans-serif';
+  let scLines = wrapTextCanvas(ctx, 'STORAGE CONDITIONS: STORE IN A COOL, DRY AND HYGIENIC PLACE.', DW - 80);
+  scLines.forEach(line => {
+    ctx.fillText(line, leftPad, y);
+    y += 34;
+  });
+
+  y += 20;
+  ctx.font = 'bold 28px Arial, sans-serif';
+  let fiLines = wrapTextCanvas(ctx, 'FOR INTERNAL USE ONLY. NOT FOR SALE', DW - 80);
+  fiLines.forEach(line => {
+    ctx.fillText(line, leftPad, y);
+    y += 34;
+  });
+
+  return canvas;
+}
+
+function generateInternalOuterCanvas(p, v, bn, pd, bb) {
+  const DW = 720;
+  const DH = 680;
+  const canvas = document.createElement('canvas');
+  canvas.width = DW;
+  canvas.height = DH;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, DW, DH);
+  ctx.fillStyle = 'black';
+  ctx.textBaseline = 'top';
+
+  const leftPad = 40;
+  let y = 50; 
+
+  ctx.font = 'bold 28px Arial, sans-serif';
+  ctx.fillText('INTERNAL MATERIAL', leftPad, y);
+  y += 60;
+
+  function dLine(label, value) {
+    if (!value) return;
+    ctx.font = 'bold 28px Arial, sans-serif';
+    let text = `${label} ${value}`;
+    let lines = wrapTextCanvas(ctx, text, DW - 80);
+    lines.forEach(l => {
+      ctx.fillText(l, leftPad, y);
+      y += 34;
+    });
+    y += 26;
+  }
+
+  dLine('Product Name:', (p.n || '').toUpperCase());
+  dLine('Net Weight:', v.d);
+  dLine('Batch No.:', bn || p.b || v.bn);
+  dLine('Date of Packing:', pd);
+  
+  let edStr = '';
+  if (pd && pd.includes('/')) {
+    const parts = pd.split('/');
+    if (parts.length === 3) {
+      const edYear = parseInt(parts[2], 10) + 1;
+      let edDay = parseInt(parts[0], 10) - 1;
+      let edMonth = parseInt(parts[1], 10);
+      let yearAdj = edYear;
+      if (edDay === 0) {
+        edMonth -= 1;
+        if (edMonth === 0) {
+          edMonth = 12;
+          yearAdj -= 1;
+        }
+        const daysInMonth = new Date(yearAdj, edMonth, 0).getDate();
+        edDay = daysInMonth;
+      }
+      edStr = `${String(edDay).padStart(2,'0')}/${String(edMonth).padStart(2,'0')}/${yearAdj}`;
+    }
+  }
+  
+  dLine('Use By Date:', edStr);
+
+  let scLines = wrapTextCanvas(ctx, 'STORAGE CONDITIONS: STORE IN A COOL, DRY AND HYGIENIC PLACE.', DW - 80);
+  scLines.forEach(line => {
+    ctx.fillText(line, leftPad, y);
+    y += 34;
+  });
+  y += 26;
+  
+  let fiLines = wrapTextCanvas(ctx, 'FOR INTERNAL USE ONLY. NOT FOR SALE', DW - 80);
+  fiLines.forEach(line => {
+    ctx.fillText(line, leftPad, y);
+    y += 34;
+  });
+
+  return canvas;
+}
+
+function buildInternalTSPL(canvas, copies, disablePopup, labelType) {
+  const DW = canvas.width;
+  const DH = canvas.height;
+  const ctx = canvas.getContext('2d');
+
+  if (!disablePopup) {
+    try {
+      const prevId = 'debug-tspl-preview-internal-' + labelType;
+      const old = document.getElementById(prevId);
+      if(old) old.remove();
+      
+      const preview = document.createElement('div');
+      preview.id = prevId;
+      preview.style.cssText = `position:fixed; top:20px; ${labelType==='inner'?'left:20px':'right:20px'}; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;`;
+      preview.innerHTML = `<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Internal Material Preview (${labelType})</div>`;
+      
+      const clone = document.createElement('canvas');
+      clone.width = DW; clone.height = DH;
+      clone.getContext('2d').drawImage(canvas, 0, 0);
+      clone.style.width = '300px'; 
+      clone.style.height = 'auto';
+      clone.style.border = '1px dashed #333';
+      
+      preview.appendChild(clone);
+      document.body.appendChild(preview);
+      setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
+    } catch(e) {}
+  }
+
+  const imgData = ctx.getImageData(0, 0, DW, DH);
+  const data = imgData.data;
+  
+  const widthBytes = Math.ceil(DW / 8); 
+  const buffer = new Uint8Array(widthBytes * DH);
+  buffer.fill(255); 
+  
+  for (let cy = 0; cy < DH; cy++) {
+    for (let cx = 0; cx < DW; cx++) {
+      const idx = (cy * DW + cx) * 4;
+      if (data[idx+3] < 128) continue; 
+      const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
+      if (gray < 128) {
+        const byteIdx = cy * widthBytes + Math.floor(cx / 8);
+        const bitIdx = 7 - (cx % 8);
+        buffer[byteIdx] &= ~(1 << bitIdx); 
+      }
+    }
+  }
+
+  let hexString = '';
+  const hexMap = "0123456789ABCDEF";
+  for (let i = 0; i < buffer.length; i++) {
+    const b = buffer[i];
+    hexString += hexMap[(b >> 4) & 0x0F] + hexMap[b & 0x0F];
+  }
+
+  const printData = [];
+  printData.push({ type: 'raw', format: 'plain', data: `SIZE 90 mm, 85 mm\r\nGAP 3 mm, 0 mm\r\nDIRECTION 1\r\nCLS\r\nBITMAP 0,0,${widthBytes},${DH},0,` });
+  printData.push({ type: 'raw', format: 'hex', data: hexString });
+  printData.push({ type: 'raw', format: 'plain', data: `\r\nPRINT ${copies},1\r\n` });
+  
+  return printData;
+}
+
+async function qzPrintInternal(p, v, bn, pd, bb, copies, isInner) {
+  if (typeof qz === 'undefined') return false;
+  if (!await _ensureConnected()) return false;
+  
+  const canvas = isInner ? generateInternalInnerCanvas(p, v) : generateInternalOuterCanvas(p, v, bn, pd, bb);
+  const printData = buildInternalTSPL(canvas, copies, true, isInner ? 'inner' : 'outer');
+  
+  try {
+    const printerName = 'TSC TA210';
+    console.log('[INTERNAL] Sending to printer:', printerName);
+    setQZStatus('printing');
+    await qz.print(_rawConfig(printerName), printData); 
+    setQZStatus('connected');
+    showToast(`✓ ${copies} label(s) sent to ${printerName}!`, 'success');
+    return true;
+  } catch (err) {
+    QZP.connected = qz.websocket.isActive();
+    setQZStatus(QZP.connected ? 'connected' : 'disconnected');
+    showToast('Print error: ' + err.message, 'error');
+    return false;
+  }
+}
