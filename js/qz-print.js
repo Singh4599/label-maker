@@ -693,10 +693,12 @@ function generateNew32Canvas(p, v, bn, pd, bb, count = 2) {
     y += 26;
 
     // KCP100 (Batch)
-    ctx.fillText(bn || '—', leftX, y);
-    y += 26;
+    ctx.font = 'bold 21px Arial, sans-serif';
+    ctx.fillText(bn || '—', leftX, y, 230); // maxWidth failsafe
+    y += 24;
     
     // 02/10/2026 (Date of Packing)
+    ctx.font = 'bold 26px Arial, sans-serif';
     ctx.fillText(pd || '—', leftX, y);
     y += 26;
 
