@@ -257,7 +257,7 @@ function clearProduct() {
   const si = $('si'); if (si) si.value = '';
   const clr = $('si-clear'); if (clr) clr.style.display = 'none';
   renderPackBtns();
-  const mv = $('mrp-val'); if (mv) mv.textContent = '';
+  const mv = $('mrp-val'); if (mv) mv.value = '';
   const pg = $('per-g'); if (pg) pg.textContent = '';
   render();
 }
@@ -281,7 +281,7 @@ function selectVariant(idx) {
   const v = ST.db.v[ST.prod.n][idx];
   const bnEl = $('bn'); if (bnEl && v.bn) bnEl.value = v.bn;
   const mrp = parseFloat(v.m) || 0, pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-  const mv = $('mrp-val'); if (mv) mv.textContent = `₹ ${mrp}`;
+  const mv = $('mrp-val'); if (mv) mv.value = mrp;
   const pgEl = $('per-g'); if (pgEl) pgEl.textContent = `(Incl. all taxes) · For 1g = ₹ ${pg}`;
   render();
 }
@@ -298,6 +298,15 @@ function attachDateListeners() {
   });
   if (bb) bb.addEventListener('change', render);
   if ($('bn')) $('bn').addEventListener('input', render);
+  if ($('mrp-val')) $('mrp-val').addEventListener('input', function() {
+    if (ST.prod && ST.vi >= 0) {
+      const v = ST.db.v[ST.prod.n][ST.vi];
+      v.m = this.value;
+      const pg = (parseFloat(this.value) || 0) / (parseFloat(v.g) || 1);
+      const pgEl = $('per-g'); if (pgEl) pgEl.textContent = `(Incl. all taxes) · For 1g = ₹ ${pg.toFixed(2)}`;
+    }
+    render();
+  });
 }
 
 function calcBestBefore() {
