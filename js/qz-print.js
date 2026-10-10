@@ -1056,7 +1056,7 @@ async function qzPrintYellow(p, v, bn, pd, bb, copies) {
   const printData = buildYellowTSPL(p, v, bn, pd, bb, copies, true);
   try {
     setQZStatus('printing');
-    await qz.print(_rawConfig(QZP.frontPrinter), printData); 
+    await qz.print(_rawConfig('TSC TA210'), printData); 
     setQZStatus('connected');
     showToast(`✓ ${copies} label(s) sent to Printer!`, 'success');
     return true;
