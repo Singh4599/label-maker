@@ -418,7 +418,8 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     ctx.font = 'bold 14px Arial';
     const bl1 = 'Mixed Masala Powder, Spices content';
     const bl2 = 'more than 85%, salt content more than 5%';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'black';
     ctx.strokeRect(leftPad, y, usableW, 46);
     ctx.fillText(bl1, (DW - ctx.measureText(bl1).width)/2, y + 6);
     ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 24);
