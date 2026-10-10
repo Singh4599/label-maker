@@ -488,22 +488,23 @@ function generateBackCanvas(p, v, bn, pd, bb) {
 
   // HR
   ctx.fillRect(leftPad, y, usableW, 2);
-  y += 12;
+  y += isDukan ? 12 : 24;
 
   // Ingredients
-  ctx.font = 'bold 20px Arial';
+  ctx.font = isDukan ? 'bold 20px Arial' : 'bold 26px Arial';
   ctx.fillText('INGREDIENTS :-', leftPad, y);
-  y += 26;
-  ctx.font = '20px Arial';
+  y += isDukan ? 26 : 34;
+  ctx.font = isDukan ? '20px Arial' : '24px Arial';
   
   // wrapTextCanvas is now globally scoped
 
   const ingrLines = wrapTextCanvas(ctx, `(In Descending Order By Weight) ${ingr}`, usableW);
+  const ingrLineH = isDukan ? 24 : 32;
   for(let ln of ingrLines) {
     ctx.fillText(ln, leftPad, y);
-    y += 24;
+    y += ingrLineH;
   }
-  y += 8;
+  y += isDukan ? 8 : 40;
 
   // Nutrition
   if (isDukan) {
@@ -579,7 +580,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   // Details
-  ctx.font = 'bold 20px Arial';
+  ctx.font = isDukan ? 'bold 20px Arial' : 'bold 26px Arial';
   const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
   const details = [
     `NET WEIGHT : ${nw}`,
@@ -587,21 +588,23 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     `DATE OF PACKING : ${pd}`,
     `EXPIRY DATE : ${bbClean}`
   ];
+  const detailLineH = isDukan ? 26 : 38;
   for(let ln of details) {
     ctx.fillText(ln, leftPad, y);
-    y += 26;
+    y += detailLineH;
   }
-  y += 10;
+  y += isDukan ? 10 : 20;
 
   // MRP
-  ctx.font = '900 28px "Arial Black", Arial, sans-serif';
+  ctx.font = isDukan ? '900 28px "Arial Black", Arial, sans-serif' : '900 38px "Arial Black", Arial, sans-serif';
   ctx.fillText(`MRP : ₹ ${mrp}/-`, leftPad, y);
-  y += 34;
-  ctx.font = 'bold 16px Arial';
+  y += isDukan ? 34 : 46;
+  
+  ctx.font = isDukan ? 'bold 16px Arial' : 'bold 20px Arial';
   ctx.fillText(`(INCL. OF ALL TAXES)`, leftPad, y);
-  y += 22;
+  y += isDukan ? 22 : 28;
   ctx.fillText(`FOR 1g = Rs ${pg}`, leftPad, y);
-  y += 30;
+  y += isDukan ? 30 : 40;
 
   // Barcode
   if (typeof JsBarcode !== 'undefined') {

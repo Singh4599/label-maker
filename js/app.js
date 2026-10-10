@@ -657,8 +657,19 @@ function buildBackHTML(p, v, bn, pd, bb) {
     `;
   }
   // If not Dukan, leave nutritionBlock empty for 365 (since they requested to remove it).
+  const scaleCSS = !isDukan ? `
+    <style>
+      .bl-wrap .blsec { font-size:11px; margin-top:6px; }
+      .bl-wrap .blingr { font-size:9px; line-height:1.4; margin-bottom:12px; }
+      .bl-wrap .blr { font-size:11.5px; padding:2px 0; line-height: 1.5; }
+      .bl-wrap .blmrp { font-size:18px; margin-top:10px; }
+      .bl-wrap .bltax { font-size:8px; }
+      .bl-wrap .blper { font-size:9.5px; margin-bottom:6px; }
+    </style>
+  ` : '';
 
   return `<div class="bl-wrap">
+    ${scaleCSS}
     <div class="bltit" id="bltit-el">${p.n.toUpperCase()}</div>
     ${jainLine}
     ${useLine}
