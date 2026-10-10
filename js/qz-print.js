@@ -499,6 +499,9 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   if (isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA')) {
     prependWeight = false;
   }
+  if (ingr.toLowerCase().includes('in descending order by weight')) {
+    prependWeight = false;
+  }
   const finalIngrStr = prependWeight ? `(In Descending Order By Weight) ${ingr}` : ingr;
 
   const ingrLines = wrapTextCanvas(ctx, finalIngrStr, usableW);
@@ -510,25 +513,53 @@ function generateBackCanvas(p, v, bn, pd, bb) {
 
   // Nutrition
   if (isDukan) {
-    ctx.font = '900 18px "Arial Black", Arial, sans-serif';
-    const n1 = 'NUTRITIONAL INFORMATION';
-    ctx.fillText(n1, (DW - ctx.measureText(n1).width)/2, y);
-    y += 20;
 
     const rowH = 18;
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
-    ctx.strokeRect(leftPad, y, usableW, rowH * 13);
+    // 14 rows total (Header 2 lines, Subheader 1 line, 11 nutrient rows, 2 footer rows = 16 rows)
+    ctx.strokeRect(leftPad, y, usableW, rowH * 16);
 
     const col1W = usableW * 0.55;
     const col2W = usableW * 0.225;
     const col3W = usableW * 0.225;
+    const leftCellW = col1W + col2W;
+    const rightCellW = col3W;
     
-    ctx.font = 'bold 12px Arial';
-    ctx.fillText('SERVING SIZE: 100g', leftPad + 2, y + 2);
-    ctx.fillText('Per 100g', leftPad + col1W + 2, y + 2);
-    ctx.fillText('% RDA**', leftPad + col1W + col2W + 2, y + 2);
+    // Row 1 (Header part 1)
+    ctx.font = '900 13px "Arial Black", Arial, sans-serif';
+    const n1 = 'NUTRITIONAL INFORMATION';
+    ctx.fillText(n1, leftPad + (leftCellW - ctx.measureText(n1).width)/2, y + 2);
+    const r1 = '% RDA**';
+    ctx.fillText(r1, leftPad + leftCellW + (rightCellW - ctx.measureText(r1).width)/2, y + 2);
     y += rowH;
+    
+    // Row 1 (Header part 2)
+    ctx.font = 'bold 12px Arial';
+    const s1 = 'SERVING SIZE: 100g';
+    ctx.fillText(s1, leftPad + (leftCellW - ctx.measureText(s1).width)/2, y + 2);
+    const p1 = 'PER SERVE';
+    ctx.fillText(p1, leftPad + leftCellW + (rightCellW - ctx.measureText(p1).width)/2, y + 2);
+    y += rowH;
+
+    // Line below header
+    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
+    // Vertical line for header
+    ctx.beginPath(); ctx.moveTo(leftPad+leftCellW, y - (rowH*2)); ctx.lineTo(leftPad+leftCellW, y); ctx.stroke();
+    
+    // Subheader Row
+    ctx.font = 'bold 12px Arial';
+    const per100Text = 'Per 100g';
+    ctx.fillText(per100Text, leftPad + col1W + (col2W - ctx.measureText(per100Text).width)/2, y + 2);
+    const sevenText = '7g';
+    ctx.fillText(sevenText, leftPad + leftCellW + (rightCellW - ctx.measureText(sevenText).width)/2, y + 2);
+    y += rowH;
+
+    // Line below subheader
+    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
+    // Vertical lines for subheader
+    ctx.beginPath(); ctx.moveTo(leftPad+col1W, y - rowH); ctx.lineTo(leftPad+col1W, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(leftPad+leftCellW, y - rowH); ctx.lineTo(leftPad+leftCellW, y); ctx.stroke();
 
     const e = parseFloat(p.e) || 0;
     const pro = parseFloat(p.p) || 0;
@@ -558,25 +589,24 @@ function generateBackCanvas(p, v, bn, pd, bb) {
 
     ctx.font = '12px Arial';
     for (let r of rows) {
-      ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
+      // Draw horizontal line (except for the first row since we drew it above)
       ctx.fillText(r[0], leftPad + 2, y + 2);
-      ctx.beginPath(); ctx.moveTo(leftPad+col1W, y-rowH); ctx.lineTo(leftPad+col1W, y); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(leftPad+col1W+col2W, y-rowH); ctx.lineTo(leftPad+col1W+col2W, y); ctx.stroke();
-      ctx.fillText(r[1], leftPad + col1W + 2, y + 2);
-      ctx.fillText(r[2], leftPad + col1W + col2W + 2, y + 2);
+      ctx.beginPath(); ctx.moveTo(leftPad+col1W, y); ctx.lineTo(leftPad+col1W, y+rowH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(leftPad+leftCellW, y); ctx.lineTo(leftPad+leftCellW, y+rowH); ctx.stroke();
+      
+      const v1 = String(r[1]);
+      const v2 = String(r[2]);
+      ctx.fillText(v1, leftPad + col1W + (col2W - ctx.measureText(v1).width)/2, y + 2);
+      ctx.fillText(v2, leftPad + leftCellW + (rightCellW - ctx.measureText(v2).width)/2, y + 2);
       y += rowH;
+      ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
     }
     
-    // Last row lines
-    ctx.beginPath(); ctx.moveTo(leftPad+col1W, y-rowH); ctx.lineTo(leftPad+col1W, y); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(leftPad+col1W+col2W, y-rowH); ctx.lineTo(leftPad+col1W+col2W, y); ctx.stroke();
-
-    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
     ctx.font = '10px Arial';
-    ctx.fillText('* Approximate values', leftPad + 2, y + 2);
+    ctx.fillText('* Approximate values', leftPad + (usableW - ctx.measureText('* Approximate values').width)/2, y + 2);
     y += rowH;
     ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
-    ctx.fillText('** % of an Adults Guideline daily Amount based on 2000 kcal diet', leftPad + 2, y + 2);
+    ctx.fillText('** % of an Adults Guideline daily Amount based on 2000 kcal diet', leftPad + (usableW - ctx.measureText('** % of an Adults Guideline daily Amount based on 2000 kcal diet').width)/2, y + 2);
     y += rowH;
     y += 10;
   }
@@ -1030,6 +1060,9 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     drawLine("Ingredient's -", p.i);
     y += 8;
   }
+  
+  drawLine('Serving Size -', '7g');
+  y += 8;
   
   drawLine('Net Quantity -', v.d.toUpperCase(), true);
   y += 8;

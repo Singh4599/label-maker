@@ -634,12 +634,21 @@ function buildBackHTML(p, v, bn, pd, bb) {
     const so = parseFloat(p.so) || 0;
 
     nutritionBlock = `
-      <div style="font-family:'Arial Black', Arial, sans-serif; font-size:0.6em; text-align:center; margin-top:2mm; text-transform:uppercase;">NUTRITIONAL INFORMATION</div>
-      <table style="width:100%; border-collapse:collapse; font-size:0.45em; text-align:center; border:1px solid #000; margin-top:1mm;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.45em; text-align:center; border:1px solid #000; margin-top:2mm;">
         <tr style="background:#fff; border-bottom:1px solid #000;">
-          <th style="padding:2px; text-align:left; border-right:1px solid #000;">SERVING SIZE: 100g</th>
-          <th style="padding:2px; border-right:1px solid #000;">Per 100g</th>
-          <th style="padding:2px;">% RDA**<br>PER SERVE</th>
+          <th style="padding:2px; text-align:center; border-right:1px solid #000;" colspan="2">
+            <div style="font-family:'Arial Black', Arial, sans-serif; font-size:1.1em; text-transform:uppercase;">NUTRITIONAL INFORMATION</div>
+            <div style="font-family:'Arial Black', Arial, sans-serif; font-size:0.95em;">SERVING SIZE: 100g</div>
+          </th>
+          <th style="padding:2px; text-align:center;">
+            <div style="font-family:'Arial Black', Arial, sans-serif; font-size:0.95em;">% RDA**</div>
+            <div style="font-family:'Arial Black', Arial, sans-serif; font-size:0.95em;">PER SERVE</div>
+          </th>
+        </tr>
+        <tr style="background:#fff; border-bottom:1px solid #000;">
+          <td style="padding:2px; text-align:left; border-right:1px solid #000;"></td>
+          <td style="padding:2px; text-align:center; border-right:1px solid #000;">Per 100g</td>
+          <td style="padding:2px; text-align:center;">7g</td>
         </tr>
         <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Energy (kcal)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${e}</td><td style="border-bottom:1px solid #000;">${((e/2000)*7).toFixed(2)}</td></tr>
         <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Protein (g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${pro}</td><td style="border-bottom:1px solid #000;"></td></tr>
@@ -677,9 +686,10 @@ function buildBackHTML(p, v, bn, pd, bb) {
     ${dukanLine}
     <hr class="blhr">
     <div class="blsec">INGREDIENTS :-</div>
-    <div class="blingr">${isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA') ? '' : '(In Descending Order By Weight) '}${ingrStr}</div>
+    <div class="blingr">${isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA') || ingrStr.toLowerCase().includes('in descending order by weight') ? '' : '(In Descending Order By Weight) '}${ingrStr}</div>
     ${nutritionBlock}
     <div class="blsp"></div>
+    ${!isDukan ? '<div class="blr" style="margin-bottom:2mm;">SERVING SIZE : 7g</div>' : ''}
     <div class="blr">NET WEIGHT : ${v.d} (${v.oz})</div>
     <div class="blr">BATCH NO : ${bn || '—'}</div>
     <div class="blr">DATE OF PACKING : ${pd}</div>
