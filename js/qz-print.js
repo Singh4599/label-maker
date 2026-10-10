@@ -1055,10 +1055,12 @@ async function qzPrintYellow(p, v, bn, pd, bb, copies) {
   if (!await _ensureConnected()) return false;
   const printData = buildYellowTSPL(p, v, bn, pd, bb, copies, true);
   try {
+    const printerName = 'TSC TA210';
+    console.log('[YELLOW 365] Sending to printer:', printerName);
     setQZStatus('printing');
-    await qz.print(_rawConfig('TSC TA210'), printData); 
+    await qz.print(_rawConfig(printerName), printData); 
     setQZStatus('connected');
-    showToast(`✓ ${copies} label(s) sent to Printer!`, 'success');
+    showToast(`✓ ${copies} label(s) sent to ${printerName}!`, 'success');
     return true;
   } catch (err) {
     QZP.connected = qz.websocket.isActive();
