@@ -456,6 +456,18 @@ function renderFront() {
     }
     return;
   }
+  
+  if (ST.mode === 'internal') {
+    if (typeof generateInternalInnerCanvas === 'function') {
+      const c = generateInternalInnerCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi] || {d:'10 Kg', g:10000, m:0});
+      c.style.width = '100%';
+      c.style.height = 'auto';
+      c.style.objectFit = 'contain';
+      fp.innerHTML = '';
+      fp.appendChild(c);
+    }
+    return;
+  }
 
   // Standard front label (html preview fallback if canvas is not used)
     const isJain = ST.prod.n.toUpperCase().includes('JAIN');
@@ -476,6 +488,18 @@ function renderBack() {
       const c = generateNew32Canvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
       c.style.width = '100%';
       c.style.height = '100%';
+      c.style.objectFit = 'contain';
+      bp.innerHTML = '';
+      bp.appendChild(c);
+    }
+    return;
+  }
+  
+  if (ST.mode === 'internal') {
+    if (typeof generateInternalOuterCanvas === 'function') {
+      const c = generateInternalOuterCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+      c.style.width = '100%';
+      c.style.height = 'auto';
       c.style.objectFit = 'contain';
       bp.innerHTML = '';
       bp.appendChild(c);
@@ -741,9 +765,13 @@ function pF() {
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintInternal === 'function') {
       qzPrintInternal(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, true).then(done => {
-        if (!done) showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (!done) {
+          showToast('Testing preview mode. QZ Tray is offline.', 'info');
+          if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi]), copies, false, 'inner');
+        }
       }).catch(() => {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi]), copies, false, 'inner');
       });
     }
     return;
@@ -803,9 +831,13 @@ function pB() {
   if (ST.mode === 'internal') {
     if (typeof qzPrintInternal === 'function') {
       qzPrintInternal(p, v, bn, pd, bb, copies, false).then(function(done) {
-        if (!done) showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (!done) {
+          showToast('Testing preview mode. QZ Tray is offline.', 'info');
+          if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalOuterCanvas(p, v, bn, pd, bb), copies, false, 'outer');
+        }
       }).catch(function() { 
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
+        if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalOuterCanvas(p, v, bn, pd, bb), copies, false, 'outer');
       });
     }
     return;
