@@ -355,7 +355,8 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
   const isJain = name.includes('JAIN');
-  const isBlended = (p.c || '').toLowerCase().includes('BLENDED');
+  const isBlended = (p.c || '').toLowerCase().includes('blended');
+  const isSeasoning = (p.c || '').toLowerCase().includes('seasoning');
 
   // 1. Title (stretched edge-to-edge)
   let lines = balanceLines(name, 1);
@@ -408,21 +409,38 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   // Category
-  ctx.font = 'bold 20px Arial';
-  const catTxt = `Category - ${cat}`;
-  ctx.fillText(catTxt, (DW - ctx.measureText(catTxt).width)/2, y);
-  y += 30;
+  if (isSeasoning) {
+    ctx.font = 'bold 20px Arial';
+    const catTxt = 'SEASONING';
+    ctx.fillText(catTxt, (DW - ctx.measureText(catTxt).width)/2, y);
+    y += 30;
+  }
 
   // Blended
-  if (isBlended) {
+  let blendedBoxText = '';
+  if (p.sc) {
+    blendedBoxText = p.sc;
+  } else if (isBlended) {
+    blendedBoxText = 'Mixed Masala Powder, Spices content more than 85%, salt content more than 5%';
+  }
+
+  if (blendedBoxText) {
     ctx.font = 'bold 14px Arial';
-    const bl1 = 'Mixed Masala Powder, Spices content';
-    const bl2 = 'more than 85%, salt content more than 5%';
     ctx.lineWidth = 4;
     ctx.strokeStyle = 'black';
+    
+    let bl1 = blendedBoxText;
+    let bl2 = '';
+    if (blendedBoxText.includes('Mixed Masala Powder')) {
+       bl1 = 'Mixed Masala Powder, Spices content';
+       bl2 = 'more than 85%, salt content more than 5%';
+    }
+
     ctx.strokeRect(leftPad, y, usableW, 46);
     ctx.fillText(bl1, (DW - ctx.measureText(bl1).width)/2, y + 6);
-    ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 24);
+    if (bl2) {
+      ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 24);
+    }
     y += 56;
   }
 
