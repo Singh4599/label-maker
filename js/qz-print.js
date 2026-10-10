@@ -977,7 +977,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   ctx.font = 'bold 22px Arial, sans-serif';
   const nrText = 'NON-RETAIL CONTAINER – NOT FOR DIRECT SALE TO CONSUMER';
   const nrW = ctx.measureText(nrText).width;
-  ctx.fillText(nrText, (DW - nrW)/2, y); // Centered looks better for this warning
+  ctx.fillText(nrText, (DW - nrW)/2, 880); // Hardcoded Y to push it down near the pre-printed text
   
   return canvas;
 }
