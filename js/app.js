@@ -288,7 +288,15 @@ function selectVariant(idx) {
   ST.vi = idx;
   document.querySelectorAll('.pack-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
   const v = ST.db.v[ST.prod.n][idx];
-  const bnEl = $('bn'); if (bnEl && v.bn) bnEl.value = v.bn;
+  
+  // Dynamic Batch Logic (Initials + MMYY)
+  const words = ST.prod.n.toUpperCase().replace(/[-/]/g, ' ').split(/\s+/);
+  const initials = words.map(w => w.match(/[A-Z]/) ? w.match(/[A-Z]/)[0] : '').join('').substring(0, 5);
+  const now = new Date();
+  const mmyy = String(now.getMonth()+1).padStart(2,'0') + String(now.getFullYear()).substring(2);
+  const autoBn = initials + mmyy;
+  
+  const bnEl = $('bn'); if (bnEl) bnEl.value = autoBn;
   const mrp = parseFloat(v.m) || 0, pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const mv = $('mrp-val'); if (mv) mv.value = mrp;
   const pgEl = $('per-g'); if (pgEl) pgEl.textContent = `(Incl. all taxes) · For 1g = ₹ ${pg}`;
@@ -569,47 +577,101 @@ function renderManual() {
 function buildBackHTML(p, v, bn, pd, bb) {
   const mrp = parseFloat(v.m) || 0;
   const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-  const ns = getNutrition(p);
   const isJain = p.n.toUpperCase().includes('JAIN');
   const isBlended = (p.c || '').toLowerCase().includes('blended');
   // Strip "(12 Months)" suffix from bb
   const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
+  const isDukan = (ST.mode === 'dukan');
 
   const jainLine = isJain
     ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.72em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:1px;">No Onion No Garlic</div>`
     : '';
 
-  const isSeasoning = (p.c || '').toLowerCase().includes('seasoning');
-  const catLine = isSeasoning ? `<div class="blcat">SEASONING</div>` : '';
-
-  // Use p.sc from excel, or fallback to default text if blended
-  let blendedBoxText = '';
-  if (p.sc) {
-    blendedBoxText = p.sc;
-  } else if (isBlended) {
-    blendedBoxText = 'Mixed Masala Powder, Spices content more than 85%, salt content more than 5%';
+  // Intended Use
+  let intendedUse = '';
+  const cLower = (p.c || '').toLowerCase();
+  if (cLower.includes('seasoning') || cLower.includes('aromatic') || cLower.includes('marinade') || cLower.includes('salt')) {
+    intendedUse = 'Intended use: For seasoning of foods during cooking';
+  } else if (cLower.includes('sauce mix')) {
+    intendedUse = 'Intended use: Mix for Preparation of Sauce';
+  } else if (cLower.includes('chutney')) {
+    intendedUse = 'Intended use: Mix for Preparation of Chutney';
+  } else if (cLower.includes('paste')) {
+    intendedUse = 'Intended use: Culinary Paste for Cooking';
+  } else if (cLower.includes('dip mix')) {
+    intendedUse = 'Intended use: Mix for Preparation of Dip';
+  } else if (cLower.includes('spice mix')) {
+    intendedUse = 'Intended use: Mix for Preparation of Gravy';
   }
-  
-  const blendedBox = blendedBoxText
-    ? `<div style="border:0.8pt solid #000;padding:1mm 1.5mm;margin:1mm 0;font-size:0.52em;text-align:center;line-height:1.3;font-weight:600;">${blendedBoxText}</div>`
-    : '';
+  const useLine = intendedUse ? `<div style="font-size:0.55em; text-align:center; margin:1mm 0; font-weight:600;">${intendedUse}</div>` : '';
+
+  // Blended / mix masala / seasoning text
+  let dukanLine = '';
+  if (cLower.includes('mix masala') || cLower.includes('seasoning') || cLower.includes('blended')) {
+    dukanLine = `<div style="font-size:0.55em; text-align:center; margin:1mm 0; font-weight:600;">Spice content more than 40%, Salt content more than 5%</div>`;
+  }
+
+  // Dukan Bhai special ingredients for specific chillies
+  let ingrStr = p.i || '—';
+  if (isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA')) {
+    ingrStr = "Chilli.<br>Rice bran edible oil not more than 2%.<br>[Saturated fat - 3%, Trans fat - 0.1%]";
+  }
+
+  // Nutritional Info Block
+  let nutritionBlock = '';
+  if (isDukan) {
+    const e = parseFloat(p.e) || 0;
+    const pro = parseFloat(p.p) || 0;
+    const df = parseFloat(p.df) || 0; // Not available in old data but fallback to 0
+    const cb = parseFloat(p.cb) || 0;
+    const ts = parseFloat(p.ts) || 0;
+    const as = parseFloat(p.as) || 0;
+    const tf = parseFloat(p.tf) || 0;
+    const sf = parseFloat(p.sf) || 0;
+    const tr = parseFloat(p.tr) || 0;
+    const ch = parseFloat(p.ch) || 0;
+    const so = parseFloat(p.so) || 0;
+
+    nutritionBlock = `
+      <div style="font-family:'Arial Black', Arial, sans-serif; font-size:0.6em; text-align:center; margin-top:2mm; text-transform:uppercase;">NUTRITIONAL INFORMATION</div>
+      <table style="width:100%; border-collapse:collapse; font-size:0.45em; text-align:center; border:1px solid #000; margin-top:1mm;">
+        <tr style="background:#fff; border-bottom:1px solid #000;">
+          <th style="padding:2px; text-align:left; border-right:1px solid #000;">SERVING SIZE: 100g</th>
+          <th style="padding:2px; border-right:1px solid #000;">Per 100g</th>
+          <th style="padding:2px;">% RDA**<br>PER SERVE</th>
+        </tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Energy (kcal)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${e}</td><td style="border-bottom:1px solid #000;">${((e/2000)*7).toFixed(2)}</td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Protein (g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${pro}</td><td style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Dietary Fibre</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${df}</td><td style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Carbohydrates (g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${cb}</td><td style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Total Sugar(g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${ts}</td><td style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Added Sugar (g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${as}</td><td style="border-bottom:1px solid #000;">${((as/50)*7).toFixed(2)}</td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Total Fat (g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${tf}</td><td style="border-bottom:1px solid #000;">${((tf/67)*7).toFixed(2)}</td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Saturated Fat (g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${sf}</td><td style="border-bottom:1px solid #000;">${((sf/22)*7).toFixed(2)}</td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Trans Fat (g)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${tr > 0 ? tr : '<0.1'}</td><td style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Cholesterol (mg)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${ch > 0 ? ch : '<10'}</td><td style="border-bottom:1px solid #000;"></td></tr>
+        <tr><td style="text-align:left; padding:1px; border-right:1px solid #000; border-bottom:1px solid #000;">Sodium (mg)</td><td style="border-right:1px solid #000; border-bottom:1px solid #000;">${so}</td><td style="border-bottom:1px solid #000;">${((so/2000)*7).toFixed(2)}</td></tr>
+        <tr><td colspan="3" style="border-bottom:1px solid #000; padding:1px;">* Approximate values</td></tr>
+        <tr><td colspan="3" style="padding:1px;">** % of an Adults Guideline daily Amount based on 2000 kcal diet</td></tr>
+      </table>
+    `;
+  }
+  // If not Dukan, leave nutritionBlock empty for 365 (since they requested to remove it).
 
   return `<div class="bl-wrap">
     <div class="bltit" id="bltit-el">${p.n.toUpperCase()}</div>
     ${jainLine}
-    ${catLine}
-    ${blendedBox}
+    ${useLine}
+    ${dukanLine}
     <hr class="blhr">
     <div class="blsec">INGREDIENTS :-</div>
-    <div class="blingr">(In Descending Order By Weight) ${p.i || '—'}</div>
-    <div class="blnt">NUTRITIONAL INFORMATION</div>
-    <div class="blns">Approximate Composition per 100 g</div>
-    <div class="blnb">${ns}</div>
+    <div class="blingr">(In Descending Order By Weight) ${ingrStr}</div>
+    ${nutritionBlock}
     <div class="blsp"></div>
     <div class="blr">NET WEIGHT : ${v.d} (${v.oz})</div>
     <div class="blr">BATCH NO : ${bn || '—'}</div>
     <div class="blr">DATE OF PACKING : ${pd}</div>
-    <div class="blr">BEST BEFORE : ${bbClean}</div>
+    <div class="blr">EXPIRY DATE : ${bbClean}</div>
     <div class="blmrp">MRP : ₹ ${mrp}/-</div>
     <div class="bltax">(INCL. OF ALL TAXES)</div>
     <div class="blper">FOR 1g = Rs ${pg}</div>

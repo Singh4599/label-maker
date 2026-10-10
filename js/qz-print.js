@@ -370,12 +370,20 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const name = tsplSafe((p.n || '').toUpperCase().trim());
   const cat  = tsplSafe(p.c || '-');
-  const ingr = tsplSafe(p.i || '-');
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
   const isJain = name.includes('JAIN');
   const isBlended = (p.c || '').toLowerCase().includes('blended');
-  const isSeasoning = (p.c || '').toLowerCase().includes('seasoning');
+  const cLower = (p.c || '').toLowerCase();
+  
+  const isDukan = (typeof ST !== 'undefined' && ST.mode === 'dukan');
+
+  // Dukan Chilli Ingredient logic
+  let ingrStr = p.i || '-';
+  if (isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA')) {
+    ingrStr = "Chilli. Rice bran edible oil not more than 2%. [Saturated fat - 3%, Trans fat - 0.1%]";
+  }
+  const ingr = tsplSafe(ingrStr);
 
   // 1. Title (stretched edge-to-edge)
   let lines = balanceLines(name, 1);
@@ -427,40 +435,55 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     y += 24;
   }
 
-  // Category
-  if (isSeasoning) {
-    ctx.font = 'bold 20px Arial';
-    const catTxt = 'SEASONING';
-    ctx.fillText(catTxt, (DW - ctx.measureText(catTxt).width)/2, y);
-    y += 30;
+  // Category (Removed as per request)
+  
+  // Intended Use (For 365 Spicery)
+  let intendedUse = '';
+  if (cLower.includes('seasoning') || cLower.includes('aromatic') || cLower.includes('marinade') || cLower.includes('salt')) {
+    intendedUse = 'Intended use: For seasoning of foods during cooking';
+  } else if (cLower.includes('sauce mix')) {
+    intendedUse = 'Intended use: Mix for Preparation of Sauce';
+  } else if (cLower.includes('chutney')) {
+    intendedUse = 'Intended use: Mix for Preparation of Chutney';
+  } else if (cLower.includes('paste')) {
+    intendedUse = 'Intended use: Culinary Paste for Cooking';
+  } else if (cLower.includes('dip mix')) {
+    intendedUse = 'Intended use: Mix for Preparation of Dip';
+  } else if (cLower.includes('spice mix')) {
+    intendedUse = 'Intended use: Mix for Preparation of Gravy';
   }
 
-  // Blended
+  if (intendedUse) {
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(intendedUse, (DW - ctx.measureText(intendedUse).width)/2, y);
+    y += 24;
+  }
+
+  // Blended text
   let blendedBoxText = '';
-  if (p.sc) {
+  if (cLower.includes('mix masala') || cLower.includes('seasoning') || cLower.includes('blended')) {
+    blendedBoxText = 'Spice content more than 40%, Salt content more than 5%';
+  } else if (p.sc) {
     blendedBoxText = p.sc;
-  } else if (isBlended) {
-    blendedBoxText = 'Mixed Masala Powder, Spices content more than 85%, salt content more than 5%';
   }
 
   if (blendedBoxText) {
     ctx.font = 'bold 14px Arial';
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = 'black';
     
-    let bl1 = blendedBoxText;
-    let bl2 = '';
-    if (blendedBoxText.includes('Mixed Masala Powder')) {
+    // No box, just text, split into two lines if needed
+    let bl1 = 'Spice content more than 40%';
+    let bl2 = 'Salt content more than 5%';
+
+    if (blendedBoxText.includes('85%')) {
        bl1 = 'Mixed Masala Powder, Spices content';
        bl2 = 'more than 85%, salt content more than 5%';
     }
 
-    ctx.strokeRect(leftPad, y, usableW, 46);
-    ctx.fillText(bl1, (DW - ctx.measureText(bl1).width)/2, y + 6);
+    ctx.fillText(bl1, (DW - ctx.measureText(bl1).width)/2, y);
     if (bl2) {
-      ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 24);
+      ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 18);
     }
-    y += 56;
+    y += 36;
   }
 
   // HR
@@ -483,28 +506,77 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   y += 8;
 
   // Nutrition
-  ctx.font = '900 20px "Arial Black", Arial, sans-serif';
-  const n1 = 'NUTRITIONAL INFORMATION';
-  ctx.fillText(n1, (DW - ctx.measureText(n1).width)/2, y);
-  y += 24;
-  ctx.font = 'italic 16px Arial';
-  const n2 = 'Approximate Composition per 100 g';
-  ctx.fillText(n2, (DW - ctx.measureText(n2).width)/2, y);
-  y += 26;
+  if (isDukan) {
+    ctx.font = '900 18px "Arial Black", Arial, sans-serif';
+    const n1 = 'NUTRITIONAL INFORMATION';
+    ctx.fillText(n1, (DW - ctx.measureText(n1).width)/2, y);
+    y += 20;
 
-  // Box
-  ctx.font = 'bold 18px Arial';
-  const fullNutriStr = `Energy (${p.e||0}kcal), Protein (${p.p||0}g), Carbohydrate (${p.cb||0}g), Total Sugars (—g), Added Sugars (—g), Total Fat (${p.tf||0}g), Saturated Fat (${p.sf||0}g), Trans Fat (—g), Cholesterol (—mg), Sodium (${p.so||0}mg)`;
-  const nl = wrapTextCanvas(ctx, fullNutriStr, usableW - 16);
-  const boxTop = y;
-  y += 8;
-  for(let ln of nl) {
-    ctx.fillText(ln, leftPad + 8, y);
-    y += 24;
+    const rowH = 18;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'black';
+    ctx.strokeRect(leftPad, y, usableW, rowH * 13);
+
+    const col1W = usableW * 0.55;
+    const col2W = usableW * 0.225;
+    const col3W = usableW * 0.225;
+    
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText('SERVING SIZE: 100g', leftPad + 2, y + 2);
+    ctx.fillText('Per 100g', leftPad + col1W + 2, y + 2);
+    ctx.fillText('% RDA**', leftPad + col1W + col2W + 2, y + 2);
+    y += rowH;
+
+    const e = parseFloat(p.e) || 0;
+    const pro = parseFloat(p.p) || 0;
+    const df = parseFloat(p.df) || 0;
+    const cb = parseFloat(p.cb) || 0;
+    const ts = parseFloat(p.ts) || 0;
+    const as = parseFloat(p.as) || 0;
+    const tf = parseFloat(p.tf) || 0;
+    const sf = parseFloat(p.sf) || 0;
+    const tr = parseFloat(p.tr) || 0;
+    const ch = parseFloat(p.ch) || 0;
+    const so = parseFloat(p.so) || 0;
+
+    const rows = [
+      ['Energy (kcal)', e, ((e/2000)*7).toFixed(2)],
+      ['Protein (g)', pro, ''],
+      ['Dietary Fibre', df, ''],
+      ['Carbohydrates (g)', cb, ''],
+      ['Total Sugar(g)', ts, ''],
+      ['Added Sugar (g)', as, ((as/50)*7).toFixed(2)],
+      ['Total Fat (g)', tf, ((tf/67)*7).toFixed(2)],
+      ['Saturated Fat (g)', sf, ((sf/22)*7).toFixed(2)],
+      ['Trans Fat (g)', tr>0?tr:'<0.1', ''],
+      ['Cholesterol (mg)', ch>0?ch:'<10', ''],
+      ['Sodium (mg)', so, ((so/2000)*7).toFixed(2)],
+    ];
+
+    ctx.font = '12px Arial';
+    for (let r of rows) {
+      ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
+      ctx.fillText(r[0], leftPad + 2, y + 2);
+      ctx.beginPath(); ctx.moveTo(leftPad+col1W, y-rowH); ctx.lineTo(leftPad+col1W, y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(leftPad+col1W+col2W, y-rowH); ctx.lineTo(leftPad+col1W+col2W, y); ctx.stroke();
+      ctx.fillText(r[1], leftPad + col1W + 2, y + 2);
+      ctx.fillText(r[2], leftPad + col1W + col2W + 2, y + 2);
+      y += rowH;
+    }
+    
+    // Last row lines
+    ctx.beginPath(); ctx.moveTo(leftPad+col1W, y-rowH); ctx.lineTo(leftPad+col1W, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(leftPad+col1W+col2W, y-rowH); ctx.lineTo(leftPad+col1W+col2W, y); ctx.stroke();
+
+    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
+    ctx.font = '10px Arial';
+    ctx.fillText('* Approximate values', leftPad + 2, y + 2);
+    y += rowH;
+    ctx.beginPath(); ctx.moveTo(leftPad, y); ctx.lineTo(leftPad+usableW, y); ctx.stroke();
+    ctx.fillText('** % of an Adults Guideline daily Amount based on 2000 kcal diet', leftPad + 2, y + 2);
+    y += rowH;
+    y += 10;
   }
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(leftPad, boxTop, usableW, y - boxTop + 4);
-  y += 24;
 
   // Details
   ctx.font = 'bold 20px Arial';
@@ -513,7 +585,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     `NET WEIGHT : ${nw}`,
     `BATCH NO : ${bno}`,
     `DATE OF PACKING : ${pd}`,
-    `BEST BEFORE : ${bbClean}`
+    `EXPIRY DATE : ${bbClean}`
   ];
   for(let ln of details) {
     ctx.fillText(ln, leftPad, y);
@@ -968,7 +1040,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     y += 8;
   }
   
-  const mrp = parseFloat(v.m) || 10000;
+  const mrp = parseFloat(v.m) || 36000;
   drawLine('MRP -', `₹ ${mrp.toFixed(2)}`);
   y += 8;
 

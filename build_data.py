@@ -77,11 +77,12 @@ def make_variants(name, price_1kg=0):
     # Derive smaller pack prices (proportional, rounded to nearest 5)
     # Small packs carry slight premium (~20% for 100g, ~10% for 200g, ~5% for 500g)
     if p1kg > 0:
-        p100  = round5(p1kg * 0.122) * 2   # 100g with ~22% premium
-        p200  = round5(p1kg * 0.23) * 2    # 200g with ~15% premium
-        p250  = round5(p1kg * 0.28) * 2    # 250g with ~12% premium
-        p500  = round5(p1kg * 0.56) * 2    # 500g with ~12% premium
-        p1000 = round5(p1kg) * 2
+        base1kg = (round5(p1kg) * 2) + 200
+        p100  = math.ceil((base1kg * 0.122) / 10.0) * 10
+        p200  = math.ceil((base1kg * 0.23) / 10.0) * 10
+        p250  = math.ceil((base1kg * 0.28) / 10.0) * 10
+        p500  = math.ceil((base1kg * 0.56) / 10.0) * 10
+        p1000 = math.ceil(base1kg / 10.0) * 10
     else:
         p100 = p200 = p250 = p500 = p1000 = 0
 
