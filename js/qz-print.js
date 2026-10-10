@@ -449,7 +449,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     intendedUse = 'Intended use: Culinary Paste for Cooking';
   } else if (cLower.includes('dip mix')) {
     intendedUse = 'Intended use: Mix for Preparation of Dip';
-  } else if (cLower.includes('spice mix')) {
+  } else if (cLower.includes('gravy mix')) {
     intendedUse = 'Intended use: Mix for Preparation of Gravy';
   }
 

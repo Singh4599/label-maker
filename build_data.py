@@ -109,6 +109,8 @@ with open(CSV_FILE, encoding='utf-8') as f:
             continue
 
         col = row.get('collection', '').strip()
+        if col.lower() == 'spice mix':
+            col = 'Gravy Mix'
 
         # Try to find price — exact first, then partial match
         n_norm = norm(n)
