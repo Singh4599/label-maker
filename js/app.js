@@ -590,7 +590,8 @@ function buildBackHTML(p, v, bn, pd, bb) {
   // Intended Use
   let intendedUse = '';
   const cLower = (p.c || '').toLowerCase();
-  if (cLower.includes('seasoning') || cLower.includes('aromatic') || cLower.includes('marinade') || cLower.includes('salt')) {
+  const nLower = (p.n || '').toLowerCase();
+  if (nLower.includes('seasoning') || cLower.includes('seasoning') || cLower.includes('aromatic') || cLower.includes('marinade') || cLower.includes('salt')) {
     intendedUse = 'Intended use: For seasoning of foods during cooking';
   } else if (cLower.includes('sauce mix')) {
     intendedUse = 'Intended use: Mix for Preparation of Sauce';
@@ -603,11 +604,11 @@ function buildBackHTML(p, v, bn, pd, bb) {
   } else if (cLower.includes('gravy mix')) {
     intendedUse = 'Intended use: Mix for Preparation of Gravy';
   }
-  const useLine = intendedUse ? `<div style="font-size:0.55em; text-align:center; margin:1mm 0; font-weight:600;">${intendedUse}</div>` : '';
+  const useLine = intendedUse ? `<div style="font-size:0.48em; text-align:center; margin:1mm 0; font-weight:600;">${intendedUse}</div>` : '';
 
   // Blended / mix masala / seasoning text
   let dukanLine = '';
-  if (cLower.includes('mix masala') || cLower.includes('seasoning') || cLower.includes('blended')) {
+  if (cLower.includes('mix masala') || cLower.includes('blended') || nLower.includes('mix masala') || nLower.includes('blended') || nLower.includes('mixed masala')) {
     dukanLine = `<div style="font-size:0.55em; text-align:center; margin:1mm 0; font-weight:600;">Spice content more than 40%, Salt content more than 5%</div>`;
   }
 
@@ -659,12 +660,12 @@ function buildBackHTML(p, v, bn, pd, bb) {
   // If not Dukan, leave nutritionBlock empty for 365 (since they requested to remove it).
   const scaleCSS = !isDukan ? `
     <style>
-      .bl-wrap .blsec { font-size:11px; margin-top:6px; }
-      .bl-wrap .blingr { font-size:9px; line-height:1.4; margin-bottom:12px; }
-      .bl-wrap .blr { font-size:11.5px; padding:2px 0; line-height: 1.5; }
-      .bl-wrap .blmrp { font-size:18px; margin-top:10px; }
-      .bl-wrap .bltax { font-size:8px; }
-      .bl-wrap .blper { font-size:9.5px; margin-bottom:6px; }
+      .bl-wrap .blsec { font-size:9.5px; margin-top:4px; }
+      .bl-wrap .blingr { font-size:7.5px; line-height:1.4; margin-bottom:10px; }
+      .bl-wrap .blr { font-size:11px; padding:2px 0; line-height: 1.45; }
+      .bl-wrap .blmrp { font-size:16px; margin-top:8px; }
+      .bl-wrap .bltax { font-size:7.5px; }
+      .bl-wrap .blper { font-size:8.5px; margin-bottom:5px; }
     </style>
   ` : '';
 

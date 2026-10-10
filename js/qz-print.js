@@ -439,7 +439,8 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   
   // Intended Use (For 365 Spicery)
   let intendedUse = '';
-  if (cLower.includes('seasoning') || cLower.includes('aromatic') || cLower.includes('marinade') || cLower.includes('salt')) {
+  const nLower = (p.n || '').toLowerCase();
+  if (nLower.includes('seasoning') || cLower.includes('seasoning') || cLower.includes('aromatic') || cLower.includes('marinade') || cLower.includes('salt')) {
     intendedUse = 'Intended use: For seasoning of foods during cooking';
   } else if (cLower.includes('sauce mix')) {
     intendedUse = 'Intended use: Mix for Preparation of Sauce';
@@ -454,14 +455,14 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   if (intendedUse) {
-    ctx.font = 'bold 16px Arial';
+    ctx.font = 'bold 13px Arial';
     ctx.fillText(intendedUse, (DW - ctx.measureText(intendedUse).width)/2, y);
-    y += 24;
+    y += 20;
   }
 
   // Blended text
   let blendedBoxText = '';
-  if (cLower.includes('mix masala') || cLower.includes('seasoning') || cLower.includes('blended')) {
+  if (cLower.includes('mix masala') || cLower.includes('blended') || nLower.includes('mix masala') || nLower.includes('blended') || nLower.includes('mixed masala')) {
     blendedBoxText = 'Spice content more than 40%, Salt content more than 5%';
   } else if (p.sc) {
     blendedBoxText = p.sc;
@@ -479,11 +480,9 @@ function generateBackCanvas(p, v, bn, pd, bb) {
        bl2 = 'more than 85%, salt content more than 5%';
     }
 
-    ctx.fillText(bl1, (DW - ctx.measureText(bl1).width)/2, y);
-    if (bl2) {
-      ctx.fillText(bl2, (DW - ctx.measureText(bl2).width)/2, y + 18);
-    }
-    y += 36;
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText(bl1 + ', ' + bl2, (DW - ctx.measureText(bl1 + ', ' + bl2).width)/2, y);
+    y += 22;
   }
 
   // HR
@@ -491,20 +490,19 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   y += isDukan ? 12 : 24;
 
   // Ingredients
-  ctx.font = isDukan ? 'bold 20px Arial' : 'bold 26px Arial';
+  ctx.font = 'bold 20px Arial';
   ctx.fillText('INGREDIENTS :-', leftPad, y);
-  y += isDukan ? 26 : 34;
-  ctx.font = isDukan ? '20px Arial' : '24px Arial';
+  y += 26;
+  ctx.font = '20px Arial';
   
   // wrapTextCanvas is now globally scoped
 
   const ingrLines = wrapTextCanvas(ctx, `(In Descending Order By Weight) ${ingr}`, usableW);
-  const ingrLineH = isDukan ? 24 : 32;
   for(let ln of ingrLines) {
     ctx.fillText(ln, leftPad, y);
-    y += ingrLineH;
+    y += 24;
   }
-  y += isDukan ? 8 : 40;
+  y += 12;
 
   // Nutrition
   if (isDukan) {
@@ -580,7 +578,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   // Details
-  ctx.font = isDukan ? 'bold 20px Arial' : 'bold 26px Arial';
+  ctx.font = isDukan ? 'bold 20px Arial' : 'bold 24px Arial';
   const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
   const details = [
     `NET WEIGHT : ${nw}`,
@@ -588,23 +586,23 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     `DATE OF PACKING : ${pd}`,
     `EXPIRY DATE : ${bbClean}`
   ];
-  const detailLineH = isDukan ? 26 : 38;
+  const detailLineH = isDukan ? 26 : 32;
   for(let ln of details) {
     ctx.fillText(ln, leftPad, y);
     y += detailLineH;
   }
-  y += isDukan ? 10 : 20;
+  y += isDukan ? 10 : 16;
 
   // MRP
-  ctx.font = isDukan ? '900 28px "Arial Black", Arial, sans-serif' : '900 38px "Arial Black", Arial, sans-serif';
+  ctx.font = isDukan ? '900 28px "Arial Black", Arial, sans-serif' : '900 34px "Arial Black", Arial, sans-serif';
   ctx.fillText(`MRP : ₹ ${mrp}/-`, leftPad, y);
-  y += isDukan ? 34 : 46;
+  y += isDukan ? 34 : 40;
   
-  ctx.font = isDukan ? 'bold 16px Arial' : 'bold 20px Arial';
+  ctx.font = isDukan ? 'bold 16px Arial' : 'bold 18px Arial';
   ctx.fillText(`(INCL. OF ALL TAXES)`, leftPad, y);
-  y += isDukan ? 22 : 28;
+  y += isDukan ? 22 : 26;
   ctx.fillText(`FOR 1g = Rs ${pg}`, leftPad, y);
-  y += isDukan ? 30 : 40;
+  y += isDukan ? 30 : 36;
 
   // Barcode
   if (typeof JsBarcode !== 'undefined') {
