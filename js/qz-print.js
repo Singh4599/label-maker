@@ -1041,7 +1041,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     y += 8;
   }
   
-  const mrp = parseFloat(v.m) || 36000;
+  const mrp = 36000;
   drawLine('MRP -', `₹ ${mrp.toFixed(2)}`);
   y += 8;
 
