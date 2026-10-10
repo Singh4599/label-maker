@@ -15,6 +15,25 @@ const QZP = {
   _retrying: false
 };
 
+// Custom wrapping function for canvas pixel width
+function wrapTextCanvas(context, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = words[0] || '';
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
+    const width = context.measureText(currentLine + " " + word).width;
+    if (width < maxWidth) {
+      currentLine += " " + word;
+    } else {
+      lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines;
+}
+
 /* ─── Init on page load ─── */
 window.addEventListener('DOMContentLoaded', () => {
   loadSavedSettings();
@@ -454,24 +473,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   y += 26;
   ctx.font = '20px Arial';
   
-  // Custom wrapping function for canvas pixel width
-  function wrapTextCanvas(context, text, maxWidth) {
-    const words = text.split(' ');
-    const lines = [];
-    let currentLine = words[0] || '';
-    for (let i = 1; i < words.length; i++) {
-      const word = words[i];
-      const width = context.measureText(currentLine + " " + word).width;
-      if (width < maxWidth) {
-        currentLine += " " + word;
-      } else {
-        lines.push(currentLine);
-        currentLine = word;
-      }
-    }
-    if (currentLine) lines.push(currentLine);
-    return lines;
-  }
+  // wrapTextCanvas is now globally scoped
 
   const ingrLines = wrapTextCanvas(ctx, `(In Descending Order By Weight) ${ingr}`, usableW);
   for(let ln of ingrLines) {
