@@ -17,10 +17,10 @@ The application hardcodes specific printer names (as installed on the Windows OS
 
 | Mode / Category | Label Dimensions | Target Printer | JS Generation Function |
 | :--- | :--- | :--- | :--- |
-| **Standard Front** | 65mm x 25mm | `TSC TE244` | `generateFrontCanvas()` |
-| **Standard Back** | 65mm x 25mm | `TSC TE244 (Copy 1)` | `generateBackCanvas()` |
-| **Dukan Bai (Front)** | 80mm x 25mm | `TSC TE244` | `generateFrontCanvas()` (DW modified to 640) |
-| **Dukan Bai (Back)** | 50mm x 90mm | `TSC TE244 (Copy 1)` | `generateBackCanvas()` (DW:400, DH:720) |
+| **Standard Front** | 65mm x 25mm | `TSC TE244 (Copy 1)` | `generateFrontCanvas()` |
+| **Standard Back** | 65mm x 25mm | `TSC TE244` | `generateBackCanvas()` |
+| **Dukan Bai (Front)** | 80mm x 25mm | `TSC TE244 (Copy 1)` | `generateFrontCanvas()` (DW modified to 640) |
+| **Dukan Bai (Back)** | 50mm x 90mm | `TSC TE244` | `generateBackCanvas()` (DW:400, DH:720) |
 | **32x25 Label (Back)**| 32.5mm x 25mm (x2) | `TSC TE244` | `generateNew32Canvas()` (Splits 65mm roll into two) |
 | **Parties Data** | 104mm x 152mm | `TSC TA210` | `generatePartiesCanvas()` |
 | **Yellow 365** | 104mm x 152mm | `TSC TA210` | `generateYellowCanvas()` |

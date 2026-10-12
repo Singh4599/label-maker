@@ -3,14 +3,14 @@
 /* ═══════════════════════════════════════════════════════════════
    QZ TRAY — 365 Spicery Label Studio
    MODE: Raw TSPL via altPrinting (direct to printer port)
-   PRINTERS: Default — TSC TE244 = Front, TSC TE244 (Copy 1) = Back
+   PRINTERS: Hardcoded — TSC TE244 (Copy 1) = Front, TSC TE244 = Back
    GAP: 3mm both (from Printing Defaults — matches BarTender)
 ═══════════════════════════════════════════════════════════════ */
 
 const QZP = {
   connected: false,
-  frontPrinter: localStorage.getItem('qz_front_printer') || 'TSC TE244',
-  backPrinter:  localStorage.getItem('qz_back_printer')  || 'TSC TE244 (Copy 1)',
+  frontPrinter: 'TSC TE244 (Copy 1)',  // HARDCODED — never changes
+  backPrinter:  'TSC TE244',           // HARDCODED — never changes
   printers: [],
   _retrying: false
 };
@@ -128,26 +128,12 @@ function populatePrinterDropdowns(printers) {
 }
 
 function loadSavedSettings() {
-  const savedFront = localStorage.getItem('qz_front_printer');
-  const savedBack = localStorage.getItem('qz_back_printer');
-  if (savedFront) QZP.frontPrinter = savedFront;
-  if (savedBack) QZP.backPrinter = savedBack;
   const gapEl = document.getElementById('label-gap');
   if (gapEl) gapEl.value = '3';
 }
 function savePrinterSettings() {
-  const fSel = document.getElementById('front-printer-sel');
-  const bSel = document.getElementById('back-printer-sel');
-  if (fSel && fSel.value) {
-    QZP.frontPrinter = fSel.value;
-    localStorage.setItem('qz_front_printer', fSel.value);
-  }
-  if (bSel && bSel.value) {
-    QZP.backPrinter = bSel.value;
-    localStorage.setItem('qz_back_printer', bSel.value);
-  }
   closePrinterSettings();
-  showToast('✓ Printer settings saved successfully!', 'success');
+  showToast('✓ Settings saved! Printers are hardcoded.', 'success');
 }
 
 /* ═══════════════════════════════════════════════════════════════
