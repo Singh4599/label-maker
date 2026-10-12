@@ -361,9 +361,9 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const leftPad = 24; // perfect middle ground between 8 and 36
-  const rightPad = 24;
-  const usableW = DW - (leftPad + rightPad);
+  const leftPad = 8; // Shifted left to balance margins perfectly on printer
+  const rightPad = 42; // Increased right margin so text never cuts on the right
+  const usableW = DW - (leftPad + rightPad); // 350
   let y = 36; // Increased top margin so title doesn't get cut
   
   const mrp  = parseFloat(v.m) || 0;
@@ -431,7 +431,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   if (isJain) {
     ctx.font = '900 16px "Arial Black", Arial, sans-serif';
     const sub = 'NO ONION NO GARLIC';
-    ctx.fillText(sub, (DW - ctx.measureText(sub).width)/2, y);
+    ctx.fillText(sub, leftPad + (usableW - ctx.measureText(sub).width)/2, y);
     y += 24;
   }
 
@@ -456,7 +456,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
 
   if (intendedUse) {
     ctx.font = 'bold 13px Arial';
-    ctx.fillText(intendedUse, (DW - ctx.measureText(intendedUse).width)/2, y);
+    ctx.fillText(intendedUse, leftPad + (usableW - ctx.measureText(intendedUse).width)/2, y);
     y += 20;
   }
 
@@ -479,7 +479,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     }
 
     ctx.font = 'bold 14px Arial';
-    ctx.fillText(bl1 + ', ' + bl2, (DW - ctx.measureText(bl1 + ', ' + bl2).width)/2, y);
+    ctx.fillText(bl1 + ', ' + bl2, leftPad + (usableW - ctx.measureText(bl1 + ', ' + bl2).width)/2, y);
     y += 22;
   }
 
@@ -612,7 +612,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   // Details
-  ctx.font = isDukan ? 'bold 20px Arial' : 'bold 24px Arial';
+  ctx.font = isDukan ? 'bold 20px Arial' : 'bold 23px Arial';
   const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
   const details = [
     `NET WEIGHT : ${nw}`,
@@ -650,7 +650,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
       fontSize: 18,
       margin: 0
     });
-    const bcX = Math.max(leftPad, (DW - bcCanvas.width) / 2);
+    const bcX = Math.max(leftPad, leftPad + (usableW - bcCanvas.width) / 2);
     ctx.drawImage(bcCanvas, bcX, y);
     y += bcCanvas.height;
   }
