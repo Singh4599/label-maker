@@ -198,13 +198,6 @@ const DUKAN_DB = {
       "sc": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace.",
       "e": 350, "p": 12.0, "cb": 50.0, "tf": 14.0, "so": 1200, "ts": 3.0, "as": 0
     },
-    "STICKER SIZE- 50 X 90 MM": {
-      "n": "STICKER SIZE- 50 X 90 MM",
-      "b": "STICKER SIZE- 80 X 25 MM",
-      "c": "",
-      "i": "",
-      "e": 0, "p": 0, "cb": 0, "tf": 0, "so": 0, "ts": 0, "as": 0
-    }
   },
   "v": {
     "GOLDEN TURMERIC POWDER": [
@@ -394,6 +387,27 @@ const DUKAN_DB = {
         "oz": "3.53oz",
         "m": 60,
         "bn": "CSS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 150,
+        "bn": "CSS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 300,
+        "bn": "CSS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 600,
+        "bn": "CSS-1026"
       }
     ],
     "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING": [
@@ -523,6 +537,27 @@ const DUKAN_DB = {
         "oz": "3.53oz",
         "m": 100,
         "bn": "CPSPLV-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 250,
+        "bn": "CPSPLV-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 500,
+        "bn": "CPSPLV-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1000,
+        "bn": "CPSPLV-1026"
       }
     ],
     "CHILLI POWDER SP LAL UNCHA": [
@@ -532,6 +567,27 @@ const DUKAN_DB = {
         "oz": "3.53oz",
         "m": 100,
         "bn": "CPSPLCCV-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 250,
+        "bn": "CPSPLCCV-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 500,
+        "bn": "CPSPLCCV-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1000,
+        "bn": "CPSPLCCV-1026"
       }
     ],
     "GINGER SEASONING": [
@@ -540,6 +596,27 @@ const DUKAN_DB = {
         "g": 100,
         "oz": "3.53oz",
         "m": 100,
+        "bn": "GSM-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 250,
+        "bn": "GSM-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 500,
+        "bn": "GSM-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 1000,
         "bn": "GSM-1026"
       }
     ],
@@ -580,6 +657,27 @@ const DUKAN_DB = {
         "oz": "3.53oz",
         "m": 60,
         "bn": "DMSM-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 150,
+        "bn": "DMSM-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 300,
+        "bn": "DMSM-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 600,
+        "bn": "DMSM-1026"
       }
     ],
     "BLACK PEPPER SEASONING": [
@@ -619,6 +717,27 @@ const DUKAN_DB = {
         "oz": "3.53oz",
         "m": 40,
         "bn": "MS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 100,
+        "bn": "MS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 200,
+        "bn": "MS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 400,
+        "bn": "MS-1026"
       }
     ],
     "CORIANDER SEASONING": [
@@ -627,6 +746,27 @@ const DUKAN_DB = {
         "g": 100,
         "oz": "3.53oz",
         "m": 40,
+        "bn": "CS-1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 100,
+        "bn": "CS-1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 200,
+        "bn": "CS-1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 400,
         "bn": "CS-1026"
       }
     ],
@@ -727,6 +867,27 @@ const DUKAN_DB = {
         "oz": "3.53oz",
         "m": 40,
         "bn": "R1026"
+      },
+      {
+        "d": "250g",
+        "g": 250,
+        "oz": "8.82oz",
+        "m": 100,
+        "bn": "R1026"
+      },
+      {
+        "d": "500g",
+        "g": 500,
+        "oz": "17.64oz",
+        "m": 200,
+        "bn": "R1026"
+      },
+      {
+        "d": "1kg",
+        "g": 1000,
+        "oz": "35.27oz",
+        "m": 400,
+        "bn": "R1026"
       }
     ],
     "RAJWADI GARAM MASALA": [
@@ -757,15 +918,6 @@ const DUKAN_DB = {
         "oz": "35.27oz",
         "m": 1200,
         "bn": "RGM-1026"
-      }
-    ],
-    "STICKER SIZE- 50 X 90 MM": [
-      {
-        "d": "Standard Pack",
-        "g": 100,
-        "oz": "3.5oz",
-        "m": 0,
-        "bn": "STICKER SIZE- 80 X 25 MM"
       }
     ]
   }
