@@ -473,13 +473,14 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     const drawCenteredLine = (text, yPos) => {
       const tw = ctx.measureText(text).width;
       const x = Math.max(leftPad, leftPad + (usableW - tw) / 2);
-      ctx.fillText(text, x, yPos, usableW); // maxWidth = usableW prevents right overflow too
+      ctx.fillText(text, x, yPos, usableW);
     };
 
     if (blendedBoxText.includes('85%')) {
       drawCenteredLine('Mixed Masala Powder, Spices content more than 85%, Salt content more than 5%', y);
       y += 15;
-    } else if (nLower.includes('mixed masala') || nLower.includes('mix masala')) {
+    } else if (cLower.includes('blended')) {
+      // ALL Blended Spices category → show Mixed Masala Powder line
       drawCenteredLine('Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%', y);
       y += 15;
     } else {
