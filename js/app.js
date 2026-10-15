@@ -117,7 +117,7 @@ function setMode(mode) {
   document.querySelectorAll('.preview-section')[0].querySelector('.preview-lbl-size').textContent = frontSizeText;
   document.querySelectorAll('.btn-print-f').forEach(btn => {
     if (isYellow) btn.innerHTML = `🖨️ Print — ${frontSizeText}`;
-    else if (isInternal) btn.innerHTML = `🖨️ Inner — ${frontSizeText}`;
+    else if (isInternal) btn.innerHTML = `🖨️ Outer — ${frontSizeText}`;
     else btn.innerHTML = `🖨️ Front — ${frontSizeText}`;
   });
 
@@ -131,7 +131,7 @@ function setMode(mode) {
   }
   document.querySelectorAll('.btn-print-b').forEach(btn => {
     btn.style.display = isYellow ? 'none' : 'inline-block';
-    if (isInternal) btn.innerHTML = `🖨️ Outer — ${backSizeText}`;
+    if (isInternal) btn.innerHTML = `🖨️ Inner — ${backSizeText}`;
     else btn.innerHTML = `🖨️ Back — ${backSizeText}`;
   });
 
