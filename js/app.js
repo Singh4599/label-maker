@@ -289,13 +289,19 @@ function selectVariant(idx) {
   document.querySelectorAll('.pack-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
   const v = ST.db.v[ST.prod.n][idx];
   
-  // Dynamic Batch Logic (Initials + MMYY)
-  const words = ST.prod.n.toUpperCase().replace(/[-/]/g, ' ').split(/\s+/);
-  const initials = words.map(w => w.match(/[A-Z]/) ? w.match(/[A-Z]/)[0] : '').join('').substring(0, 5);
-  const now = new Date();
-  const mmyy = String(now.getMonth()+1).padStart(2,'0') + String(now.getFullYear()).substring(2);
-  const autoBn = initials + mmyy;
-  
+  // Batch code: use pre-defined bn from data for Dukan Bhai, else auto-generate
+  let autoBn;
+  if (ST.db === DUKAN_DB && v.bn) {
+    autoBn = v.bn;
+  } else {
+    // Dynamic Batch Logic (Initials + MMYY)
+    const words = ST.prod.n.toUpperCase().replace(/[-/]/g, ' ').split(/\s+/);
+    const initials = words.map(w => w.match(/[A-Z]/) ? w.match(/[A-Z]/)[0] : '').join('').substring(0, 5);
+    const now = new Date();
+    const mmyy = String(now.getMonth()+1).padStart(2,'0') + String(now.getFullYear()).substring(2);
+    autoBn = initials + mmyy;
+  }
+
   const bnEl = $('bn'); if (bnEl) bnEl.value = autoBn;
   const mrp = parseFloat(v.m) || 0, pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const mv = $('mrp-val'); if (mv) mv.value = mrp;
