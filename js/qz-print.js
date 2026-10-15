@@ -467,23 +467,24 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   if (blendedBoxText) {
-    ctx.font = 'bold 10px Arial';
+    ctx.font = 'bold 9px Arial';
+
+    // Helper: center text but never go left of leftPad, clamp within usableW
+    const drawCenteredLine = (text, yPos) => {
+      const tw = ctx.measureText(text).width;
+      const x = Math.max(leftPad, leftPad + (usableW - tw) / 2);
+      ctx.fillText(text, x, yPos, usableW); // maxWidth = usableW prevents right overflow too
+    };
 
     if (blendedBoxText.includes('85%')) {
-      // 85% case
-      let line = 'Mixed Masala Powder, Spices content more than 85%, Salt content more than 5%';
-      ctx.fillText(line, leftPad + (usableW - ctx.measureText(line).width)/2, y);
-      y += 14;
+      drawCenteredLine('Mixed Masala Powder, Spices content more than 85%, Salt content more than 5%', y);
+      y += 13;
     } else if (nLower.includes('mixed masala') || nLower.includes('mix masala')) {
-      // One single line: Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%
-      let line = 'Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%';
-      ctx.fillText(line, leftPad + (usableW - ctx.measureText(line).width)/2, y);
-      y += 14;
+      drawCenteredLine('Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%', y);
+      y += 13;
     } else {
-      // Default blended: one line
-      let line = 'Spice content more than 40%, Salt content more than 5%';
-      ctx.fillText(line, leftPad + (usableW - ctx.measureText(line).width)/2, y);
-      y += 14;
+      drawCenteredLine('Spice content more than 40%, Salt content more than 5%', y);
+      y += 13;
     }
   }
 
