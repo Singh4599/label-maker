@@ -609,7 +609,12 @@ function buildBackHTML(p, v, bn, pd, bb) {
   // Blended / mix masala / seasoning text
   let dukanLine = '';
   if (cLower.includes('mix masala') || cLower.includes('blended') || nLower.includes('mix masala') || nLower.includes('blended') || nLower.includes('mixed masala')) {
-    dukanLine = `<div style="font-size:0.55em; text-align:center; margin:1mm 0; font-weight:600;">Spice content more than 40%, Salt content more than 5%</div>`;
+    if (nLower.includes('mixed masala') || nLower.includes('mix masala')) {
+      // One single line: Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%
+      dukanLine = `<div style="font-size:0.36em; text-align:center; margin:1mm 0; font-weight:600;">Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%</div>`;
+    } else {
+      dukanLine = `<div style="font-size:0.42em; text-align:center; margin:1mm 0; font-weight:600;">Spice content more than 40%, Salt content more than 5%</div>`;
+    }
   }
 
   // Dukan Bhai special ingredients for specific chillies

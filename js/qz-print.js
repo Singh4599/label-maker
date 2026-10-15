@@ -467,20 +467,24 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   if (blendedBoxText) {
-    ctx.font = 'bold 14px Arial';
-    
-    // No box, just text, split into two lines if needed
-    let bl1 = 'Spice content more than 40%';
-    let bl2 = 'Salt content more than 5%';
+    ctx.font = 'bold 10px Arial';
 
     if (blendedBoxText.includes('85%')) {
-       bl1 = 'Mixed Masala Powder, Spices content';
-       bl2 = 'more than 85%, salt content more than 5%';
+      // 85% case
+      let line = 'Mixed Masala Powder, Spices content more than 85%, Salt content more than 5%';
+      ctx.fillText(line, leftPad + (usableW - ctx.measureText(line).width)/2, y);
+      y += 14;
+    } else if (nLower.includes('mixed masala') || nLower.includes('mix masala')) {
+      // One single line: Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%
+      let line = 'Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%';
+      ctx.fillText(line, leftPad + (usableW - ctx.measureText(line).width)/2, y);
+      y += 14;
+    } else {
+      // Default blended: one line
+      let line = 'Spice content more than 40%, Salt content more than 5%';
+      ctx.fillText(line, leftPad + (usableW - ctx.measureText(line).width)/2, y);
+      y += 14;
     }
-
-    ctx.font = 'bold 14px Arial';
-    ctx.fillText(bl1 + ', ' + bl2, leftPad + (usableW - ctx.measureText(bl1 + ', ' + bl2).width)/2, y);
-    y += 22;
   }
 
   // HR
