@@ -197,21 +197,43 @@ function generateFrontCanvas(name) {
   const jainBlockH = isJain ? 36 : 0;
   const availH = DH - jainBlockH;
 
+  // Trailing unit words that should not be orphaned on their own line
+  const UNIT_WORDS = ['SEASONING', 'MIX', 'POWDER', 'PASTE'];
+
+  function smartSplit(text, maxLines) {
+    let lines = balanceLines(text, maxLines);
+    // If last line is only a single unit word, merge it with second-to-last
+    if (lines.length >= 2) {
+      const last = lines[lines.length - 1].trim();
+      if (UNIT_WORDS.includes(last)) {
+        lines[lines.length - 2] = lines[lines.length - 2] + ' ' + last;
+        lines = lines.slice(0, -1);
+      }
+    }
+    return lines;
+  }
+
   let lines = balanceLines(n, 1);
   if (n.length > 15 && n.length <= 26) {
-    lines = balanceLines(n, 2);
-    if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')]; 
+    lines = smartSplit(n, 2);
+    if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')];
   } else if (n.length > 26) {
-    lines = balanceLines(n, 3);
+    lines = smartSplit(n, 3);
     if (lines.length < 3) {
       const words = n.split(' ');
       if (words.length >= 3) {
         const third = Math.ceil(words.length / 3);
-        lines = [
+        let candidate = [
           words.slice(0, third).join(' '),
           words.slice(third, third * 2).join(' '),
           words.slice(third * 2).join(' ')
         ];
+        // Apply unit-word fix to the fallback split too
+        if (candidate.length >= 2 && UNIT_WORDS.includes(candidate[candidate.length - 1].trim())) {
+          candidate[candidate.length - 2] += ' ' + candidate[candidate.length - 1];
+          candidate = candidate.slice(0, -1);
+        }
+        lines = candidate;
       }
     }
   }

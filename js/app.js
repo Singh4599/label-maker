@@ -699,7 +699,7 @@ function buildBackHTML(p, v, bn, pd, bb) {
 
   return `<div class="bl-wrap">
     ${scaleCSS}
-    <div class="bltit" id="bltit-el">${p.n.toUpperCase()}</div>
+    <div class="bltit" id="bltit-el">${(() => { const UNITS = ['SEASONING','MIX','POWDER','PASTE']; const raw = p.n.toUpperCase(); const words = raw.split(' '); if (words.length >= 2 && UNITS.includes(words[words.length-1])) { words[words.length-2] = words[words.length-2] + '\u00a0' + words[words.length-1]; words.pop(); } return words.join(' '); })()}</div>
     ${jainLine}
     ${useLine}
     ${dukanLine}
