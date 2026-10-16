@@ -467,8 +467,6 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   }
 
   if (blendedBoxText) {
-    ctx.font = 'bold 12px Arial';
-
     // Helper: center text but never go left of leftPad, clamp within usableW
     const drawCenteredLine = (text, yPos) => {
       const tw = ctx.measureText(text).width;
@@ -477,13 +475,20 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     };
 
     if (blendedBoxText.includes('85%')) {
+      ctx.font = 'bold 12px Arial';
       drawCenteredLine('Mixed Masala Powder, Spices content more than 85%, Salt content more than 5%', y);
       y += 15;
     } else if (cLower.includes('blended')) {
-      // ALL Blended Spices category → show Mixed Masala Powder line
-      drawCenteredLine('Mixed Masala Powder, Spice content more than 40%, Salt content more than 5%', y);
-      y += 15;
+      // Line 1: "Mixed Masala Powder" — centered, slightly larger
+      ctx.font = 'bold 13px Arial';
+      drawCenteredLine('Mixed Masala Powder', y);
+      y += 16;
+      // Line 2: spice content — smaller
+      ctx.font = 'bold 11px Arial';
+      drawCenteredLine('Spice content more than 40%, Salt content more than 5%', y);
+      y += 14;
     } else {
+      ctx.font = 'bold 12px Arial';
       drawCenteredLine('Spice content more than 40%, Salt content more than 5%', y);
       y += 15;
     }
