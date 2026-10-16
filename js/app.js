@@ -297,7 +297,7 @@ function selectVariant(idx) {
   
   // Batch code: use pre-defined bn/b from data for Dukan Bhai, 32x25 & Internal labels, else auto-generate
   let autoBn;
-  const useDataBn = (ST.db === DUKAN_DB || ST.db === NEW32_DB || ST.db === INTERNAL_DB) && (v.bn || ST.prod.b);
+  const useDataBn = (ST.db === DUKAN_DB || ST.db === NEW32_DB || ST.db === INTERNAL_DB || ST.db === PARTIES_DB) && (v.bn || ST.prod.b);
   if (useDataBn) {
     autoBn = v.bn || ST.prod.b;
   } else {

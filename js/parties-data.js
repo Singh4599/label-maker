@@ -210,6 +210,41 @@ const PARTIES_DB = {
       "note": "",
       "i": "mustard seeds"
     },
+    "VARIYALI POWDER": {
+      "n": "VARIYALI POWDER",
+      "b": "VP-1026",
+      "c": "",
+      "note": "",
+      "i": "(In Descending Order By Weight) FENNEL SEEDS & EDIBLE RICE BRAN OIL"
+    },
+    "RAI BARIK": {
+      "n": "RAI BARIK",
+      "b": "RB-1026",
+      "c": "",
+      "note": "",
+      "i": "Small Mustard Seeds"
+    },
+    "FENNEL SEEDS": {
+      "n": "FENNEL SEEDS",
+      "b": "FS-1026",
+      "c": "",
+      "note": "",
+      "i": "FENNEL SEEDS"
+    },
+    "KALONJI": {
+      "n": "KALONJI",
+      "b": "K-1026",
+      "c": "",
+      "note": "",
+      "i": "BLACK SEEDS"
+    },
+    "GARAM MASALA": {
+      "n": "GARAM MASALA",
+      "b": "GM-1026",
+      "c": "",
+      "note": "",
+      "i": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace."
+    },
     "PAGE SIZE": {
       "n": "PAGE SIZE",
       "b": "",
@@ -487,6 +522,51 @@ const PARTIES_DB = {
         "oz": "1763.7oz",
         "m": 10000,
         "bn": "R1026"
+      }
+    ],
+    "VARIYALI POWDER": [
+      {
+        "d": "50 KGS",
+        "g": 50000,
+        "oz": "1763.7oz",
+        "m": 10000,
+        "bn": "VP-1026"
+      }
+    ],
+    "RAI BARIK": [
+      {
+        "d": "50 KGS",
+        "g": 50000,
+        "oz": "1763.7oz",
+        "m": 10000,
+        "bn": "RB-1026"
+      }
+    ],
+    "FENNEL SEEDS": [
+      {
+        "d": "50 KGS",
+        "g": 50000,
+        "oz": "1763.7oz",
+        "m": 10000,
+        "bn": "FS-1026"
+      }
+    ],
+    "KALONJI": [
+      {
+        "d": "50 KGS",
+        "g": 50000,
+        "oz": "1763.7oz",
+        "m": 10000,
+        "bn": "K-1026"
+      }
+    ],
+    "GARAM MASALA": [
+      {
+        "d": "50 KGS",
+        "g": 50000,
+        "oz": "1763.7oz",
+        "m": 10000,
+        "bn": "GM-1026"
       }
     ],
     "PAGE SIZE": [
