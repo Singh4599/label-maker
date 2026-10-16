@@ -8379,7 +8379,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "JAIN GREEN CURRY PASTE (No Onion No Garlic)": {
-    "n": "JAIN GREEN CURRY PASTE (No Onion No Garlic)",
+    "n": "JAIN GREEN CURRY PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8396,7 +8396,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN RED CURRY PASTE (No Onion No Garlic)": {
-    "n": "JAIN RED CURRY PASTE (No Onion No Garlic)",
+    "n": "JAIN RED CURRY PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8413,7 +8413,7 @@ const SPICERY_DB = {
     "so": 620.0
   },
   "Jain Tom Yum Paste (No Onion No Garlic)": {
-    "n": "Jain Tom Yum Paste (No Onion No Garlic)",
+    "n": "Jain Tom Yum Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8430,7 +8430,7 @@ const SPICERY_DB = {
     "so": 1200.0
   },
   "Jain Green Thai Curry Paste (No Onion No Garlic)": {
-    "n": "Jain Green Thai Curry Paste (No Onion No Garlic)",
+    "n": "Jain Green Thai Curry Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8447,7 +8447,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN ARABIATTA PASTA PASTE (No Onion No Garlic)": {
-    "n": "JAIN ARABIATTA PASTA PASTE (No Onion No Garlic)",
+    "n": "JAIN ARABIATTA PASTA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8464,7 +8464,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN SMOKEY TANDOORI PASTE (No Onion No Garlic)": {
-    "n": "JAIN SMOKEY TANDOORI PASTE (No Onion No Garlic)",
+    "n": "JAIN SMOKEY TANDOORI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8481,7 +8481,7 @@ const SPICERY_DB = {
     "so": 1200.0
   },
   "JAIN MEXICAN PASTE (No Onion No Garlic)": {
-    "n": "JAIN MEXICAN PASTE (No Onion No Garlic)",
+    "n": "JAIN MEXICAN PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8498,7 +8498,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "JAIN SALAD DRESSING PASTE (No Onion No Garlic)": {
-    "n": "JAIN SALAD DRESSING PASTE (No Onion No Garlic)",
+    "n": "JAIN SALAD DRESSING PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8515,7 +8515,7 @@ const SPICERY_DB = {
     "so": 520.0
   },
   "JAIN MANCHURIAN PASTE (No Onion No Garlic)": {
-    "n": "JAIN MANCHURIAN PASTE (No Onion No Garlic)",
+    "n": "JAIN MANCHURIAN PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8532,7 +8532,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "JAIN AMRITSARI CHOLE PASTE (No Onion No Garlic)": {
-    "n": "JAIN AMRITSARI CHOLE PASTE (No Onion No Garlic)",
+    "n": "JAIN AMRITSARI CHOLE PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8549,7 +8549,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN BUTTER PANEER PASTE (No Onion No Garlic)": {
-    "n": "JAIN BUTTER PANEER PASTE (No Onion No Garlic)",
+    "n": "JAIN BUTTER PANEER PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8566,7 +8566,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN HUMMUS PASTE (No Onion No Garlic)": {
-    "n": "JAIN HUMMUS PASTE (No Onion No Garlic)",
+    "n": "JAIN HUMMUS PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8583,7 +8583,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN MOMO CHUTNEY PASTE (No Onion No Garlic)": {
-    "n": "JAIN MOMO CHUTNEY PASTE (No Onion No Garlic)",
+    "n": "JAIN MOMO CHUTNEY PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8600,7 +8600,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "JAIN RAJMA PASTE (No Onion No Garlic)": {
-    "n": "JAIN RAJMA PASTE (No Onion No Garlic)",
+    "n": "JAIN RAJMA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8617,7 +8617,7 @@ const SPICERY_DB = {
     "so": 600.0
   },
   "JAIN TAHINI PASTE (No Onion No Garlic)": {
-    "n": "JAIN TAHINI PASTE (No Onion No Garlic)",
+    "n": "JAIN TAHINI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8634,7 +8634,7 @@ const SPICERY_DB = {
     "so": 10.0
   },
   "JAIN Cheese Chilli Paste (No Onion No Garlic)": {
-    "n": "JAIN Cheese Chilli Paste (No Onion No Garlic)",
+    "n": "JAIN Cheese Chilli Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8651,7 +8651,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN ACHARI PASTE (No Onion No Garlic)": {
-    "n": "JAIN ACHARI PASTE (No Onion No Garlic)",
+    "n": "JAIN ACHARI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8668,7 +8668,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Jain Mysore Dosa Paste (No Onion No Garlic Paste)": {
-    "n": "Jain Mysore Dosa Paste (No Onion No Garlic Paste)",
+    "n": "Jain Mysore Dosa Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8702,7 +8702,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "Jain Schezwan Paste (No Onion No Garlic)": {
-    "n": "Jain Schezwan Paste (No Onion No Garlic)",
+    "n": "Jain Schezwan Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8719,7 +8719,7 @@ const SPICERY_DB = {
     "so": 700.0
   },
   "JAIN SMOKED PAPRIKA PASTE (No Onion No Garlic)": {
-    "n": "JAIN SMOKED PAPRIKA PASTE (No Onion No Garlic)",
+    "n": "JAIN SMOKED PAPRIKA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8736,7 +8736,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "Jain Red Chilli Paste (No Onion No Garlic)": {
-    "n": "Jain Red Chilli Paste (No Onion No Garlic)",
+    "n": "Jain Red Chilli Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8753,7 +8753,7 @@ const SPICERY_DB = {
     "so": 480.0
   },
   "JAIN KHAKHRA MASALA PASTE (No Onion No Garlic)": {
-    "n": "JAIN KHAKHRA MASALA PASTE (No Onion No Garlic)",
+    "n": "JAIN KHAKHRA MASALA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8770,7 +8770,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN WASABI PASTE (No Onion No Garlic)": {
-    "n": "JAIN WASABI PASTE (No Onion No Garlic)",
+    "n": "JAIN WASABI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8787,7 +8787,7 @@ const SPICERY_DB = {
     "so": 1200.0
   },
   "JAIN LEMONGRASS TURMERIC PASTE (No Onion No Garlic)": {
-    "n": "JAIN LEMONGRASS TURMERIC PASTE (No Onion No Garlic)",
+    "n": "JAIN LEMONGRASS TURMERIC PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8804,7 +8804,7 @@ const SPICERY_DB = {
     "so": 0
   },
   "JAIN MALAI CHAAP PASTE (No Onion No Garlic)": {
-    "n": "JAIN MALAI CHAAP PASTE (No Onion No Garlic)",
+    "n": "JAIN MALAI CHAAP PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8821,7 +8821,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "JAIN HARIYALI TIKKA PASTE (No Onion No Garlic)": {
-    "n": "JAIN HARIYALI TIKKA PASTE (No Onion No Garlic)",
+    "n": "JAIN HARIYALI TIKKA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8838,7 +8838,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN TIKKA PASTE (No Onion No Garlic)": {
-    "n": "JAIN TIKKA PASTE (No Onion No Garlic)",
+    "n": "JAIN TIKKA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8855,7 +8855,7 @@ const SPICERY_DB = {
     "so": 1800.0
   },
   "JAIN KOLHAPURI PASTE (No Onion No Garlic)": {
-    "n": "JAIN KOLHAPURI PASTE (No Onion No Garlic)",
+    "n": "JAIN KOLHAPURI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8872,7 +8872,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN TOMATO PASTE (No Onion No Garlic)": {
-    "n": "JAIN TOMATO PASTE (No Onion No Garlic)",
+    "n": "JAIN TOMATO PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8889,7 +8889,7 @@ const SPICERY_DB = {
     "so": 50.0
   },
   "JAIN DUM PASTE (No Onion No Garlic)": {
-    "n": "JAIN DUM PASTE (No Onion No Garlic)",
+    "n": "JAIN DUM PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8906,7 +8906,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN DAL MAKHANI PASTE (No Onion No Garlic)": {
-    "n": "JAIN DAL MAKHANI PASTE (No Onion No Garlic)",
+    "n": "JAIN DAL MAKHANI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8923,7 +8923,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN DEGGI CHILLI PASTE (No Onion No Garlic)": {
-    "n": "JAIN DEGGI CHILLI PASTE (No Onion No Garlic)",
+    "n": "JAIN DEGGI CHILLI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8940,7 +8940,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN SMOKED PERI PERI PASTE (No Onion No Garlic)": {
-    "n": "JAIN SMOKED PERI PERI PASTE (No Onion No Garlic)",
+    "n": "JAIN SMOKED PERI PERI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8957,7 +8957,7 @@ const SPICERY_DB = {
     "so": 1200.0
   },
   "Jain Za'atar Paste (No Onion No Garlic)": {
-    "n": "Jain Za'atar Paste (No Onion No Garlic)",
+    "n": "Jain Za'atar Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8974,7 +8974,7 @@ const SPICERY_DB = {
     "so": 1800.0
   },
   "JAIN ROASTED CUMIN PASTE (No Onion No Garlic)": {
-    "n": "JAIN ROASTED CUMIN PASTE (No Onion No Garlic)",
+    "n": "JAIN ROASTED CUMIN PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -8991,7 +8991,7 @@ const SPICERY_DB = {
     "so": 450.0
   },
   "Jain Smokey Paprika Paste (No Onion No Garlic)": {
-    "n": "Jain Smokey Paprika Paste (No Onion No Garlic)",
+    "n": "Jain Smokey Paprika Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9008,7 +9008,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "JAIN YELLOW MUSTARD DRESSING PASTE (No Onion No Garlic)": {
-    "n": "JAIN YELLOW MUSTARD DRESSING PASTE (No Onion No Garlic)",
+    "n": "JAIN YELLOW MUSTARD DRESSING PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9025,7 +9025,7 @@ const SPICERY_DB = {
     "so": 1000.0
   },
   "JAIN PERI PERI PASTE (No Onion No Garlic)": {
-    "n": "JAIN PERI PERI PASTE (No Onion No Garlic)",
+    "n": "JAIN PERI PERI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9042,7 +9042,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "JAIN KITCHEN KING PASTE (No Onion No Garlic)": {
-    "n": "JAIN KITCHEN KING PASTE (No Onion No Garlic)",
+    "n": "JAIN KITCHEN KING PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9059,7 +9059,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Jain Sambhar Paste (No Onion No Garlic Paste)": {
-    "n": "Jain Sambhar Paste (No Onion No Garlic Paste)",
+    "n": "Jain Sambhar Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9076,7 +9076,7 @@ const SPICERY_DB = {
     "so": 570.0
   },
   "Jain Malgapodi Paste (No Onion No Garlic Paste)": {
-    "n": "Jain Malgapodi Paste (No Onion No Garlic Paste)",
+    "n": "Jain Malgapodi Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9093,7 +9093,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "Jain Yellow Gravy Paste (No Onion No Garlic Paste)": {
-    "n": "Jain Yellow Gravy Paste (No Onion No Garlic Paste)",
+    "n": "Jain Yellow Gravy Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9110,7 +9110,7 @@ const SPICERY_DB = {
     "so": 1550.0
   },
   "Jain White Gravy Paste (No Onion No Garlic Paste)": {
-    "n": "Jain White Gravy Paste (No Onion No Garlic Paste)",
+    "n": "Jain White Gravy Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9127,7 +9127,7 @@ const SPICERY_DB = {
     "so": 1400.0
   },
   "Jain Sabji Masala Paste (No Onion No Garlic Paste)": {
-    "n": "Jain Sabji Masala Paste (No Onion No Garlic Paste)",
+    "n": "Jain Sabji Masala Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9144,7 +9144,7 @@ const SPICERY_DB = {
     "so": 580.0
   },
   "JAIN MAGIC MASALA PASTE (No Onion No Garlic)": {
-    "n": "JAIN MAGIC MASALA PASTE (No Onion No Garlic)",
+    "n": "JAIN MAGIC MASALA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9161,7 +9161,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "Jain Arrabiata Pasta Paste (No Onion No Garlic)": {
-    "n": "Jain Arrabiata Pasta Paste (No Onion No Garlic)",
+    "n": "Jain Arrabiata Pasta Paste",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9178,7 +9178,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN PAV BHAJI PASTE (No Onion No Garlic)": {
-    "n": "JAIN PAV BHAJI PASTE (No Onion No Garlic)",
+    "n": "JAIN PAV BHAJI PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9195,7 +9195,7 @@ const SPICERY_DB = {
     "so": 850.0
   },
   "JAIN COCONUT PASTE (No Onion No Garlic)": {
-    "n": "JAIN COCONUT PASTE (No Onion No Garlic)",
+    "n": "JAIN COCONUT PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9212,7 +9212,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "JAIN PIZZA PASTE (No Onion No Garlic)": {
-    "n": "JAIN PIZZA PASTE (No Onion No Garlic)",
+    "n": "JAIN PIZZA PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
@@ -9229,7 +9229,7 @@ const SPICERY_DB = {
     "so": 550.0
   },
   "JAIN TAMARIND PASTE (No Onion No Garlic)": {
-    "n": "JAIN TAMARIND PASTE (No Onion No Garlic)",
+    "n": "JAIN TAMARIND PASTE",
     "c": "Jain Paste",
     "icon": "✨",
     "desc": "",
