@@ -198,6 +198,38 @@ const DUKAN_DB = {
       "sc": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace.",
       "e": 350, "p": 12.0, "cb": 50.0, "tf": 14.0, "so": 1200, "ts": 3.0, "as": 0
     },
+    "SPECIAL GARAM MASALA": {
+      "n": "SPECIAL GARAM MASALA",
+      "b": "SGM-1026",
+      "c": "",
+      "i": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace.",
+      "sc": "(In Descending Order By weight) Coriander, Chilli, Edible Common Salt, Cumin, Fennel, Cassia Bark, Star Anise, Black Cardamom, Bay Leaf, Caraway, Sichuan Pepper, Black Pepper,Clove, Cotton seed oil, Mace.",
+      "e": 350, "p": 12.0, "cb": 50.0, "tf": 14.0, "so": 1200, "ts": 3.0, "as": 0
+    },
+    "VARIYALI SEASONING": {
+      "n": "VARIYALI SEASONING",
+      "b": "VS-1026",
+      "c": "category - seasoning",
+      "i": "(In Descending Order By Weight) FENNEL SEEDS, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) FENNEL SEEDS, EDIBLE RICE BRAN OIL",
+      "e": 345, "p": 15.0, "cb": 52.0, "tf": 15.0, "so": 88, "ts": 3.0, "as": 0
+    },
+    "CHILLI POWDER SP LINE": {
+      "n": "CHILLI POWDER SP LINE",
+      "b": "CPSPLV-1026",
+      "c": "",
+      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "sc": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "e": 300, "p": 12.0, "cb": 50.0, "tf": 16.0, "so": 30, "ts": 7.2, "as": 0
+    },
+    "CHILLI POWDER KASHMIRI SUPER DELUXE": {
+      "n": "CHILLI POWDER KASHMIRI SUPER DELUXE",
+      "b": "CPKKMU1-1026",
+      "c": "",
+      "i": "Kashmiri Chilli Stemless,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "sc": "Kashmiri Chilli Stemless,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "e": 300, "p": 12.0, "cb": 50.0, "tf": 16.0, "so": 30, "ts": 7.2, "as": 0
+    },
   },
   "v": {
     "GOLDEN TURMERIC POWDER": [
@@ -919,6 +951,30 @@ const DUKAN_DB = {
         "m": 1200,
         "bn": "RGM-1026"
       }
+    ],
+    "SPECIAL GARAM MASALA": [
+      { "d": "100g", "g": 100, "oz": "3.53oz", "m": 72, "bn": "SGM-1026" },
+      { "d": "250g", "g": 250, "oz": "8.82oz", "m": 180, "bn": "SGM-1026" },
+      { "d": "500g", "g": 500, "oz": "17.64oz", "m": 360, "bn": "SGM-1026" },
+      { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 720, "bn": "SGM-1026" }
+    ],
+    "VARIYALI SEASONING": [
+      { "d": "100g", "g": 100, "oz": "3.53oz", "m": 52, "bn": "VS-1026" },
+      { "d": "250g", "g": 250, "oz": "8.82oz", "m": 130, "bn": "VS-1026" },
+      { "d": "500g", "g": 500, "oz": "17.64oz", "m": 260, "bn": "VS-1026" },
+      { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 520, "bn": "VS-1026" }
+    ],
+    "CHILLI POWDER SP LINE": [
+      { "d": "100g", "g": 100, "oz": "3.53oz", "m": 72, "bn": "CPSPLV-1026" },
+      { "d": "250g", "g": 250, "oz": "8.82oz", "m": 180, "bn": "CPSPLV-1026" },
+      { "d": "500g", "g": 500, "oz": "17.64oz", "m": 360, "bn": "CPSPLV-1026" },
+      { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 720, "bn": "CPSPLV-1026" }
+    ],
+    "CHILLI POWDER KASHMIRI SUPER DELUXE": [
+      { "d": "100g", "g": 100, "oz": "3.53oz", "m": 160, "bn": "CPKKMU1-1026" },
+      { "d": "250g", "g": 250, "oz": "8.82oz", "m": 400, "bn": "CPKKMU1-1026" },
+      { "d": "500g", "g": 500, "oz": "17.64oz", "m": 800, "bn": "CPKKMU1-1026" },
+      { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 1600, "bn": "CPKKMU1-1026" }
     ]
   }
 };
