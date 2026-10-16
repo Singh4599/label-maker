@@ -699,7 +699,7 @@ function buildBackHTML(p, v, bn, pd, bb) {
     ${dukanLine}
     <hr class="blhr">
     <div class="blsec">INGREDIENTS :-</div>
-    <div class="blingr">${isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA') || ingrStr.toLowerCase().includes('in descending order by weight') ? '' : '(In Descending Order By Weight) '}${ingrStr}</div>
+    <div class="blingr">${(() => { const cleaned = ingrStr.replace(/\(in descending order by weight\)\s*/i, '').trim(); const isSingle = !cleaned.includes(','); const alreadyHas = ingrStr.toLowerCase().includes('in descending order by weight'); const isChilliException = isDukan && (p.n === 'CHILLI POWDER KASHMIRI' || p.n === 'CHILLI POWDER SP  LAL' || p.n === 'CHILLI POWDER SP LAL UNCHA'); return (alreadyHas || isChilliException || isSingle) ? cleaned : '(In Descending Order By Weight) ' + cleaned; })()}</div>
     ${nutritionBlock}
     <div class="blsp"></div>
     ${!isDukan ? '<div class="blr" style="margin-bottom:2mm;">SERVING SIZE : 7g</div>' : ''}

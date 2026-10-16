@@ -513,7 +513,12 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   if (ingr.toLowerCase().includes('in descending order by weight')) {
     prependWeight = false;
   }
-  const finalIngrStr = prependWeight ? `(In Descending Order By Weight) ${ingr}` : ingr;
+  // Single ingredient (no comma) → no prefix needed
+  const ingrCleaned = ingr.replace(/\(in descending order by weight\)\s*/i, '').trim();
+  if (!ingrCleaned.includes(',')) {
+    prependWeight = false;
+  }
+  const finalIngrStr = prependWeight ? `(In Descending Order By Weight) ${ingrCleaned}` : ingrCleaned;
 
   const ingrLines = wrapTextCanvas(ctx, finalIngrStr, usableW);
   for(let ln of ingrLines) {
