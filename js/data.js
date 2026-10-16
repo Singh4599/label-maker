@@ -3058,7 +3058,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Roasted & Burnt Chilli Garlic Tomato Chutney Powder": {
-    "n": "Roasted & Burnt Chilli Garlic Tomato Chutney Powder",
+    "n": "Roasted & Burnt Chilli Garlic Tomato Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3075,7 +3075,7 @@ const SPICERY_DB = {
     "so": 2100.0
   },
   "Mint Chutney Powder": {
-    "n": "Mint Chutney Powder",
+    "n": "Mint Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3109,7 +3109,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Schezwan Powder": {
-    "n": "Schezwan Powder",
+    "n": "Schezwan Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3126,7 +3126,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Vada Pav Chutney Powder": {
-    "n": "Vada Pav Chutney Powder",
+    "n": "Vada Pav Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3143,7 +3143,7 @@ const SPICERY_DB = {
     "so": 2000.0
   },
   "Mysore Dosa Chutney Powder": {
-    "n": "Mysore Dosa Chutney Powder",
+    "n": "Mysore Dosa Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3160,7 +3160,7 @@ const SPICERY_DB = {
     "so": 1550.0
   },
   "Khaman Chutney Powder": {
-    "n": "Khaman Chutney Powder",
+    "n": "Khaman Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3177,7 +3177,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Malgapodi Powder": {
-    "n": "Malgapodi Powder",
+    "n": "Malgapodi Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3194,7 +3194,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Spicy Ginger Chutney Powder": {
-    "n": "Spicy Ginger Chutney Powder",
+    "n": "Spicy Ginger Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3211,7 +3211,7 @@ const SPICERY_DB = {
     "so": 2000.0
   },
   "Saunth Chutney Powder": {
-    "n": "Saunth Chutney Powder",
+    "n": "Saunth Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3228,7 +3228,7 @@ const SPICERY_DB = {
     "so": 2100.0
   },
   "Samosa Chutney Powder": {
-    "n": "Samosa Chutney Powder",
+    "n": "Samosa Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3245,7 +3245,7 @@ const SPICERY_DB = {
     "so": 2300.0
   },
   "Tamarind Chutney Powder": {
-    "n": "Tamarind Chutney Powder",
+    "n": "Tamarind Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3262,7 +3262,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Mustard Chutney Powder": {
-    "n": "Mustard Chutney Powder",
+    "n": "Mustard Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3279,7 +3279,7 @@ const SPICERY_DB = {
     "so": 1400.0
   },
   "Puliyogare Rice Powder": {
-    "n": "Puliyogare Rice Powder",
+    "n": "Puliyogare Rice Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3296,7 +3296,7 @@ const SPICERY_DB = {
     "so": 1600.0
   },
   "Lemon Rice Powder": {
-    "n": "Lemon Rice Powder",
+    "n": "Lemon Rice Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3313,7 +3313,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Bisibele Rice Powder": {
-    "n": "Bisibele Rice Powder",
+    "n": "Bisibele Rice Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3347,7 +3347,7 @@ const SPICERY_DB = {
     "so": 2050.0
   },
   "Sesame Chutney Powder": {
-    "n": "Sesame Chutney Powder",
+    "n": "Sesame Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3364,7 +3364,7 @@ const SPICERY_DB = {
     "so": 1800.0
   },
   "Kalonji Chutney Powder": {
-    "n": "Kalonji Chutney Powder",
+    "n": "Kalonji Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3381,7 +3381,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Flax Seed Chutney Powder": {
-    "n": "Flax Seed Chutney Powder",
+    "n": "Flax Seed Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3398,7 +3398,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Kara Chutney Powder": {
-    "n": "Kara Chutney Powder",
+    "n": "Kara Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3415,7 +3415,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Chana Peanut Chutney Powder": {
-    "n": "Chana Peanut Chutney Powder",
+    "n": "Chana Peanut Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3432,7 +3432,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Coconut Red Chutney Powder": {
-    "n": "Coconut Red Chutney Powder",
+    "n": "Coconut Red Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3449,7 +3449,7 @@ const SPICERY_DB = {
     "so": 1700.0
   },
   "Coconut Green Chutney Powder": {
-    "n": "Coconut Green Chutney Powder",
+    "n": "Coconut Green Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3466,7 +3466,7 @@ const SPICERY_DB = {
     "so": 1650.0
   },
   "Onion Chutney Powder": {
-    "n": "Onion Chutney Powder",
+    "n": "Onion Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3483,7 +3483,7 @@ const SPICERY_DB = {
     "so": 1650.0
   },
   "Onion Tomato Chutney Powder": {
-    "n": "Onion Tomato Chutney Powder",
+    "n": "Onion Tomato Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3500,7 +3500,7 @@ const SPICERY_DB = {
     "so": 1750.0
   },
   "Rajkot Special Chutney Powder": {
-    "n": "Rajkot Special Chutney Powder",
+    "n": "Rajkot Special Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3517,7 +3517,7 @@ const SPICERY_DB = {
     "so": 2000.0
   },
   "Tomato Chutney Powder": {
-    "n": "Tomato Chutney Powder",
+    "n": "Tomato Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3534,7 +3534,7 @@ const SPICERY_DB = {
     "so": 1800.0
   },
   "Green Chutney Powder": {
-    "n": "Green Chutney Powder",
+    "n": "Green Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3551,7 +3551,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Khatta Meetha Chutney Powder": {
-    "n": "Khatta Meetha Chutney Powder",
+    "n": "Khatta Meetha Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3568,7 +3568,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Momos Chutney Powder": {
-    "n": "Momos Chutney Powder",
+    "n": "Momos Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3585,7 +3585,7 @@ const SPICERY_DB = {
     "so": 1700.0
   },
   "Coconut Chutney Powder": {
-    "n": "Coconut Chutney Powder",
+    "n": "Coconut Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3602,7 +3602,7 @@ const SPICERY_DB = {
     "so": 1600.0
   },
   "Lemon Chutney Powder": {
-    "n": "Lemon Chutney Powder",
+    "n": "Lemon Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3619,7 +3619,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Mango Mustard Chutney Powder": {
-    "n": "Mango Mustard Chutney Powder",
+    "n": "Mango Mustard Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3636,7 +3636,7 @@ const SPICERY_DB = {
     "so": 1600.0
   },
   "Spicy Mango Chutney Powder": {
-    "n": "Spicy Mango Chutney Powder",
+    "n": "Spicy Mango Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3653,7 +3653,7 @@ const SPICERY_DB = {
     "so": 2150.0
   },
   "Golden Bhel Chutney Powder": {
-    "n": "Golden Bhel Chutney Powder",
+    "n": "Golden Bhel Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3670,7 +3670,7 @@ const SPICERY_DB = {
     "so": 2100.0
   },
   "Sandwich Chutney Powder": {
-    "n": "Sandwich Chutney Powder",
+    "n": "Sandwich Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3687,7 +3687,7 @@ const SPICERY_DB = {
     "so": 2200.0
   },
   "Lasun Chutney Powder": {
-    "n": "Lasun Chutney Powder",
+    "n": "Lasun Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3704,7 +3704,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Kanda Lasun Chutney Powder": {
-    "n": "Kanda Lasun Chutney Powder",
+    "n": "Kanda Lasun Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3721,7 +3721,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Peanut Chutney Powder": {
-    "n": "Peanut Chutney Powder",
+    "n": "Peanut Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3738,7 +3738,7 @@ const SPICERY_DB = {
     "so": 1300.0
   },
   "Coconut Garlic Chutney Powder": {
-    "n": "Coconut Garlic Chutney Powder",
+    "n": "Coconut Garlic Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -3755,7 +3755,7 @@ const SPICERY_DB = {
     "so": 1700.0
   },
   "Bhelpuri Chutney Powder": {
-    "n": "Bhelpuri Chutney Powder",
+    "n": "Bhelpuri Chutney Mix",
     "c": "Chutney Powders",
     "icon": "🟢",
     "desc": "",
@@ -4724,7 +4724,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Vegetable Bouillon & Broth powder": {
-    "n": "Jain Vegetable Bouillon & Broth powder",
+    "n": "Jain Vegetable Bouillon & Broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4758,7 +4758,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Dashi misho powder": {
-    "n": "Jain Dashi misho powder",
+    "n": "Jain Dashi misho powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4775,7 +4775,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Mushroom broth powder": {
-    "n": "Jain Mushroom broth powder",
+    "n": "Jain Mushroom broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4792,7 +4792,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Garden veggie plant based broth powder": {
-    "n": "Jain Garden veggie plant based broth powder",
+    "n": "Jain Garden veggie plant based broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4809,7 +4809,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Vegetable umami yondu": {
-    "n": "Jain Vegetable umami yondu",
+    "n": "Jain Vegetable umami yondu Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4826,7 +4826,7 @@ const SPICERY_DB = {
     "so": 15000.0
   },
   "Jain Raman broth powder spicy": {
-    "n": "Jain Raman broth powder spicy",
+    "n": "Jain Raman broth powder spicy Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4843,7 +4843,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Aromatic Veg broth powder": {
-    "n": "Jain Aromatic Veg broth powder",
+    "n": "Jain Aromatic Veg broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4860,7 +4860,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Umami Vegetable Broth powder": {
-    "n": "Jain Umami Vegetable Broth powder",
+    "n": "Jain Umami Vegetable Broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4877,7 +4877,7 @@ const SPICERY_DB = {
     "so": 12000.0
   },
   "Jain Herb-Infused Vegetable Broth powder": {
-    "n": "Jain Herb-Infused Vegetable Broth powder",
+    "n": "Jain Herb-Infused Vegetable Broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4894,7 +4894,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Roasted Vegetable Broth powder": {
-    "n": "Jain Roasted Vegetable Broth powder",
+    "n": "Jain Roasted Vegetable Broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4911,7 +4911,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Mirepoix Vegetable Broth powder": {
-    "n": "Jain Mirepoix Vegetable Broth powder",
+    "n": "Jain Mirepoix Vegetable Broth powder Seasoning",
     "c": "Jain Aromatic Powders",
     "icon": "✨",
     "desc": "",
@@ -4928,7 +4928,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Oats Masala": {
-    "n": "Jain Oats Masala",
+    "n": "Jain Oats Masala Seasoning",
     "c": "Jain Blended Spices",
     "icon": "✨",
     "desc": "",
@@ -6968,7 +6968,7 @@ const SPICERY_DB = {
     "so": 1600.0
   },
   "Jain Coconut Red Chutney Powder": {
-    "n": "Jain Coconut Red Chutney Powder",
+    "n": "Jain Coconut Red Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -6985,7 +6985,7 @@ const SPICERY_DB = {
     "so": 1050.0
   },
   "Jain Malgapodi Powder": {
-    "n": "Jain Malgapodi Powder",
+    "n": "Jain Malgapodi Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7019,7 +7019,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Jain Momos Chutney Powder": {
-    "n": "Jain Momos Chutney Powder",
+    "n": "Jain Momos Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7036,7 +7036,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Coconut Chutney Powder": {
-    "n": "Jain Coconut Chutney Powder",
+    "n": "Jain Coconut Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7053,7 +7053,7 @@ const SPICERY_DB = {
     "so": 900.0
   },
   "Jain Spicy Mango Chutney Powder": {
-    "n": "Jain Spicy Mango Chutney Powder",
+    "n": "Jain Spicy Mango Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7070,7 +7070,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Vada Pav Chutney Powder": {
-    "n": "Jain Vada Pav Chutney Powder",
+    "n": "Jain Vada Pav Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7087,7 +7087,7 @@ const SPICERY_DB = {
     "so": 2000.0
   },
   "Jain Sandwich Chutney Powder": {
-    "n": "Jain Sandwich Chutney Powder",
+    "n": "Jain Sandwich Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7104,7 +7104,7 @@ const SPICERY_DB = {
     "so": 1800.0
   },
   "Jain Mysore Dosa Chutney Powder": {
-    "n": "Jain Mysore Dosa Chutney Powder",
+    "n": "Jain Mysore Dosa Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7121,7 +7121,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Jain Peanut Chutney Powder": {
-    "n": "Jain Peanut Chutney Powder",
+    "n": "Jain Peanut Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7138,7 +7138,7 @@ const SPICERY_DB = {
     "so": 1400.0
   },
   "Jain Bhelpuri Chutney Powder": {
-    "n": "Jain Bhelpuri Chutney Powder",
+    "n": "Jain Bhelpuri Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7155,7 +7155,7 @@ const SPICERY_DB = {
     "so": 1200.0
   },
   "Jain Tomato Chutney Powder": {
-    "n": "Jain Tomato Chutney Powder",
+    "n": "Jain Tomato Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7172,7 +7172,7 @@ const SPICERY_DB = {
     "so": 2400.0
   },
   "Jain Spicy Ginger Chutney Powder": {
-    "n": "Jain Spicy Ginger Chutney Powder",
+    "n": "Jain Spicy Ginger Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7189,7 +7189,7 @@ const SPICERY_DB = {
     "so": 1500.0
   },
   "Jain Saunth Chutney Powder": {
-    "n": "Jain Saunth Chutney Powder",
+    "n": "Jain Saunth Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7206,7 +7206,7 @@ const SPICERY_DB = {
     "so": 1100.0
   },
   "Jain Samosa Chutney Powder": {
-    "n": "Jain Samosa Chutney Powder",
+    "n": "Jain Samosa Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7223,7 +7223,7 @@ const SPICERY_DB = {
     "so": 1200.0
   },
   "Jain Tamarind Chutney Powder": {
-    "n": "Jain Tamarind Chutney Powder",
+    "n": "Jain Tamarind Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7240,7 +7240,7 @@ const SPICERY_DB = {
     "so": 2200.0
   },
   "Jain Fenugreek Chutney Powder": {
-    "n": "Jain Fenugreek Chutney Powder",
+    "n": "Jain Fenugreek Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7257,7 +7257,7 @@ const SPICERY_DB = {
     "so": 950.0
   },
   "Jain Khaman Chutney Powder": {
-    "n": "Jain Khaman Chutney Powder",
+    "n": "Jain Khaman Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7274,7 +7274,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Mustard Chutney Powder": {
-    "n": "Jain Mustard Chutney Powder",
+    "n": "Jain Mustard Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7291,7 +7291,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Sesame Chutney Powder": {
-    "n": "Jain Sesame Chutney Powder",
+    "n": "Jain Sesame Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7308,7 +7308,7 @@ const SPICERY_DB = {
     "so": 1300.0
   },
   "Jain Flax Seed Chutney Powder": {
-    "n": "Jain Flax Seed Chutney Powder",
+    "n": "Jain Flax Seed Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7325,7 +7325,7 @@ const SPICERY_DB = {
     "so": 800.0
   },
   "Jain Chana Peanut Chutney Powder": {
-    "n": "Jain Chana Peanut Chutney Powder",
+    "n": "Jain Chana Peanut Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7342,7 +7342,7 @@ const SPICERY_DB = {
     "so": 1000.0
   },
   "Jain Puliyogare Rice Powder": {
-    "n": "Jain Puliyogare Rice Powder",
+    "n": "Jain Puliyogare Rice Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7359,7 +7359,7 @@ const SPICERY_DB = {
     "so": 1600.0
   },
   "Jain Lemon Rice Powder": {
-    "n": "Jain Lemon Rice Powder",
+    "n": "Jain Lemon Rice Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7376,7 +7376,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Bisibele Rice Powder": {
-    "n": "Jain Bisibele Rice Powder",
+    "n": "Jain Bisibele Rice Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7393,7 +7393,7 @@ const SPICERY_DB = {
     "so": 1100.0
   },
   "Jain Mint Chutney Powder": {
-    "n": "Jain Mint Chutney Powder",
+    "n": "Jain Mint Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7410,7 +7410,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Coconut Green Chutney Powder": {
-    "n": "Jain Coconut Green Chutney Powder",
+    "n": "Jain Coconut Green Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7427,7 +7427,7 @@ const SPICERY_DB = {
     "so": 1100.0
   },
   "Jain Rajkot Chutney Powder": {
-    "n": "Jain Rajkot Chutney Powder",
+    "n": "Jain Rajkot Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7444,7 +7444,7 @@ const SPICERY_DB = {
     "so": 1700.0
   },
   "Jain Green Chutney Powder": {
-    "n": "Jain Green Chutney Powder",
+    "n": "Jain Green Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7461,7 +7461,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Khatta Meetha Chutney Powder": {
-    "n": "Jain Khatta Meetha Chutney Powder",
+    "n": "Jain Khatta Meetha Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7478,7 +7478,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Lemon Chutney Powder": {
-    "n": "Jain Lemon Chutney Powder",
+    "n": "Jain Lemon Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7495,7 +7495,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Mango Mustard Chutney Powder": {
-    "n": "Jain Mango Mustard Chutney Powder",
+    "n": "Jain Mango Mustard Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -7512,7 +7512,7 @@ const SPICERY_DB = {
     "so": 4000.0
   },
   "Jain Golden Chutney Powder": {
-    "n": "Jain Golden Chutney Powder",
+    "n": "Jain Golden Chutney Mix",
     "c": "Jain Chutney Powders",
     "icon": "✨",
     "desc": "",
@@ -8056,7 +8056,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Schezwan N Tamarind Glaze Marinade": {
-    "n": "Jain Schezwan N Tamarind Glaze Marinade",
+    "n": "Jain Schezwan N Tamarind Glaze Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8073,7 +8073,7 @@ const SPICERY_DB = {
     "so": 2800.0
   },
   "Jain Malai Tikka N Truffle Honey Marinade": {
-    "n": "Jain Malai Tikka N Truffle Honey Marinade",
+    "n": "Jain Malai Tikka N Truffle Honey Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8090,7 +8090,7 @@ const SPICERY_DB = {
     "so": 2100.0
   },
   "Jain Red Thai Curry N Roasted Pineapple Thecha Marinade": {
-    "n": "Jain Red Thai Curry N Roasted Pineapple Thecha Marinade",
+    "n": "Jain Red Thai Curry N Roasted Pineapple Thecha Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8107,7 +8107,7 @@ const SPICERY_DB = {
     "so": 2400.0
   },
   "Jain Limbu Achar Cajun Rub Marinade": {
-    "n": "Jain Limbu Achar Cajun Rub Marinade",
+    "n": "Jain Limbu Achar Cajun Rub Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8124,7 +8124,7 @@ const SPICERY_DB = {
     "so": 2800.0
   },
   "Jain Italian Parmesan Pav Bhaji Masala Marinade": {
-    "n": "Jain Italian Parmesan Pav Bhaji Masala Marinade",
+    "n": "Jain Italian Parmesan Pav Bhaji Masala Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8141,7 +8141,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Shawarma Marinade": {
-    "n": "Jain Shawarma Marinade",
+    "n": "Jain Shawarma Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8158,7 +8158,7 @@ const SPICERY_DB = {
     "so": 2600.0
   },
   "Jain Fajita Marinade": {
-    "n": "Jain Fajita Marinade",
+    "n": "Jain Fajita Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8175,7 +8175,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Cream N Cheese Marinade": {
-    "n": "Jain Cream N Cheese Marinade",
+    "n": "Jain Cream N Cheese Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8192,7 +8192,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Hot N Smoky Marinade": {
-    "n": "Jain Hot N Smoky Marinade",
+    "n": "Jain Hot N Smoky Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8209,7 +8209,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Kabab Marinade": {
-    "n": "Jain Kabab Marinade",
+    "n": "Jain Kabab Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8226,7 +8226,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Butter Masala Marinade": {
-    "n": "Jain Butter Masala Marinade",
+    "n": "Jain Butter Masala Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8243,7 +8243,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Malai Marinade": {
-    "n": "Jain Malai Marinade",
+    "n": "Jain Malai Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8260,7 +8260,7 @@ const SPICERY_DB = {
     "so": 2200.0
   },
   "Jain Hariyali Marinade": {
-    "n": "Jain Hariyali Marinade",
+    "n": "Jain Hariyali Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8277,7 +8277,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Tandoori Marinade": {
-    "n": "Jain Tandoori Marinade",
+    "n": "Jain Tandoori Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8294,7 +8294,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Afghan Marinade": {
-    "n": "Jain Afghan Marinade",
+    "n": "Jain Afghan Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8311,7 +8311,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Mexican Marinade": {
-    "n": "Jain Mexican Marinade",
+    "n": "Jain Mexican Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8328,7 +8328,7 @@ const SPICERY_DB = {
     "so": 2600.0
   },
   "Jain Achari Marinade": {
-    "n": "Jain Achari Marinade",
+    "n": "Jain Achari Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8345,7 +8345,7 @@ const SPICERY_DB = {
     "so": 2500.0
   },
   "Jain Piri Piri Marinade": {
-    "n": "Jain Piri Piri Marinade",
+    "n": "Jain Piri Piri Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
@@ -8362,7 +8362,7 @@ const SPICERY_DB = {
     "so": 2700.0
   },
   "Jain Hot N Spicy Marinade": {
-    "n": "Jain Hot N Spicy Marinade",
+    "n": "Jain Hot N Spicy Marinade Seasoning",
     "c": "Jain Marinades",
     "icon": "✨",
     "desc": "",
