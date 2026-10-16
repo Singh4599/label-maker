@@ -289,10 +289,11 @@ function selectVariant(idx) {
   document.querySelectorAll('.pack-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
   const v = ST.db.v[ST.prod.n][idx];
   
-  // Batch code: use pre-defined bn from data for Dukan Bhai & 32x25 labels, else auto-generate
+  // Batch code: use pre-defined bn/b from data for Dukan Bhai, 32x25 & Internal labels, else auto-generate
   let autoBn;
-  if ((ST.db === DUKAN_DB || ST.db === NEW32_DB) && v.bn) {
-    autoBn = v.bn;
+  const useDataBn = (ST.db === DUKAN_DB || ST.db === NEW32_DB || ST.db === INTERNAL_DB) && (v.bn || ST.prod.b);
+  if (useDataBn) {
+    autoBn = v.bn || ST.prod.b;
   } else {
     // Dynamic Batch Logic (Initials + MMYY)
     const words = ST.prod.n.toUpperCase().replace(/[-/]/g, ' ').split(/\s+/);
