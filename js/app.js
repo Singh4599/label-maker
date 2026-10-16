@@ -236,7 +236,13 @@ function pickProduct(rawName) {
   const name = rawName.replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]\s*/u, '').trim();
   const p = ST.db.p[name] || Object.values(ST.db.p).find(x => x.n === name);
   if (!p) return;
-  ST.prod = p; ST.vi = -1;
+  ST.prod = p;
+  // Store the DB key so variant lookup doesn't break when p.n changes
+  if (!p._key) {
+    const foundKey = Object.keys(ST.db.p).find(k => ST.db.p[k] === p);
+    if (foundKey) p._key = foundKey;
+  }
+  ST.vi = -1;
   const si = $('si'); if (si) si.value = p.n;
   const clr = $('si-clear'); if (clr) clr.style.display = 'block';
   closeDrop();
@@ -274,11 +280,11 @@ function clearProduct() {
 /* ─── Pack Buttons ─── */
 function renderPackBtns() {
   const wrap = $('pack-btns'); if (!wrap) return;
-  if (!ST.prod || !ST.db.v[ST.prod.n]) {
+  if (!ST.prod || !ST.db.v[ST.prod._key || ST.prod.n]) {
     wrap.innerHTML = '<span style="font-size:12px;color:var(--muted);font-style:italic">Select a product first</span>';
     return;
   }
-  wrap.innerHTML = ST.db.v[ST.prod.n].map((v, i) =>
+  wrap.innerHTML = ST.db.v[ST.prod._key || ST.prod.n].map((v, i) =>
     `<button class="pack-btn${ST.vi === i ? ' active' : ''}" onclick="selectVariant(${i})">${v.d}</button>`
   ).join('');
 }
@@ -287,7 +293,7 @@ function selectVariant(idx) {
   if (!ST.prod) return;
   ST.vi = idx;
   document.querySelectorAll('.pack-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
-  const v = ST.db.v[ST.prod.n][idx];
+  const v = ST.db.v[ST.prod._key || ST.prod.n][idx];
   
   // Batch code: use pre-defined bn/b from data for Dukan Bhai, 32x25 & Internal labels, else auto-generate
   let autoBn;
@@ -325,7 +331,7 @@ function attachDateListeners() {
   if ($('bn')) $('bn').addEventListener('input', render);
   if ($('mrp-val')) $('mrp-val').addEventListener('input', function() {
     if (ST.prod && ST.vi >= 0) {
-      const v = ST.db.v[ST.prod.n][ST.vi];
+      const v = ST.db.v[ST.prod._key || ST.prod.n][ST.vi];
       v.m = this.value;
       const pg = (parseFloat(this.value) || 0) / (parseFloat(v.g) || 1);
       const pgEl = $('per-g'); if (pgEl) pgEl.textContent = `(Incl. all taxes) · For 1g = ₹ ${pg.toFixed(2)}`;
@@ -334,7 +340,7 @@ function attachDateListeners() {
   });
   if ($('custom-wt')) $('custom-wt').addEventListener('input', function() {
     if (ST.prod && ST.vi >= 0) {
-      const v = ST.db.v[ST.prod.n][ST.vi];
+      const v = ST.db.v[ST.prod._key || ST.prod.n][ST.vi];
       const val = this.value.trim();
       v.d = val || '100g';
       
@@ -462,7 +468,7 @@ function renderFront() {
     if (ST.vi < 0) { fp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof generateYellowCanvas === 'function') {
-      const c = generateYellowCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+      const c = generateYellowCanvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb);
       c.style.width = '100%';
       c.style.height = 'auto'; // allow it to scale naturally based on width
       c.style.objectFit = 'contain';
@@ -474,7 +480,7 @@ function renderFront() {
   
   if (ST.mode === 'internal') {
     if (typeof generateInternalInnerCanvas === 'function') {
-      const c = generateInternalInnerCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi] || {d:'10 Kg', g:10000, m:0});
+      const c = generateInternalInnerCanvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi] || {d:'10 Kg', g:10000, m:0});
       c.style.width = '100%';
       c.style.height = 'auto';
       c.style.objectFit = 'contain';
@@ -500,7 +506,7 @@ function renderBack() {
 
   if (ST.mode === 'new32') {
     if (typeof generateNew32Canvas === 'function') {
-      const c = generateNew32Canvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+      const c = generateNew32Canvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb);
       c.style.width = '100%';
       c.style.height = '100%';
       c.style.objectFit = 'contain';
@@ -512,7 +518,7 @@ function renderBack() {
   
   if (ST.mode === 'internal') {
     if (typeof generateInternalOuterCanvas === 'function') {
-      const c = generateInternalOuterCanvas(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+      const c = generateInternalOuterCanvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb);
       c.style.width = '100%';
       c.style.height = 'auto';
       c.style.objectFit = 'contain';
@@ -522,7 +528,7 @@ function renderBack() {
     return;
   }
 
-  bp.innerHTML = buildBackHTML(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb);
+  bp.innerHTML = buildBackHTML(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb);
   requestAnimationFrame(() => { fitBackTitle(); setTimeout(() => renderBarcode(ST.prod), 30); });
 }
 
@@ -863,14 +869,14 @@ function pF() {
     if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintYellow === 'function') {
-      qzPrintYellow(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
+      qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
         if (!done) {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
-          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies, false);
         }
       }).catch(() => {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
-        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies, false);
       });
     }
     return;
@@ -878,7 +884,7 @@ function pF() {
   
   if (ST.mode === 'internal') {
     const dummyV = {d:'10 Kg', g:10000, m:0};
-    const v = ST.vi >= 0 && ST.db.v[ST.prod.n] ? ST.db.v[ST.prod.n][ST.vi] : dummyV;
+    const v = ST.vi >= 0 && ST.db.v[ST.prod._key || ST.prod.n] ? ST.db.v[ST.prod._key || ST.prod.n][ST.vi] : dummyV;
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintInternal === 'function') {
       qzPrintInternal(ST.prod, v, bn, pd, bb, copies, true).then(done => {
@@ -925,7 +931,7 @@ function pB() {
   } else {
     if (!ST.prod) { showToast('Select a product first', 'error'); return; }
     if (ST.vi < 0) { showToast('Select a pack size', 'error'); return; }
-    p = ST.prod; v = ST.db.v[p.n][ST.vi];
+    p = ST.prod; v = ST.db.v[p._key || p.n][ST.vi];
     bn = gv('bn'); pd = fmtDate(gv('pd')); bb = getBBValue('bb-sel','bb');
   }
   const copies = getCopies();
