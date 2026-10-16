@@ -489,7 +489,7 @@ function renderFront() {
     const jainSub = isJain
       ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.55em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:2px;line-height:1;">No Onion No Garlic</div>`
       : '';
-    fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div>${jainSub}</div>`;
+    fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${getDisplayProductName(ST.prod).toUpperCase()}</div>${jainSub}</div>`;
     requestAnimationFrame(fitFrontName);
 }
 
@@ -693,7 +693,7 @@ function buildBackHTML(p, v, bn, pd, bb) {
 
   return `<div class="bl-wrap">
     ${scaleCSS}
-    <div class="bltit" id="bltit-el">${p.n.toUpperCase()}</div>
+    <div class="bltit" id="bltit-el">${getDisplayProductName(p).toUpperCase()}</div>
     ${jainLine}
     ${useLine}
     ${dukanLine}
@@ -737,6 +737,18 @@ function getCategoryDisplay(rawCat) {
   if (c.includes('aromatic'))          return prefix + 'Aromatic Seasoning';
   // All others: return as-is
   return rawCat || '';
+}
+
+/* ─── Product Display Name (appends Seasoning for marinade/aromatic) ─── */
+function getDisplayProductName(p) {
+  const n = (p.n || '').trim();
+  const c = (p.c || '').toLowerCase();
+  const nLower = n.toLowerCase();
+  const needsSeasoning = (c.includes('marinade') || c.includes('aromatic'));
+  if (needsSeasoning && !nLower.includes('seasoning')) {
+    return n + ' Seasoning';
+  }
+  return n;
 }
 
 /* ─── Barcode Renderer (JsBarcode) ─── */
@@ -814,7 +826,8 @@ function populateCategories() {
   sel.innerHTML = '<option value="">All Categories</option>';
   cats.forEach(c => {
     const o = document.createElement('option');
-    o.value = c; o.textContent = c;
+    o.value = c; // keep raw value for filtering
+    o.textContent = getCategoryDisplay(c); // show mapped name
     sel.appendChild(o);
   });
 }
