@@ -369,7 +369,7 @@ function generateBackCanvas(p, v, bn, pd, bb) {
   const mrp  = parseFloat(v.m) || 0;
   const pg   = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
   const name = tsplSafe((p.n || '').toUpperCase().trim());
-  const cat  = tsplSafe(p.c || '-');
+  const cat  = tsplSafe(typeof getCategoryDisplay === 'function' ? getCategoryDisplay(p.c) : (p.c || '-'));
   const nw   = tsplSafe(`${v.d} (${v.oz})`);
   const bno  = tsplSafe(bn || '-');
   const isJain = name.includes('JAIN');

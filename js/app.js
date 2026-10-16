@@ -251,7 +251,7 @@ function showProductCard(p) {
     <div class="product-icon">${p.icon || '🌿'}</div>
     <div class="product-info">
       <div class="product-name">${p.n}</div>
-      <div class="product-cat">${p.c}</div>
+      <div class="product-cat">${getCategoryDisplay(p.c)}</div>
       <div class="product-desc">${p.desc || ''}</div>
     </div>
     <button class="product-change" onclick="clearProduct()">⇄ Change</button>
@@ -719,6 +719,24 @@ function buildBackHTML(p, v, bn, pd, bb) {
 function splitName(n) {
   const w = (n||'').trim().split(/\s+/), m = Math.ceil(w.length/2);
   return { a: w.slice(0,m).join(' '), b: w.slice(m).join(' ') };
+}
+
+/* ─── Category Display Name Mapper ─── */
+function getCategoryDisplay(rawCat) {
+  const c = (rawCat || '').toLowerCase().trim();
+  const isJain = c.includes('jain');
+  const prefix = isJain ? 'Jain ' : '';
+
+  if (c.includes('spice mix'))         return prefix + 'Gravy Mix';
+  if (c.includes('chutney'))           return prefix + 'Chutney Mix';
+  if (c.includes('salt'))              return prefix + 'Seasoned Salt';
+  if (c.includes('dehydrated'))        return prefix + 'Dehydrated Vegetable Powders';
+  if (c.includes('paste'))             return prefix + 'Culinary Paste';
+  if (c.includes('sauce'))             return prefix + 'Sauce Mix Powder';
+  if (c.includes('marinade'))          return prefix + 'Marinade Seasoning';
+  if (c.includes('aromatic'))          return prefix + 'Aromatic Seasoning';
+  // All others: return as-is
+  return rawCat || '';
 }
 
 /* ─── Barcode Renderer (JsBarcode) ─── */
