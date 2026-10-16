@@ -289,9 +289,9 @@ function selectVariant(idx) {
   document.querySelectorAll('.pack-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
   const v = ST.db.v[ST.prod.n][idx];
   
-  // Batch code: use pre-defined bn from data for Dukan Bhai, else auto-generate
+  // Batch code: use pre-defined bn from data for Dukan Bhai & 32x25 labels, else auto-generate
   let autoBn;
-  if (ST.db === DUKAN_DB && v.bn) {
+  if ((ST.db === DUKAN_DB || ST.db === NEW32_DB) && v.bn) {
     autoBn = v.bn;
   } else {
     // Dynamic Batch Logic (Initials + MMYY)
