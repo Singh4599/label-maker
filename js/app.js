@@ -842,7 +842,7 @@ function getCopies() {
   if (d && !d.offsetParent && m && m.offsetParent) el = m;
   else if (m && !d) el = m;
   const n = parseInt(el && el.value, 10);
-  return (n && n > 0) ? Math.min(n, 50) : 1;
+  return (n && n > 0) ? Math.min(n, 200) : 1;
 }
 
 // Keep both copies inputs in sync
