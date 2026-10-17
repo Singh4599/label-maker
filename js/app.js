@@ -882,22 +882,24 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
-  // ── Build track opts once — called ONLY when QZ confirms done===true ──
+  // ── Track only if yellow365 (single all-in-one label). Front labels are NOT tracked. ──
   const _v = (ST.vi >= 0 && ST.prod && ST.db.v && ST.db.v[ST.prod._key || ST.prod.n])
     ? ST.db.v[ST.prod._key || ST.prod.n][ST.vi] : null;
   const _doTrack = () => {
-    if (typeof trackPrint === 'function') trackPrint({
-      stickerType: ST.mode,
-      labelSide:   'front',
-      productName: name,
-      packSize:    _v ? _v.d : (ST.mode === 'manual' ? gv('m-vd') : '—'),
-      weightG:     _v ? (_v.g || 0) : (ST.mode === 'manual' ? parseFloat(gv('m-vg')) || 0 : 0),
-      mrp:         _v ? _v.m : (ST.mode === 'manual' ? parseFloat(gv('m-mrp')) || 0 : 0),
-      batchNo:     gv('bn') || gv('m-bn') || '—',
-      mfgDate:     gv('pd') || gv('m-pd') || '—',
-      bestBefore:  gv('bb') || gv('m-bb') || '—',
-      copies,
-    });
+    if (ST.mode === 'yellow365' && typeof trackPrint === 'function') {
+      trackPrint({
+        stickerType: ST.mode,
+        labelSide:   'back',
+        productName: name,
+        packSize:    _v ? _v.d : (ST.mode === 'manual' ? gv('m-vd') : '—'),
+        weightG:     _v ? (_v.g || 0) : (ST.mode === 'manual' ? parseFloat(gv('m-vg')) || 0 : 0),
+        mrp:         _v ? _v.m : (ST.mode === 'manual' ? parseFloat(gv('m-mrp')) || 0 : 0),
+        batchNo:     gv('bn') || gv('m-bn') || '—',
+        mfgDate:     gv('pd') || gv('m-pd') || '—',
+        bestBefore:  gv('bb') || gv('m-bb') || '—',
+        copies,
+      });
+    }
   };
 
   if (ST.mode === 'yellow365') {

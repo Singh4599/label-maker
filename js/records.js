@@ -286,6 +286,11 @@ window.confirmClearAll = function() {
 // TRACK PRINT — called from app.js ONLY when QZ done===true
 // ═══════════════════════════════════════════════════════════════════════
 window.trackPrint = async function(opts) {
+  // Only record back labels — front labels are not recorded
+  if (!opts || opts.labelSide === 'front') {
+    return;
+  }
+
   const now   = new Date();
   const ts    = now.getTime();
   const dateStr = fmtDayStr(now);
@@ -298,7 +303,7 @@ window.trackPrint = async function(opts) {
     time:         timeStr,
     stickerType:  opts.stickerType || 'unknown',
     stickerLabel: getStickerLabel(opts.stickerType || 'unknown'),
-    labelSide:    opts.labelSide || 'front',
+    labelSide:    opts.labelSide || 'back',
     productName:  (opts.productName || '').toUpperCase(),
     packSize:     opts.packSize || '—',
     weightG:      parseFloat(opts.weightG) || 0,
@@ -400,7 +405,17 @@ function startFirebaseListener() {
   if (window.LabelFirebase && window.LabelFirebase.listen) {
     _fbReady = true;
     window.LabelFirebase.listen(records => {
-      _recAll = records || [];
+      // Auto-purge any existing 'front' records from Firestore
+      const frontRecords = (records || []).filter(r => r.labelSide === 'front' || r.packSize === 'FRONT');
+      if (frontRecords.length > 0 && window.LabelFirebase && window.LabelFirebase.delete) {
+        frontRecords.forEach(r => {
+          const docId = r._docId || r.id || r.timestamp;
+          if (docId) window.LabelFirebase.delete(docId);
+        });
+      }
+
+      // Filter out front labels — only back labels are recorded & displayed
+      _recAll = (records || []).filter(r => r.labelSide !== 'front' && r.packSize !== 'FRONT');
       updateBadge(_recAll.length);
       updateCloudBadge(true);
 
