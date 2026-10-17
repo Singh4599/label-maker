@@ -202,10 +202,11 @@ function generateFrontCanvas(name) {
 
   function smartSplit(text, maxLines) {
     let lines = balanceLines(text, maxLines);
-    // If last line is only a single unit word, merge it with second-to-last
+    // Only merge back if the orphaned unit word is short (<=6 chars)
+    // e.g. "MIX", "GEL" — NOT "SEASONING" or "POWDER" which should stay on their own line
     if (lines.length >= 2) {
       const last = lines[lines.length - 1].trim();
-      if (UNIT_WORDS.includes(last)) {
+      if (UNIT_WORDS.includes(last) && last.length <= 6) {
         lines[lines.length - 2] = lines[lines.length - 2] + ' ' + last;
         lines = lines.slice(0, -1);
       }

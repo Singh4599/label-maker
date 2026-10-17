@@ -89,6 +89,24 @@ function setMode(mode) {
   const mDb = $('mode-db'); if (mDb) mDb.classList.toggle('active', isListMode);
   const mMnl = $('mode-manual'); if (mMnl) mMnl.classList.toggle('active', mode === 'manual');
 
+  // Records panel — hide preview + print bars + main header when in records mode
+  const mRec      = $('records-panel');
+  const previewEl = document.querySelector('.preview-panel');
+  const mobilePb  = document.querySelector('.print-bar-mobile');
+  const mainHdr   = document.querySelector('.main-header');
+  const isRec     = (mode === 'records');
+
+  if (mRec)      mRec.style.display      = isRec ? 'block' : 'none';
+  if (previewEl) previewEl.style.display  = isRec ? 'none'  : '';
+  if (mobilePb)  mobilePb.style.display   = isRec ? 'none'  : '';
+  if (mainHdr)   mainHdr.style.display    = isRec ? 'none'  : '';
+
+  if (isRec) {
+    if (typeof renderRecordsPanel === 'function') renderRecordsPanel();
+    return;
+  }
+
+
   // Load the correct data into ST.db
   if (mode === 'db') {
     ST.db = { p: SPICERY_DB.p, v: SPICERY_DB.v };
@@ -864,13 +882,31 @@ function pF() {
   const name = pname.toUpperCase();
   const copies = getCopies();
 
+  // ── Build track opts once — called ONLY when QZ confirms done===true ──
+  const _v = (ST.vi >= 0 && ST.prod && ST.db.v && ST.db.v[ST.prod._key || ST.prod.n])
+    ? ST.db.v[ST.prod._key || ST.prod.n][ST.vi] : null;
+  const _doTrack = () => {
+    if (typeof trackPrint === 'function') trackPrint({
+      stickerType: ST.mode,
+      labelSide:   'front',
+      productName: name,
+      packSize:    _v ? _v.d : (ST.mode === 'manual' ? gv('m-vd') : '—'),
+      weightG:     _v ? (_v.g || 0) : (ST.mode === 'manual' ? parseFloat(gv('m-vg')) || 0 : 0),
+      mrp:         _v ? _v.m : (ST.mode === 'manual' ? parseFloat(gv('m-mrp')) || 0 : 0),
+      batchNo:     gv('bn') || gv('m-bn') || '—',
+      mfgDate:     gv('pd') || gv('m-pd') || '—',
+      bestBefore:  gv('bb') || gv('m-bb') || '—',
+      copies,
+    });
+  };
 
   if (ST.mode === 'yellow365') {
     if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintYellow === 'function') {
       qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
-        if (!done) {
+        if (done) _doTrack();
+        else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
           if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies, false);
         }
@@ -888,7 +924,8 @@ function pF() {
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintInternal === 'function') {
       qzPrintInternal(ST.prod, v, bn, pd, bb, copies, true).then(done => {
-        if (!done) {
+        if (done) _doTrack();
+        else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
           if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, v), copies, false, 'inner');
         }
@@ -900,10 +937,11 @@ function pF() {
     return;
   }
 
-  // ── Try QZ Tray first (direct RAW print) ──
+  // ── Default: QZ front print ──
   if (typeof qzPrintFront === 'function') {
     qzPrintFront(name, copies).then(function(done) {
-      if (!done) {
+      if (done) _doTrack();
+      else {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildFrontTSPL === 'function') buildFrontTSPL(name, copies);
       }
@@ -936,10 +974,27 @@ function pB() {
   }
   const copies = getCopies();
 
+  // ── Build track opts — called ONLY when QZ confirms done===true ──
+  const _doTrack = () => {
+    if (typeof trackPrint === 'function') trackPrint({
+      stickerType: ST.mode,
+      labelSide:   'back',
+      productName: p.n || '',
+      packSize:    v ? v.d : '—',
+      weightG:     v ? (parseFloat(v.g) || 0) : 0,
+      mrp:         v ? v.m : 0,
+      batchNo:     bn || '—',
+      mfgDate:     pd || '—',
+      bestBefore:  bb || '—',
+      copies,
+    });
+  };
+
   if (ST.mode === 'new32') {
     if (typeof qzPrintNew32 === 'function') {
       qzPrintNew32(p, v, bn, pd, bb, copies).then(function(done) {
-        if (!done) {
+        if (done) _doTrack();
+        else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
           if (typeof buildNew32TSPL === 'function') buildNew32TSPL(p, v, bn, pd, bb, copies);
         }
@@ -954,7 +1009,8 @@ function pB() {
   if (ST.mode === 'internal') {
     if (typeof qzPrintInternal === 'function') {
       qzPrintInternal(p, v, bn, pd, bb, copies, false).then(function(done) {
-        if (!done) {
+        if (done) _doTrack();
+        else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
           if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalOuterCanvas(p, v, bn, pd, bb), copies, false, 'outer');
         }
@@ -966,10 +1022,11 @@ function pB() {
     return;
   }
 
-  // ── Try QZ Tray first (direct RAW print) ──
+  // ── Default: QZ back print ──
   if (typeof qzPrintBack === 'function') {
     qzPrintBack(p, v, bn, pd, bb, copies).then(function(done) {
-      if (!done) {
+      if (done) _doTrack();
+      else {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildBackTSPL === 'function') buildBackTSPL(p, v, bn, pd, bb, copies);
       }
