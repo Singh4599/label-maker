@@ -180,7 +180,6 @@ function buildTableHTML(filtered) {
         ? 'Records appear automatically when QZ Tray sends a print job.'
         : 'Try navigating to a different date or switching sticker type.'
       }</div>
-      ${noData ? `<button class="rec-empty-seed-btn" onclick="seedDummyData()">🧪 Add Test Data</button>` : ''}
     </div>`;
   }
 
@@ -421,84 +420,4 @@ window.addEventListener('DOMContentLoaded', () => {
   startFirebaseListener();
 });
 
-// ═══════════════════════════════════════════════════════════════════════
-// SEED DUMMY DATA — for testing
-// Run in browser console:  window.seedDummyData()
-// Remove later with:       window.clearDummyData()
-// ═══════════════════════════════════════════════════════════════════════
-window.seedDummyData = async function() {
-  if (!window.LabelFirebase || !window.LabelFirebase.sync) {
-    alert('Firebase not ready yet. Try again in a moment.'); return;
-  }
-  const today = fmtDayStr(new Date());
-  const yest  = fmtDayStr(new Date(Date.now() - 86400000));
-  const base  = Date.now();
-
-  const raw = [
-    // 365 Spicery (db)
-    { d: -18000, type:'db', side:'front', name:'BYADGI KHANDELA SEASONING', size:'FRONT',  g:0,     mrp:0,   bn:'BKS-1026', cop:5,  date:today, time:'09:30 am' },
-    { d: -17900, type:'db', side:'back',  name:'BYADGI KHANDELA SEASONING', size:'500g',   g:500,   mrp:120, bn:'BKS-1026', cop:5,  date:today, time:'09:32 am' },
-    { d: -14400, type:'db', side:'back',  name:'MALVANI MIX MASALA',        size:'200g',   g:200,   mrp:60,  bn:'MMM-1026', cop:20, date:today, time:'10:15 am' },
-    { d: -10800, type:'db', side:'back',  name:'CHICKEN MASALA',            size:'100g',   g:100,   mrp:35,  bn:'CMK-1026', cop:50, date:today, time:'11:00 am' },
-    { d: -93600, type:'db', side:'back',  name:'SABZI MASALA POWDER',       size:'500g',   g:500,   mrp:110, bn:'SMP-1026', cop:20, date:yest,  time:'03:00 pm' },
-    // Dukan Bai (dukan)
-    { d: -1800,  type:'dukan', side:'front', name:'DUKAN CHILLI POWDER', size:'FRONT', g:0,   mrp:0,  bn:'DCP-1026', cop:30, date:today, time:'08:45 am' },
-    { d: -1740,  type:'dukan', side:'back',  name:'DUKAN CHILLI POWDER', size:'50g',   g:50,  mrp:20, bn:'DCP-1026', cop:30, date:today, time:'08:47 am' },
-    { d: -7200,  type:'dukan', side:'back',  name:'DUKAN GARAM MASALA',  size:'50g',   g:50,  mrp:22, bn:'DGM-1026', cop:40, date:today, time:'07:30 am' },
-    { d: -90000, type:'dukan', side:'back',  name:'DUKAN HALDI POWDER',  size:'50g',   g:50,  mrp:18, bn:'DHP-1026', cop:20, date:yest,  time:'02:00 pm' },
-    // 32×25 Label (new32)
-    { d: -12000, type:'new32', side:'back', name:'KALI MIRCH WHOLE', size:'100g', g:100, mrp:45, bn:'KMW-1026', cop:50, date:today, time:'07:10 am' },
-    { d: -11700, type:'new32', side:'back', name:'LAUNG SABUT',      size:'50g',  g:50,  mrp:55, bn:'LSK-1026', cop:50, date:today, time:'07:13 am' },
-    { d: -97200, type:'new32', side:'back', name:'METHI SEEDS',      size:'200g', g:200, mrp:30, bn:'MSK-1026', cop:20, date:yest,  time:'04:00 pm' },
-    // Internal Material (internal)
-    { d: -14400, type:'internal', side:'front', name:'BLENDED MIX LOT 26A',    size:'FRONT', g:0,     mrp:0, bn:'INT-001', cop:10, date:today, time:'06:50 am' },
-    { d: -14100, type:'internal', side:'back',  name:'BLENDED MIX LOT 26A',    size:'10 Kg', g:10000, mrp:0, bn:'INT-001', cop:10, date:today, time:'06:52 am' },
-    { d: -100800,type:'internal', side:'back',  name:'STOCK TRANSFER BATCH B', size:'5 Kg',  g:5000,  mrp:0, bn:'INT-002', cop:10, date:yest,  time:'05:00 pm' },
-    // Yellow 365 (yellow365)
-    { d: -18000, type:'yellow365', side:'front', name:'YELLOW 365 SPICE MIX', size:'FRONT', g:0,   mrp:0,  bn:'Y365-1026', cop:15, date:today, time:'06:20 am' },
-    { d: -17700, type:'yellow365', side:'back',  name:'YELLOW 365 SPICE MIX', size:'100g',  g:100, mrp:50, bn:'Y365-1026', cop:15, date:today, time:'06:22 am' },
-    { d: -104400,type:'yellow365', side:'back',  name:'SPECIAL BLEND GOLD',   size:'200g',  g:200, mrp:85, bn:'SBG-1026',  cop:30, date:yest,  time:'06:00 pm' },
-    // Manual Entry (manual)
-    { d: -21000, type:'manual', side:'front', name:'CUSTOM PRODUCT TRIAL', size:'FRONT', g:0,   mrp:0,  bn:'MAN-001', cop:2, date:today, time:'05:55 am' },
-    { d: -20700, type:'manual', side:'back',  name:'CUSTOM PRODUCT TRIAL', size:'250g',  g:250, mrp:75, bn:'MAN-001', cop:2, date:today, time:'05:57 am' },
-  ];
-
-  let count = 0;
-  for (const e of raw) {
-    const ts  = base + e.d * 1000;
-    const rec = {
-      timestamp:    ts,
-      _docId:       `dummy_${ts}`,
-      date:         e.date,
-      time:         e.time,
-      stickerType:  e.type,
-      stickerLabel: getStickerLabel(e.type),
-      labelSide:    e.side,
-      productName:  e.name,
-      packSize:     e.size,
-      weightG:      e.g,
-      totalWeightG: e.g * e.cop,
-      mrp:          e.mrp,
-      batchNo:      e.bn,
-      mfgDate:      '01-10-2026',
-      bestBefore:   '01-10-2027',
-      copies:       e.cop,
-      isDummy:      true,
-    };
-    await window.LabelFirebase.sync(rec);
-    count++;
-  }
-  alert(`✅ ${count} dummy entries seeded!\nOpen Print Records panel to see them.\nDelete later with: window.clearDummyData()`);
-};
-
-// Remove all dummy entries
-window.clearDummyData = async function() {
-  const dummies = _recAll.filter(r => r.isDummy || String(r._docId||'').startsWith('dummy_'));
-  if (!dummies.length) { alert('No dummy entries found.'); return; }
-  if (!confirm(`Delete ${dummies.length} dummy records? This can't be undone.`)) return;
-  for (const r of dummies) {
-    await window.LabelFirebase.delete(String(r._docId || r.timestamp));
-  }
-  alert(`Deleted ${dummies.length} dummy records.`);
-};
 
