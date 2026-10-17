@@ -332,10 +332,12 @@ window.trackPrint = async function(opts) {
 };
 
 // ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // EXPORT — Excel
 // ═══════════════════════════════════════════════════════════════════════
 window.exportRecordsExcel = function(typeFilter) {
-  const src = (typeFilter && typeFilter !== 'ALL')
+  const isExportAll = (!typeFilter || typeFilter === 'ALL');
+  const src = (!isExportAll)
     ? _recAll.filter(r => r.stickerType === typeFilter)
     : _recAll;
 
@@ -343,59 +345,175 @@ window.exportRecordsExcel = function(typeFilter) {
   if (typeof XLSX === 'undefined') { alert('Excel library not loaded. Reload page.'); return; }
 
   const wb   = XLSX.utils.book_new();
-  const hdrs = ['SR.NO.','DATE','TIME','PRODUCT NAME','BATCH CODE','SIZE / LABEL','COPIES','TOTAL WEIGHT (g)'];
+  const hdrs = [
+    'SR.NO.',
+    'DATE',
+    'TIME',
+    'STICKER TYPE',
+    'PRODUCT NAME',
+    'BATCH CODE',
+    'PACK SIZE',
+    'COPIES',
+    'TOTAL WEIGHT (g)',
+    'TOTAL WEIGHT (KG)'
+  ];
 
-  // Group by type → one sheet each
-  const groups = {};
-  src.forEach(r => {
-    const k = r.stickerType || 'other';
-    if (!groups[k]) groups[k] = { label: getStickerLabel(k), rows: [] };
-    groups[k].rows.push(r);
-  });
+  function createSheetForRows(rowsList) {
+    let sumCopies = 0;
+    let sumWeightG = 0;
 
-  Object.entries(groups).forEach(([, g]) => {
-    const data = g.rows.map((r, i) => {
-      const isFront = r.labelSide === 'front';
-      const tw = r.totalWeightG || ((r.weightG||0)*(r.copies||1));
+    const data = rowsList.map((r, i) => {
+      const tw = r.totalWeightG || ((r.weightG || 0) * (r.copies || 1));
+      const twKg = tw > 0 ? Number((tw / 1000).toFixed(3)) : 0;
+      sumCopies += (Number(r.copies) || 1);
+      sumWeightG += (Number(tw) || 0);
+
       return [
-        g.rows.length - i,
-        r.date, r.time, r.productName, r.batchNo,
-        isFront ? 'FRONT' : (r.packSize||'—'),
-        r.copies,
-        isFront ? '' : tw,
+        rowsList.length - i,
+        r.date,
+        r.time,
+        getStickerLabel(r.stickerType),
+        r.productName,
+        r.batchNo,
+        r.packSize || '—',
+        r.copies || 1,
+        tw,
+        twKg
       ];
     });
-    const ws = XLSX.utils.aoa_to_sheet([hdrs, ...data]);
-    ws['!cols'] = [{wch:6},{wch:13},{wch:8},{wch:36},{wch:14},{wch:10},{wch:7},{wch:16}];
-    XLSX.utils.book_append_sheet(wb, ws, g.label.substring(0, 31));
-  });
 
-  XLSX.writeFile(wb, `365_LabelRecords_${todayStr().replace(/-/g,'.')}.xlsx`);
+    // Summary Total Row at the bottom with Total in KG
+    const totalKgFormatted = `${(sumWeightG / 1000).toFixed(2)} KG`;
+    const totalRow = [
+      'TOTAL',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'TOTAL (KG):',
+      sumCopies,
+      sumWeightG,
+      totalKgFormatted
+    ];
+    data.push(totalRow);
+
+    const ws = XLSX.utils.aoa_to_sheet([hdrs, ...data]);
+    ws['!cols'] = [
+      { wch: 8 },  // SR.NO.
+      { wch: 13 }, // DATE
+      { wch: 10 }, // TIME
+      { wch: 18 }, // STICKER TYPE
+      { wch: 38 }, // PRODUCT NAME
+      { wch: 15 }, // BATCH CODE
+      { wch: 14 }, // PACK SIZE
+      { wch: 10 }, // COPIES
+      { wch: 18 }, // TOTAL WEIGHT (g)
+      { wch: 20 }, // TOTAL WEIGHT (KG)
+    ];
+    return ws;
+  }
+
+  if (isExportAll) {
+    // 1. Primary consolidated sheet: 'All Records' with STICKER TYPE column
+    const wsAll = createSheetForRows(src);
+    XLSX.utils.book_append_sheet(wb, wsAll, 'All Records');
+
+    // 2. Individual sheets grouped by sticker type (if multiple types exist)
+    const groups = {};
+    src.forEach(r => {
+      const k = r.stickerType || 'other';
+      if (!groups[k]) groups[k] = { label: getStickerLabel(k), rows: [] };
+      groups[k].rows.push(r);
+    });
+
+    if (Object.keys(groups).length > 1) {
+      Object.entries(groups).forEach(([, g]) => {
+        const wsGroup = createSheetForRows(g.rows);
+        XLSX.utils.book_append_sheet(wb, wsGroup, g.label.substring(0, 31));
+      });
+    }
+
+    XLSX.writeFile(wb, `365_LabelRecords_ALL_${todayStr().replace(/-/g,'.')}.xlsx`);
+  } else {
+    // Single sheet for selected sticker type
+    const ws = createSheetForRows(src);
+    const label = getStickerLabel(typeFilter);
+    XLSX.utils.book_append_sheet(wb, ws, label.substring(0, 31));
+    XLSX.writeFile(wb, `365_LabelRecords_${label.replace(/\s+/g,'_')}_${todayStr().replace(/-/g,'.')}.xlsx`);
+  }
 };
 
 // ═══════════════════════════════════════════════════════════════════════
 // EXPORT — CSV
 // ═══════════════════════════════════════════════════════════════════════
 window.exportRecordsCsv = function(typeFilter) {
-  const src = (typeFilter && typeFilter !== 'ALL')
+  const isExportAll = (!typeFilter || typeFilter === 'ALL');
+  const src = (!isExportAll)
     ? _recAll.filter(r => r.stickerType === typeFilter)
     : _recAll;
   if (!src.length) { alert('No records to export!'); return; }
 
   const q    = s => `"${String(s||'').replace(/"/g,'""')}"`;
-  const hdrs = ['SR.NO.','DATE','TIME','PRODUCT','BATCH','SIZE','COPIES','TOTAL(g)'];
-  const rows = src.map((r,i) => {
-    const isFront = r.labelSide==='front';
-    const tw = r.totalWeightG||((r.weightG||0)*(r.copies||1));
-    return [q(src.length-i),q(r.date),q(r.time),q(r.productName),q(r.batchNo),
-            q(isFront?'FRONT':r.packSize),q(r.copies),q(isFront?'':tw)].join(',');
+  const hdrs = [
+    'SR.NO.',
+    'DATE',
+    'TIME',
+    'STICKER TYPE',
+    'PRODUCT',
+    'BATCH',
+    'SIZE',
+    'COPIES',
+    'TOTAL WEIGHT (g)',
+    'TOTAL WEIGHT (KG)'
+  ];
+
+  let sumCopies = 0;
+  let sumWeightG = 0;
+
+  const rows = src.map((r, i) => {
+    const tw = r.totalWeightG || ((r.weightG || 0) * (r.copies || 1));
+    const twKg = tw > 0 ? (tw / 1000).toFixed(3) : '0';
+    sumCopies += (Number(r.copies) || 1);
+    sumWeightG += (Number(tw) || 0);
+
+    return [
+      q(src.length - i),
+      q(r.date),
+      q(r.time),
+      q(getStickerLabel(r.stickerType)),
+      q(r.productName),
+      q(r.batchNo),
+      q(r.packSize || '—'),
+      q(r.copies || 1),
+      q(tw),
+      q(twKg)
+    ].join(',');
   });
-  const content = '\uFEFF' + [hdrs.map(q).join(','), ...rows].join('\r\n');
-  const a = Object.assign(document.createElement('a'),{
-    href: URL.createObjectURL(new Blob([content],{type:'text/csv;charset=utf-8;'})),
-    download: `365_Records_${todayStr().replace(/-/g,'.')}.csv`,
+
+  const totalRow = [
+    q('TOTAL'),
+    q(''),
+    q(''),
+    q(''),
+    q(''),
+    q(''),
+    q('TOTAL (KG):'),
+    q(sumCopies),
+    q(sumWeightG),
+    q(`${(sumWeightG / 1000).toFixed(2)} KG`)
+  ].join(',');
+
+  const content = '\uFEFF' + [hdrs.map(q).join(','), ...rows, totalRow].join('\r\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8;' })),
+    download: isExportAll
+      ? `365_LabelRecords_ALL_${todayStr().replace(/-/g, '.')}.csv`
+      : `365_LabelRecords_${getStickerLabel(typeFilter).replace(/\s+/g, '_')}_${todayStr().replace(/-/g, '.')}.csv`,
   });
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 };
 
 // ═══════════════════════════════════════════════════════════════════════
