@@ -2,7 +2,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /labelRecords/{document=**} {
-      allow read, write: if true;
+      // Internal tool — no public auth; restrict to prevent abuse
+      allow read: if true;
+      allow create: if request.resource.data.keys().size() <= 30
+                    && request.resource.data.size() < 10240;
+      allow update: if request.resource.data.keys().size() <= 30
+                    && request.resource.data.size() < 10240;
+      allow delete: if true;
     }
   }
 }
