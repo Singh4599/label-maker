@@ -1223,7 +1223,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
       ctx.font = 'bold 22px Arial, sans-serif';
     }
     const w = ctx.measureText(line).width;
-    ctx.fillText(line, (DW - w) / 2, y);
+    ctx.fillText(line, leftPad, y);
     y += 30;
   }
 
