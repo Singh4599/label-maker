@@ -7,10 +7,14 @@
    GAP: 3mm both (from Printing Defaults — matches BarTender)
 ═══════════════════════════════════════════════════════════════ */
 
+const QZP_DEFAULTS = {
+  front: 'TSC TE244 (Copy 1)',
+  back:  'TSC TE244'
+};
 const QZP = {
   connected: false,
-  frontPrinter: 'TSC TE244 (Copy 1)',  // HARDCODED — never changes
-  backPrinter:  'TSC TE244',           // HARDCODED — never changes
+  frontPrinter: QZP_DEFAULTS.front,
+  backPrinter:  QZP_DEFAULTS.back,
   printers: [],
   _retrying: false
 };
@@ -115,7 +119,7 @@ function closePrinterSettings(e) {
   if (modal) modal.classList.remove('active');
 }
 
-/* ─── Populate dropdowns (UI only, printers hardcoded in code) ─── */
+/* ─── Populate dropdowns ─── */
 function populatePrinterDropdowns(printers) {
   const fSel = document.getElementById('front-printer-sel');
   const bSel = document.getElementById('back-printer-sel');
@@ -125,15 +129,65 @@ function populatePrinterDropdowns(printers) {
   ).join('');
   fSel.innerHTML = '<option value="">-- Select Printer --</option>' + makeOpts(QZP.frontPrinter);
   bSel.innerHTML = '<option value="">-- Select Printer --</option>' + makeOpts(QZP.backPrinter);
+  _updateSwapBadges();
+}
+
+function _updateSwapBadges() {
+  const fBadge = document.getElementById('front-printer-badge');
+  const bBadge = document.getElementById('back-printer-badge');
+  if (fBadge) fBadge.textContent = QZP.frontPrinter;
+  if (bBadge) bBadge.textContent = QZP.backPrinter;
+  // Visual warning if printers are swapped from default
+  const swapped = QZP.frontPrinter !== QZP_DEFAULTS.front;
+  const swapBtn = document.getElementById('swap-printers-btn');
+  if (swapBtn) {
+    swapBtn.style.background = swapped ? '#dc2626' : '#7c3aed';
+    swapBtn.textContent = swapped ? '⚠️ Printers Swapped — Click to Restore' : '🔄 Swap Front ↔ Back Printers';
+  }
 }
 
 function loadSavedSettings() {
   const gapEl = document.getElementById('label-gap');
   if (gapEl) gapEl.value = '3';
+  // Restore saved printer swap from localStorage
+  const saved = localStorage.getItem('qzp_printers');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed.front) QZP.frontPrinter = parsed.front;
+      if (parsed.back)  QZP.backPrinter  = parsed.back;
+    } catch(e) { /* ignore corrupt data */ }
+  }
+  _updateSwapBadges();
 }
+
 function savePrinterSettings() {
+  // Save dropdown selections if user manually picked
+  const fSel = document.getElementById('front-printer-sel');
+  const bSel = document.getElementById('back-printer-sel');
+  if (fSel && fSel.value) QZP.frontPrinter = fSel.value;
+  if (bSel && bSel.value) QZP.backPrinter  = bSel.value;
+  localStorage.setItem('qzp_printers', JSON.stringify({ front: QZP.frontPrinter, back: QZP.backPrinter }));
+  _updateSwapBadges();
   closePrinterSettings();
-  showToast('✓ Settings saved! Printers are hardcoded.', 'success');
+  showToast(`✓ Saved! Front: ${QZP.frontPrinter}`, 'success');
+}
+
+/* ─── SWAP FRONT ↔ BACK (one-click fix when Windows flips names) ─── */
+function swapPrinters() {
+  [QZP.frontPrinter, QZP.backPrinter] = [QZP.backPrinter, QZP.frontPrinter];
+  localStorage.setItem('qzp_printers', JSON.stringify({ front: QZP.frontPrinter, back: QZP.backPrinter }));
+  populatePrinterDropdowns(QZP.printers);
+  showToast(`🔄 Swapped! Front → ${QZP.frontPrinter}`, 'info');
+}
+
+/* ─── RESET to defaults ─── */
+function resetPrinterDefaults() {
+  QZP.frontPrinter = QZP_DEFAULTS.front;
+  QZP.backPrinter  = QZP_DEFAULTS.back;
+  localStorage.removeItem('qzp_printers');
+  populatePrinterDropdowns(QZP.printers);
+  showToast('↩ Reset to default printer names', 'info');
 }
 
 /* ═══════════════════════════════════════════════════════════════

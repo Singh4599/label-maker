@@ -470,17 +470,35 @@
           <small>Tab tak purana Chrome print method use hoga (backup mode).</small>
         </div>
 
+        <!-- Live Printer Status Badges -->
+        <div style="background:#1e1e2e;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;">
+          <div style="color:#94a3b8;margin-bottom:6px;font-weight:600;letter-spacing:.5px;">ACTIVE ASSIGNMENT</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;">
+            <span style="background:#22c55e22;color:#22c55e;border-radius:5px;padding:2px 8px;font-weight:700;font-size:11px;">FRONT</span>
+            <span id="front-printer-badge" style="color:#e2e8f0;font-family:monospace;">loading...</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="background:#3b82f622;color:#3b82f6;border-radius:5px;padding:2px 8px;font-weight:700;font-size:11px;">BACK</span>
+            <span id="back-printer-badge" style="color:#e2e8f0;font-family:monospace;">loading...</span>
+          </div>
+        </div>
+
+        <!-- ONE-CLICK SWAP BUTTON -->
+        <button id="swap-printers-btn" onclick="swapPrinters()" style="width:100%;padding:12px;border:none;border-radius:10px;background:#7c3aed;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px;transition:background .2s;">&#128260; Swap Front &#8596; Back Printers</button>
+        <div style="color:#64748b;font-size:11px;text-align:center;margin-bottom:14px;">Jab Windows printer naam ulta kar de — yeh button dabao. Ek baar dabane se theek ho jaata hai.</div>
+
         <div class="modal-field">
-          <label>Front Label Printer <small>(65×25mm)</small></label>
+          <label>Front Label Printer <small>(65x25mm)</small></label>
           <select id="front-printer-sel"><option value="">-- Select Printer --</option></select>
         </div>
         <div class="modal-field">
-          <label>Back Label Printer <small>(50×90mm)</small></label>
+          <label>Back Label Printer <small>(50x90mm)</small></label>
           <select id="back-printer-sel"><option value="">-- Select Printer --</option></select>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-save-printers" onclick="savePrinterSettings()">💾 Save Settings</button>
+      <div class="modal-footer" style="display:flex;gap:8px;">
+        <button class="btn-save-printers" onclick="savePrinterSettings()" style="flex:1;">&#128190; Save</button>
+        <button onclick="resetPrinterDefaults()" style="padding:10px 16px;border:1px solid #374151;border-radius:8px;background:transparent;color:#94a3b8;cursor:pointer;font-size:13px;">&#8617; Reset</button>
       </div>
     </div>
   </div>
@@ -493,7 +511,7 @@
 <script src="js/parties-data.js?v=2"></script>
 <script src="js/internal-data.js?v=2"></script>
 <script src="js/qz-tray.js"></script>
-<script src="js/qz-print.js?v=92"></script>
+<script src="js/qz-print.js?v=93"></script>
 <script type="module" src="js/firebase-records.js?v=2"></script>
 <script src="js/records.js?v=5"></script>
 <script src="js/app.js?v=95"></script>
