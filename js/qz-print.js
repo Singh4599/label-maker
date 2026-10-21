@@ -1207,11 +1207,31 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   drawLine('Allergen Information -', 'Processed in a facility that also contains Milk, Sesame and Mustard.');
   y += 24;
 
-  ctx.font = 'bold 22px Arial, sans-serif';
-  const nrText = 'NON-RETAIL CONTAINER – NOT FOR DIRECT SALE TO CONSUMER';
-  const nrW = ctx.measureText(nrText).width;
-  ctx.fillText(nrText, (DW - nrW)/2, y); // Centered looks better for this warning
-  
+  // 3-line raw material disclaimer — centered, bold, small enough to fit remaining space
+  ctx.font = 'bold 20px Arial, sans-serif';
+  const disclaimers = [
+    'RAW MATERIAL \u2013 INTERNAL USE ONLY',
+    'FOR REPACKING INTO LABELED RETAIL OR NON-RETAIL PACKS ONLY',
+    'NOT FOR DIRECT SALE TO CONSUMERS / NOT FOR LOOSE SALE'
+  ];
+  // Draw a thin separator line
+  ctx.fillRect(leftPad, y, usableW, 1);
+  y += 10;
+  for (const line of disclaimers) {
+    const lw = ctx.measureText(line).width;
+    // If line too wide, shrink font temporarily
+    if (lw > usableW) {
+      const scale = usableW / lw;
+      const shrunkSize = Math.floor(20 * scale);
+      ctx.font = `bold ${Math.max(shrunkSize, 14)}px Arial, sans-serif`;
+    } else {
+      ctx.font = 'bold 20px Arial, sans-serif';
+    }
+    const w = ctx.measureText(line).width;
+    ctx.fillText(line, (DW - w) / 2, y);
+    y += 28;
+  }
+
   return canvas;
 }
 
