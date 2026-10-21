@@ -425,6 +425,19 @@ function buildFrontTSPL(name, copies, disablePopup) {
 }
 
 
+/* ─── ALLERGEN DETECTOR ─── */
+function getAllergens(ingrStr) {
+  const s = (ingrStr || '').toLowerCase();
+  const found = [];
+  if (/sesame|til\b/.test(s))                                                     found.push('Sesame');
+  if (/mustard/.test(s))                                                           found.push('Mustard');
+  if (/peanut|groundnut/.test(s))                                                  found.push('Peanut');
+  if (/cashew|almond|pistachio|walnut|pecan|hazelnut|macadamia|tree nut/.test(s)) found.push('Tree Nuts');
+  if (/milk|dairy|whey|lactose|cheese powder|butter powder|cream powder|milk powder/.test(s)) found.push('Milk');
+  if (/soy|soya|soja/.test(s))                                                     found.push('Soybean');
+  return found;
+}
+
 function generateBackCanvas(p, v, bn, pd, bb) {
   const DW = 400;
   // Use a tall virtual canvas to draw everything, then squish if it's too tall
@@ -602,7 +615,22 @@ function generateBackCanvas(p, v, bn, pd, bb) {
     ctx.fillText(ln, leftPad, y);
     y += 24;
   }
-  y += 12;
+  y += 4;
+
+  // Allergen Information
+  const allergens = getAllergens(ingrStr);
+  if (allergens.length > 0) {
+    const allergenText = 'Allergen Information: Contains ' + allergens.join(', ');
+    ctx.font = 'bold 16px Arial';
+    const aLines = wrapTextCanvas(ctx, allergenText, usableW);
+    for (let ln of aLines) {
+      ctx.fillText(ln, leftPad, y);
+      y += 20;
+    }
+    y += 8;
+  } else {
+    y += 8;
+  }
 
   // Nutrition
   if (isDukan) {
