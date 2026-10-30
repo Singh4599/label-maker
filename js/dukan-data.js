@@ -18,26 +18,26 @@ const DUKAN_DB = {
     },
     "CHILLI POWDER KASHMIRI": {
       "n": "CHILLI POWDER KASHMIRI",
-      "b": "CPKKMU1-1026",
+      "b": "CPKKMU2-1026",
       "c": "",
-      "i": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
-      "sc": "Chilli,\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "i": "Chilli.\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
+      "sc": "Chilli.\nRice bran edible oil not more than 2%.\n[Saturated fat - 3%, Trans fat - 0.1%]",
       "e": 300, "p": 12.0, "cb": 50.0, "tf": 16.0, "so": 30, "ts": 7.2, "as": 0
     },
     "MALVANI MIX SPECIAL MASALA": {
       "n": "MALVANI MIX SPECIAL MASALA",
-      "b": "MMSM-1026",
+      "b": "MMSMM-1026",
       "c": "",
+      "sc": "Spice content more than 85%, Salt content more than 5%",
       "i": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt.",
-      "sc": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt.",
       "e": 350, "p": 12.0, "cb": 50.0, "tf": 14.0, "so": 1200, "ts": 3.0, "as": 0
     },
     "CORIANDER GREEN SEASONING": {
       "n": "CORIANDER GREEN SEASONING",
       "b": "CGSKMU1-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
-      "sc": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "i": "(In Descending Order By Weight) CORIANDER, DEHYDRATED CORIANDER LEAVES POWDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) CORIANDER, DEHYDRATED CORIANDER LEAVES POWDER, TURMERIC, EDIBLE RICE BRAN OIL",
       "e": 310, "p": 12.0, "cb": 55.0, "tf": 18.0, "so": 35, "ts": 2.0, "as": 0
     },
     "DHANAJEERA (MIX MASALA POWDER)": {
@@ -58,8 +58,8 @@ const DUKAN_DB = {
       "n": "CORIANDER SARAS SEASONING",
       "b": "CSS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
-      "sc": "(In Descending Order By Weight) CORIANDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "i": "(In Descending Order By Weight) CORIANDER, DEHYDRATED CORIANDER LEAVES POWDER, TURMERIC, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) CORIANDER, DEHYDRATED CORIANDER LEAVES POWDER, TURMERIC, EDIBLE RICE BRAN OIL",
       "e": 310, "p": 12.0, "cb": 55.0, "tf": 18.0, "so": 35, "ts": 2.0, "as": 0
     },
     "RESHAMPATTI KHANDELA CHILLI BLEND SEASONING": {
@@ -114,24 +114,24 @@ const DUKAN_DB = {
       "n": "GINGER SEASONING",
       "b": "GSM-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) GINGER, RICE, EDIBLE RICE BRAN OIL",
-      "sc": "(In Descending Order By Weight) GINGER, RICE, EDIBLE RICE BRAN OIL",
+      "i": "(In Descending Order By Weight) GINGER, RICE FLOUR, SALT, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) GINGER, RICE FLOUR, SALT, EDIBLE RICE BRAN OIL",
       "e": 335, "p": 8.0, "cb": 70.0, "tf": 5.0, "so": 27, "ts": 2.0, "as": 0
     },
     "CUMIN SEASONING": {
       "n": "CUMIN SEASONING",
       "b": "CSM-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) CUMIN, EDIBLE RICE BRAN OIL",
-      "sc": "(In Descending Order By Weight) CUMIN, EDIBLE RICE BRAN OIL",
+      "i": "(In Descending Order By Weight) CUMIN, SALT, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) CUMIN, SALT, EDIBLE RICE BRAN OIL",
       "e": 385, "p": 17.4, "cb": 43.3, "tf": 23.8, "so": 165, "ts": 2.2, "as": 0
     },
     "DRY MANGO SEASONING": {
       "n": "DRY MANGO SEASONING",
       "b": "DMSM-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, EDIBLE RICE BRAN OIL",
-      "sc": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, EDIBLE RICE BRAN OIL",
+      "i": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, SALT, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) DRY MANGO, RICE FLOUR, SALT, EDIBLE RICE BRAN OIL",
       "e": 320, "p": 3.5, "cb": 75.0, "tf": 3.0, "so": 25, "ts": 45.0, "as": 0
     },
     "BLACK PEPPER SEASONING": {
@@ -210,8 +210,8 @@ const DUKAN_DB = {
       "n": "VARIYALI SEASONING",
       "b": "VS-1026",
       "c": "category - seasoning",
-      "i": "(In Descending Order By Weight) FENNEL SEEDS, EDIBLE RICE BRAN OIL",
-      "sc": "(In Descending Order By Weight) FENNEL SEEDS, EDIBLE RICE BRAN OIL",
+      "i": "(In Descending Order By Weight) FENNEL SEEDS, SALT, EDIBLE RICE BRAN OIL",
+      "sc": "(In Descending Order By Weight) FENNEL SEEDS, SALT, EDIBLE RICE BRAN OIL",
       "e": 345, "p": 15.0, "cb": 52.0, "tf": 15.0, "so": 88, "ts": 3.0, "as": 0
     },
     "CHILLI POWDER SP LINE": {
@@ -298,28 +298,28 @@ const DUKAN_DB = {
         "g": 100,
         "oz": "3.53oz",
         "m": 160,
-        "bn": "CPKKMU1-1026"
+        "bn": "CPKKMU2-1026"
       },
       {
         "d": "250g",
         "g": 250,
         "oz": "8.82oz",
         "m": 400,
-        "bn": "CPKKMU1-1026"
+        "bn": "CPKKMU2-1026"
       },
       {
         "d": "500g",
         "g": 500,
         "oz": "17.64oz",
         "m": 800,
-        "bn": "CPKKMU1-1026"
+        "bn": "CPKKMU2-1026"
       },
       {
         "d": "1kg",
         "g": 1000,
         "oz": "35.27oz",
         "m": 1600,
-        "bn": "CPKKMU1-1026"
+        "bn": "CPKKMU2-1026"
       }
     ],
     "MALVANI MIX SPECIAL MASALA": [
@@ -328,28 +328,28 @@ const DUKAN_DB = {
         "g": 100,
         "oz": "3.53oz",
         "m": 90,
-        "bn": "MMSM-1026"
+        "bn": "MMSMM-1026"
       },
       {
         "d": "250g",
         "g": 250,
         "oz": "8.82oz",
         "m": 225,
-        "bn": "MMSM-1026"
+        "bn": "MMSMM-1026"
       },
       {
         "d": "500g",
         "g": 500,
         "oz": "17.64oz",
         "m": 450,
-        "bn": "MMSM-1026"
+        "bn": "MMSMM-1026"
       },
       {
         "d": "1kg",
         "g": 1000,
         "oz": "35.27oz",
         "m": 900,
-        "bn": "MMSM-1026"
+        "bn": "MMSMM-1026"
       }
     ],
     "CORIANDER GREEN SEASONING": [
