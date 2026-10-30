@@ -212,6 +212,11 @@
               <div id="drop" class="dropdown"></div>
             </div>
             <div id="product-card" class="product-card"></div>
+            <!-- Editable product name override -->
+            <div id="name-override-wrap" style="display:none;margin-top:12px;">
+              <label for="label-name-override" style="font-size:12px;font-weight:700;color:#374151;letter-spacing:0.3px;">Label Name <span style="font-weight:400;color:#9ca3af;">(Editable — changes what prints on label)</span></label>
+              <input type="text" id="label-name-override" placeholder="Edit product name for label..." oninput="render()" style="margin-top:4px;width:100%;padding:9px 12px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;color:#111827;background:#f9fafb;transition:border-color .2s;" onfocus="this.style.borderColor='#dc2626'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
           </div>
 
           <!-- Step 02 -->
@@ -514,7 +519,7 @@
 <script src="js/qz-print.js?v=98"></script>
 <script type="module" src="js/firebase-records.js?v=2"></script>
 <script src="js/records.js?v=5"></script>
-<script src="js/app.js?v=95"></script>
+<script src="js/app.js?v=96"></script>
 
 </body>
 </html>

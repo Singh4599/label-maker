@@ -13,6 +13,13 @@ const $ = id => document.getElementById(id);
 const gv = id => { const el = $(id); return el ? el.value.trim() : ''; };
 const gn = id => { const el = $(id); return parseFloat(el ? el.value : 0) || 0; };
 
+/* ─── Get Display Name (respects editable override) ─── */
+function getDisplayName() {
+  if (ST.mode === 'manual') return gv('m-name');
+  const override = gv('label-name-override');
+  return override || (ST.prod ? ST.prod.n : '');
+}
+
 /* ─── Init ─── */
 window.addEventListener('DOMContentLoaded', () => {
   setTodayDates();
@@ -263,6 +270,11 @@ function pickProduct(rawName) {
   ST.vi = -1;
   const si = $('si'); if (si) si.value = p.n;
   const clr = $('si-clear'); if (clr) clr.style.display = 'block';
+  // Show & pre-fill editable name override
+  const nameWrap = $('name-override-wrap');
+  const nameInput = $('label-name-override');
+  if (nameInput) nameInput.value = p.n;
+  if (nameWrap) nameWrap.style.display = 'block';
   closeDrop();
   showProductCard(p);
   renderPackBtns();
@@ -289,6 +301,11 @@ function clearProduct() {
   if (card) { card.innerHTML = ''; card.classList.remove('show'); }
   const si = $('si'); if (si) si.value = '';
   const clr = $('si-clear'); if (clr) clr.style.display = 'none';
+  // Reset editable name override
+  const nameInput = $('label-name-override');
+  const nameWrap = $('name-override-wrap');
+  if (nameInput) nameInput.value = '';
+  if (nameWrap) nameWrap.style.display = 'none';
   renderPackBtns();
   const mv = $('mrp-val'); if (mv) mv.value = '';
   const pg = $('per-g'); if (pg) pg.textContent = '';
@@ -509,11 +526,12 @@ function renderFront() {
   }
 
   // Standard front label (html preview fallback if canvas is not used)
-    const isJain = ST.prod.n.toUpperCase().includes('JAIN');
+    const dispName = getDisplayName();
+    const isJain = dispName.toUpperCase().includes('JAIN');
     const jainSub = isJain
       ? `<div style="font-family:'Arial Black',Arial,sans-serif;font-weight:900;font-size:0.55em;text-align:center;text-transform:uppercase;letter-spacing:0.5pt;margin-top:2px;line-height:1;">No Onion No Garlic</div>`
       : '';
-    fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${ST.prod.n.toUpperCase()}</div>${jainSub}</div>`;
+    fp.innerHTML = `<div class="fl-wrap"><div class="fl-name" id="fl-name-el">${dispName.toUpperCase()}</div>${jainSub}</div>`;
     requestAnimationFrame(fitFrontName);
 }
 
@@ -608,7 +626,9 @@ function renderManual() {
 function buildBackHTML(p, v, bn, pd, bb) {
   const mrp = parseFloat(v.m) || 0;
   const pg = (mrp / (parseFloat(v.g) || 1)).toFixed(2);
-  const isJain = p.n.toUpperCase().includes('JAIN');
+  // Use editable override name for display on label; fall back to p.n
+  const displayName = (ST.mode !== 'manual' && gv('label-name-override')) ? gv('label-name-override') : p.n;
+  const isJain = displayName.toUpperCase().includes('JAIN');
   const isBlended = (p.c || '').toLowerCase().includes('blended');
   // Strip "(12 Months)" suffix from bb
   const bbClean = (bb || '—').replace(/\s*\(.*$/, '');
@@ -717,7 +737,7 @@ function buildBackHTML(p, v, bn, pd, bb) {
 
   return `<div class="bl-wrap">
     ${scaleCSS}
-    <div class="bltit" id="bltit-el">${(() => { const UNITS = ['SEASONING','MIX','POWDER','PASTE']; const raw = p.n.toUpperCase(); const words = raw.split(' '); if (words.length >= 2 && UNITS.includes(words[words.length-1])) { words[words.length-2] = words[words.length-2] + '\u00a0' + words[words.length-1]; words.pop(); } return words.join(' '); })()}</div>
+    <div class="bltit" id="bltit-el">${(() => { const UNITS = ['SEASONING','MIX','POWDER','PASTE']; const raw = displayName.toUpperCase(); const words = raw.split(' '); if (words.length >= 2 && UNITS.includes(words[words.length-1])) { words[words.length-2] = words[words.length-2] + '\u00a0' + words[words.length-1]; words.pop(); } return words.join(' '); })()}</div>
     ${jainLine}
     ${useLine}
     ${dukanLine}
@@ -877,7 +897,7 @@ document.addEventListener('input', function(e) {
 function pF() {
   let pname;
   if (ST.mode === 'manual') { pname = gv('m-name'); }
-  else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = ST.prod.n; }
+  else { if (!ST.prod) { showToast('Select a product first', 'error'); return; } pname = getDisplayName(); }
   if (!pname) { showToast('No product name entered', 'error'); return; }
   const name = pname.toUpperCase();
   const copies = getCopies();
@@ -905,37 +925,43 @@ function pF() {
   if (ST.mode === 'yellow365') {
     if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    const _savedN_y = ST.prod.n; ST.prod.n = getDisplayName();
     if (typeof qzPrintYellow === 'function') {
-      qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies).then(done => {
+      qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies).then(done => {
+        ST.prod.n = _savedN_y;
         if (done) _doTrack();
         else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
-          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false);
         }
       }).catch(() => {
+        ST.prod.n = _savedN_y;
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
-        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, copies, false);
+        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false);
       });
-    }
+    } else { ST.prod.n = _savedN_y; }
     return;
   }
   
   if (ST.mode === 'internal') {
     const dummyV = {d:'10 Kg', g:10000, m:0};
-    const v = ST.vi >= 0 && ST.db.v[ST.prod._key || ST.prod.n] ? ST.db.v[ST.prod._key || ST.prod.n][ST.vi] : dummyV;
+    const _savedN_i = ST.prod.n; ST.prod.n = getDisplayName();
+    const v = ST.vi >= 0 && ST.db.v[ST.prod._key || _savedN_i] ? ST.db.v[ST.prod._key || _savedN_i][ST.vi] : dummyV;
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
     if (typeof qzPrintInternal === 'function') {
       qzPrintInternal(ST.prod, v, bn, pd, bb, copies, true).then(done => {
+        ST.prod.n = _savedN_i;
         if (done) _doTrack();
         else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
           if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, v), copies, false, 'inner');
         }
       }).catch(() => {
+        ST.prod.n = _savedN_i;
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalInnerCanvas(ST.prod, v), copies, false, 'inner');
       });
-    }
+    } else { ST.prod.n = _savedN_i; }
     return;
   }
 
@@ -981,7 +1007,7 @@ function pB() {
     if (typeof trackPrint === 'function') trackPrint({
       stickerType: ST.mode,
       labelSide:   'back',
-      productName: p.n || '',
+      productName: (ST.mode === 'manual' ? p.n : getDisplayName()) || '',
       packSize:    v ? v.d : '—',
       weightG:     v ? (parseFloat(v.g) || 0) : 0,
       mrp:         v ? v.m : 0,
@@ -993,34 +1019,40 @@ function pB() {
   };
 
   if (ST.mode === 'new32') {
+    const _savedN_n32 = p.n; p.n = getDisplayName();
     if (typeof qzPrintNew32 === 'function') {
       qzPrintNew32(p, v, bn, pd, bb, copies).then(function(done) {
+        p.n = _savedN_n32;
         if (done) _doTrack();
         else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
           if (typeof buildNew32TSPL === 'function') buildNew32TSPL(p, v, bn, pd, bb, copies);
         }
-      }).catch(function() { 
+      }).catch(function() {
+        p.n = _savedN_n32;
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildNew32TSPL === 'function') buildNew32TSPL(p, v, bn, pd, bb, copies);
       });
-    }
+    } else { p.n = _savedN_n32; }
     return;
   }
 
   if (ST.mode === 'internal') {
+    const _savedN_int = p.n; p.n = getDisplayName();
     if (typeof qzPrintInternal === 'function') {
       qzPrintInternal(p, v, bn, pd, bb, copies, false).then(function(done) {
+        p.n = _savedN_int;
         if (done) _doTrack();
         else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
           if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalOuterCanvas(p, v, bn, pd, bb), copies, false, 'outer');
         }
-      }).catch(function() { 
+      }).catch(function() {
+        p.n = _savedN_int;
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildInternalTSPL === 'function') buildInternalTSPL(generateInternalOuterCanvas(p, v, bn, pd, bb), copies, false, 'outer');
       });
-    }
+    } else { p.n = _savedN_int; }
     return;
   }
 
