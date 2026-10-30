@@ -378,7 +378,7 @@ function buildFrontTSPL(name, copies, disablePopup) {
     clone.getContext('2d').drawImage(canvas, 0, 0);
     clone.style.width = '260px'; 
     clone.style.height = (DH/2) + 'px';
-    clone.style.border = '1px dashed #333';
+    
     
     preview.appendChild(clone);
     document.body.appendChild(preview);
@@ -824,7 +824,7 @@ function buildBackTSPL(p, v, bn, pd, bb, copies, disablePopup) {
       // scale to fit screen nicely
       clone.style.width = '200px'; 
       clone.style.height = (DH/2) + 'px';
-      clone.style.border = '1px dashed #333';
+      
       
       preview.appendChild(clone);
       document.body.appendChild(preview);
@@ -1030,7 +1030,7 @@ function buildNew32TSPL(p, v, bn, pd, bb, copies = 1, disablePopup = false) {
       clone.width = canvasToShow.width; clone.height = canvasToShow.height;
       clone.getContext('2d').drawImage(canvasToShow, 0, 0);
       clone.style.width = '260px'; 
-      clone.style.border = '1px dashed #333';
+      
       preview.appendChild(clone);
       document.body.appendChild(preview);
       setTimeout(() => { if(document.getElementById(prevId)) preview.remove(); }, 10000);
@@ -1104,134 +1104,137 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
 // PARTIES MODE (YELLOW 365) - 104.1 x 152.4 mm (4x6)
 // ─────────────────────────────────────────────────────────
 
-function generateYellowCanvas(p, v, bn, pd, bb) {
+function generateYellowCanvas(p, v, bn, pd, bb, goniOpts) {
+  goniOpts = goniOpts || {};
   const DW = 832;
-  const DH = 1218; // 4" x 6"
+  const DH = 1218;
   const canvas = document.createElement('canvas');
   canvas.width = DW;
   canvas.height = DH;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  
+
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, DW, DH);
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const leftPad = 48;
-  const rightPad = 48;
-  const usableW = DW - (leftPad + rightPad);
-  let y = 350; // Increased top margin to prevent overlapping the pre-printed logo
-  
-  function drawLine(label, value, isBold = false) {
-    if (!value && label !== 'NON-RETAIL CONTAINER – NOT FOR DIRECT SALE TO CONSUMER') return; 
-    ctx.font = 'bold 26px Arial, sans-serif';
-    const labelW = ctx.measureText(label).width;
-    ctx.fillText(label, leftPad, y);
-    
-    if (value) {
-      ctx.font = isBold ? 'bold 26px Arial, sans-serif' : '26px Arial, sans-serif';
-      const maxW = usableW - labelW - 10;
-      const words = value.split(' ');
-      let line = '';
-      let firstLine = true;
-      for (let i = 0; i < words.length; i++) {
-        let testLine = line + words[i] + ' ';
-        if (ctx.measureText(testLine).width > (firstLine ? maxW : usableW) && i > 0) {
-          ctx.fillText(line, firstLine ? leftPad + labelW + 10 : leftPad, y);
-          y += 34;
-          line = words[i] + ' ';
-          firstLine = false;
-        } else {
-          line = testLine;
-        }
-      }
-      ctx.fillText(line, firstLine ? leftPad + labelW + 10 : leftPad, y);
-    }
-    y += 48; 
+  const PAD = 28;
+  const usableW = DW - PAD * 2;
+
+  // ── Helpers ──
+  function rule(thick) {
+    ctx.fillRect(PAD, curY, usableW, thick || 2);
+    curY += (thick || 2);
   }
 
-  // Calculate Expiry Date (1 year from PD)
-  let edStr = '';
-  if (pd && pd.includes('/')) {
-    const parts = pd.split('/');
-    if (parts.length === 3) {
-      const edYear = parseInt(parts[2], 10) + 1;
-      let edDay = parseInt(parts[0], 10) - 1;
-      let edMonth = parseInt(parts[1], 10);
-      let yearAdj = edYear;
-      if (edDay === 0) {
-        edMonth -= 1;
-        if (edMonth === 0) {
-          edMonth = 12;
-          yearAdj -= 1;
-        }
-        const daysInMonth = new Date(yearAdj, edMonth, 0).getDate();
-        edDay = daysInMonth;
+  function centre(text, fs, bold) {
+    ctx.font = `${bold ? 'bold ' : ''}${fs}px Arial, sans-serif`;
+    const w = ctx.measureText(text).width;
+    ctx.fillText(text, PAD + (usableW - w) / 2, curY);
+    curY += fs;
+  }
+
+  // Draws "Label: " bold + value normal, word-wraps value. Returns lines used.
+  function row(label, value, fs, boldVal) {
+    ctx.font = `bold ${fs}px Arial, sans-serif`;
+    ctx.fillText(label, PAD, curY);
+    const lblW = ctx.measureText(label).width;
+    if (value) {
+      ctx.font = boldVal ? `bold ${fs}px Arial, sans-serif` : `${fs}px Arial, sans-serif`;
+      const maxFirst = usableW - lblW - 6;
+      const words = String(value).split(' ');
+      let line = '', first = true;
+      for (let i = 0; i < words.length; i++) {
+        const test = line + words[i] + ' ';
+        const maxW = first ? maxFirst : usableW;
+        if (ctx.measureText(test).width > maxW && i > 0) {
+          ctx.fillText(line.trim(), first ? PAD + lblW + 6 : PAD, curY);
+          curY += fs + 2;
+          line = words[i] + ' ';
+          first = false;
+        } else { line = test; }
       }
-      edStr = `${String(edDay).padStart(2,'0')}/${String(edMonth).padStart(2,'0')}/${yearAdj}`;
+      ctx.fillText(line.trim(), first ? PAD + lblW + 6 : PAD, curY);
     }
+    curY += fs;
+  }
+
+  function boldFull(text, fs) {
+    ctx.font = `bold ${fs}px Arial, sans-serif`;
+    const w = ctx.measureText(text).width;
+    if (w > usableW) ctx.font = `bold ${Math.floor(fs * usableW / w)}px Arial, sans-serif`;
+    ctx.fillText(text, PAD, curY);
+    curY += fs;
   }
 
   const batchCode = bn || v.bn || p.b || '';
+  const productName = p.n ? p.n.toUpperCase() : '';
+  const qcDateStr = goniOpts.qcDate ? (() => {
+    const d = new Date(goniOpts.qcDate);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  })() : '';
+  const netKg = goniOpts.netKg ? `${goniOpts.netKg} KG` : '__________________ KG';
 
-  drawLine('Product Name -', p.n.toUpperCase(), true);
-  y += 8;
-  
-  if (p.i) {
-    drawLine("Ingredient's -", p.i);
-    y += 8;
-  }
-  
+  // ── FIRST PASS: measure total height needed so we can compute gaps ──
+  // We have these vertical segments (heights in px at chosen font sizes):
+  const FS_HDR  = 44;  // L V SPICES
+  const FS_SEC  = 32;  // INTERNAL MANUFACTURING
+  const FS_BODY = 34;  // body rows
+  const RULE_H  = 3;
 
-  drawLine('Net Quantity -', v.d.toUpperCase(), true);
-  y += 8;
-  
-  drawLine('Batch No -', batchCode, true);
-  y += 8;
-  
-  drawLine('Date of Manufacturing -', pd, true);
-  y += 8;
-  
-  if (edStr) {
-    drawLine('Expiry Date -', edStr, true);
-    y += 8;
-  }
-  
-  const mrp = 36000;
-  drawLine('MRP -', `₹ ${mrp.toFixed(2)}`);
-  y += 8;
+  // Fixed heights
+  const fixedH =
+    6 + FS_HDR + 4 +          // top gap + header + gap
+    RULE_H + 4 +               // rule1 + gap
+    FS_SEC + 4 +               // section title + gap
+    RULE_H + 4 +               // rule2 + gap
+    FS_BODY * 12 +             // 12 body rows (product, batch, process, mfg, expiry, netWt, mfgBy, fssai, qcStatus, qcDate, storage, intended)
+    4 +                        // gap before footer rule
+    RULE_H + 4 +               // footer rule + gap
+    FS_BODY;                   // footer line
 
-  drawLine('Storage Instructions -', 'Store in a cool, dry, and hygienic place & Keep away from moisture and direct sunlight.');
-  y += 8;
+  // Distribute remaining space as gaps between body rows (11 gaps between 12 rows)
+  const remaining = DH - fixedH;
+  const rowGap = Math.max(8, Math.floor(remaining / 14)); // 14 gap slots total
 
-  drawLine('Allergen Information -', 'Processed in a facility that also contains Milk, Sesame and Mustard.');
-  y += 24;
+  let curY = 6;
 
-  // 3-line raw material disclaimer — same font/style as old NON-RETAIL CONTAINER line
-  ctx.font = 'bold 22px Arial, sans-serif';
-  const disclaimers = [
-    'RAW MATERIAL \u2013 INTERNAL USE ONLY',
-    'FOR REPACKING INTO LABELED RETAIL OR NON-RETAIL PACKS ONLY',
-    'NOT FOR DIRECT SALE TO CONSUMERS / NOT FOR LOOSE SALE'
-  ];
-  for (const line of disclaimers) {
-    const lw = ctx.measureText(line).width;
-    // Scale down if line is wider than usable area
-    if (lw > usableW) {
-      ctx.font = `bold ${Math.floor(22 * usableW / lw)}px Arial, sans-serif`;
-    } else {
-      ctx.font = 'bold 22px Arial, sans-serif';
-    }
-    const w = ctx.measureText(line).width;
-    ctx.fillText(line, leftPad, y);
-    y += 30;
-  }
+  // ── HEADER ──
+  centre('L V SPICES', FS_HDR, true);
+  curY += 4;
+  rule(RULE_H); curY += 4;
+  centre('INTERNAL MANUFACTURING', FS_SEC, true);
+  rule(RULE_H); curY += rowGap;
+
+  // ── BODY ROWS ──
+  row('Product Name: ', productName, FS_BODY, true); curY += rowGap;
+  row('Batch / Lot No.: ', batchCode, FS_BODY, true); curY += rowGap;
+  row('Process Type: ', goniOpts.processType || '', FS_BODY, false); curY += rowGap;
+  row('Mfg. / Blending Date: ', pd || '', FS_BODY, true); curY += rowGap;
+  row('Expiry Before: ', bb || '', FS_BODY, true); curY += rowGap;
+  row('Net Weight: ', netKg, FS_BODY, !!goniOpts.netKg); curY += rowGap;
+  row('Manufactured By: ', 'L V Spices', FS_BODY, false); curY += rowGap;
+  row('FSSAI Lic. No.: ', goniOpts.fssai || '', FS_BODY, false); curY += rowGap;
+
+  // QC Status with checkbox char
+  ctx.font = `bold ${FS_BODY}px Arial, sans-serif`;
+  ctx.fillText('QC Status: \u2610 Approved', PAD, curY);
+  curY += FS_BODY + rowGap;
+
+  row('QC Date: ', qcDateStr, FS_BODY, false); curY += rowGap;
+  row('Storage: ', 'Store in a cool, dry place.', FS_BODY, false); curY += rowGap;
+  row('Intended Use: ', goniOpts.intendedUse || '', FS_BODY, false);
+
+  // ── FOOTER ──
+  curY += 6;
+  rule(RULE_H); curY += 6;
+  boldFull('NOT FOR RETAIL SALE \u2013 INTERNAL USE ONLY', FS_BODY);
 
   return canvas;
 }
 
-function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup) {
-  const canvas = generateYellowCanvas(p, v, bn, pd, bb);
+function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup, goniOpts) {
+  const canvas = generateYellowCanvas(p, v, bn, pd, bb, goniOpts);
   const DW = canvas.width;
   const DH = canvas.height;
   const ctx = canvas.getContext('2d');
@@ -1244,15 +1247,15 @@ function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup) {
       
       const preview = document.createElement('div');
       preview.id = prevId;
-      preview.style.cssText = 'position:fixed; top:20px; left:20px; z-index:99999; border:3px solid #ff4757; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;';
-      preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#ff4757; font-family:sans-serif;">Yellow 365 Preview</div>';
+      preview.style.cssText = 'position:fixed; top:20px; left:20px; z-index:99999; border:3px solid #333; background:#fff; padding:10px; border-radius:8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto;';
+      preview.innerHTML = '<div style="margin-bottom:8px; font-weight:bold; color:#333; font-family:sans-serif;">Goni Sticker Preview</div>';
       
       const clone = document.createElement('canvas');
       clone.width = DW; clone.height = DH;
       clone.getContext('2d').drawImage(canvas, 0, 0);
       clone.style.width = '300px'; 
       clone.style.height = 'auto';
-      clone.style.border = '1px dashed #333';
+      
       
       preview.appendChild(clone);
       document.body.appendChild(preview);
@@ -1295,13 +1298,13 @@ function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup) {
   return printData;
 }
 
-async function qzPrintYellow(p, v, bn, pd, bb, copies) {
+async function qzPrintYellow(p, v, bn, pd, bb, copies, goniOpts) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;
-  const printData = buildYellowTSPL(p, v, bn, pd, bb, copies, true);
+  const printData = buildYellowTSPL(p, v, bn, pd, bb, copies, true, goniOpts);
   try {
     const printerName = 'TSC TA210';
-    console.log('[YELLOW 365] Sending to printer:', printerName);
+    console.log('[GONI STICKER] Sending to printer:', printerName);
     setQZStatus('printing');
     await qz.print(_rawConfig(printerName), printData); 
     setQZStatus('connected');
@@ -1512,7 +1515,7 @@ function buildInternalTSPL(canvas, copies, disablePopup, labelType) {
       clone.getContext('2d').drawImage(canvas, 0, 0);
       clone.style.width = '300px'; 
       clone.style.height = 'auto';
-      clone.style.border = '1px dashed #333';
+      
       
       preview.appendChild(clone);
       document.body.appendChild(preview);

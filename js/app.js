@@ -167,10 +167,14 @@ function setMode(mode) {
     else if (mode === 'dukan') desc.textContent = 'Search from Dukan Bai products';
     else if (mode === 'new32') desc.textContent = 'Search from 32x25 label products';
     else if (mode === 'parties') desc.textContent = 'Search from Parties data (Coming Soon)';
-    else if (mode === 'yellow365') desc.textContent = 'Search from YELLOW 365 products (104x152 mm)';
+    else if (mode === 'yellow365') desc.textContent = 'Search from GONI STICKER products (104x152 mm)';
     else if (mode === 'internal') desc.textContent = 'Search from Internal Material products (90x85 mm)';
     else desc.textContent = 'Search from products';
   }
+
+  // Show/hide Goni extra fields
+  const goniExtra = $('goni-extra-fields');
+  if (goniExtra) goniExtra.style.display = isYellow ? 'block' : 'none';
 
   clearProduct();
   
@@ -498,15 +502,24 @@ function render() {
 
 function renderFront() {
   const fp = $('fp'); if (!fp) return;
+  // Reset prevwrap styling for non-canvas modes
+  fp.style.padding = '';
+  fp.style.border = '';
+  fp.style.borderRadius = '';
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
   if (ST.mode === 'yellow365') {
     if (ST.vi < 0) { fp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    const goniOpts = { processType: gv('goni-process-type'), fssai: gv('goni-fssai'), netKg: gv('goni-net-kg'), qcDate: gv('goni-qc-date'), intendedUse: gv('goni-intended') };
     if (typeof generateYellowCanvas === 'function') {
-      const c = generateYellowCanvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb);
+      const c = generateYellowCanvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, goniOpts);
       c.style.width = '100%';
-      c.style.height = 'auto'; // allow it to scale naturally based on width
-      c.style.objectFit = 'contain';
+      c.style.height = 'auto';
+      c.style.display = 'block';
+      // Remove container padding/border so canvas fills flush
+      fp.style.padding = '0';
+      fp.style.border = 'none';
+      fp.style.borderRadius = '0';
       fp.innerHTML = '';
       fp.appendChild(c);
     }
@@ -925,19 +938,20 @@ function pF() {
   if (ST.mode === 'yellow365') {
     if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
+    const goniOpts = { processType: gv('goni-process-type'), fssai: gv('goni-fssai'), netKg: gv('goni-net-kg'), qcDate: gv('goni-qc-date'), intendedUse: gv('goni-intended') };
     const _savedN_y = ST.prod.n; ST.prod.n = getDisplayName();
     if (typeof qzPrintYellow === 'function') {
-      qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies).then(done => {
+      qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, goniOpts).then(done => {
         ST.prod.n = _savedN_y;
         if (done) _doTrack();
         else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
-          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false);
+          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false, goniOpts);
         }
       }).catch(() => {
         ST.prod.n = _savedN_y;
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
-        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false);
+        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false, goniOpts);
       });
     } else { ST.prod.n = _savedN_y; }
     return;

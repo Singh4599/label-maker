@@ -99,9 +99,9 @@
           </div>
         </button>
         <button class="nav-item" data-mode="yellow365" onclick="setMode('yellow365')">
-          <div class="nav-icon">🟨</div>
+          <div class="nav-icon">🌾</div>
           <div>
-            <span class="nav-title">YELLOW 365</span>
+            <span class="nav-title">GONI STICKER</span>
             <span class="nav-sub">104x152 Labels</span>
           </div>
         </button>
@@ -266,6 +266,33 @@
                   <option value="custom">Custom Date</option>
                 </select>
                 <input type="date" id="bb" class="hidden" style="margin-top:6px">
+              </div>
+            </div>
+            <!-- Goni Sticker extra fields (yellow365 only) -->
+            <div id="goni-extra-fields" style="display:none; margin-top:14px;">
+              <div class="fields-row">
+                <div class="field">
+                  <label for="goni-process-type">Process Type</label>
+                  <input type="text" id="goni-process-type" placeholder="e.g. Grinding / Blending" oninput="render()">
+                </div>
+                <div class="field">
+                  <label for="goni-fssai">FSSAI Lic. No.</label>
+                  <input type="text" id="goni-fssai" placeholder="e.g. 10012345000123" oninput="render()">
+                </div>
+              </div>
+              <div class="fields-row">
+                <div class="field">
+                  <label for="goni-net-kg">Net Weight (KG)</label>
+                  <input type="number" id="goni-net-kg" placeholder="e.g. 50" oninput="render()">
+                </div>
+                <div class="field">
+                  <label for="goni-qc-date">QC Date</label>
+                  <input type="date" id="goni-qc-date" oninput="render()">
+                </div>
+                <div class="field">
+                  <label for="goni-intended">Intended Use</label>
+                  <input type="text" id="goni-intended" placeholder="e.g. Retail Packing" oninput="render()">
+                </div>
               </div>
             </div>
           </div>
@@ -516,10 +543,10 @@
 <script src="js/parties-data.js?v=2"></script>
 <script src="js/internal-data.js?v=2"></script>
 <script src="js/qz-tray.js"></script>
-<script src="js/qz-print.js?v=98"></script>
+<script src="js/qz-print.js?v=101"></script>
 <script type="module" src="js/firebase-records.js?v=2"></script>
 <script src="js/records.js?v=5"></script>
-<script src="js/app.js?v=96"></script>
+<script src="js/app.js?v=98"></script>
 
 </body>
 </html>
