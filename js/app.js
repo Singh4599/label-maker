@@ -124,7 +124,7 @@ function setMode(mode) {
   } else if (mode === 'parties') {
     ST.db = { p: {}, v: {} };
   } else if (mode === 'yellow365') {
-    ST.db = typeof PARTIES_DB !== 'undefined' ? PARTIES_DB : { p: {}, v: {} };
+    ST.db = typeof GONI_DB !== 'undefined' ? GONI_DB : { p: {}, v: {} };
   } else if (mode === 'internal') {
     ST.db = typeof INTERNAL_DB !== 'undefined' ? INTERNAL_DB : { p: {}, v: {} };
   }
@@ -173,15 +173,14 @@ function setMode(mode) {
   }
 
   // Show/hide Goni extra fields
-  const goniExtra = $('goni-extra-fields');
-  if (goniExtra) goniExtra.style.display = isYellow ? 'block' : 'none';
+  // (no extra goni fields)
 
   clearProduct();
   
   // Handle Category Wrapper Visibility
   const catWrap = $('cat-wrap');
   if (catWrap) {
-    if (isDukan || isNew32 || mode === 'parties' || isYellow) {
+    if (isDukan || isNew32 || mode === 'parties') {
       catWrap.style.display = 'none';
     } else {
       catWrap.style.display = 'block';
@@ -196,8 +195,11 @@ function showDrop(names) {
   const drop = $('drop'); if (!drop) return;
   drop.innerHTML = '';
   names.forEach(n => {
+    const prod = ST.db.p[n];
+    const displayN = prod ? (prod.n || n) : n;
     const d = document.createElement('div');
-    d.innerHTML = `${ST.db.p[n].icon || '🌿'} &nbsp;${n}`;
+    d.innerHTML = `${(prod && prod.icon) || '🌿'} &nbsp;${displayN}`;
+    d.dataset.key = n;
     d.addEventListener('mousedown', e => { e.preventDefault(); pickProduct(n); });
     drop.appendChild(d);
   });
@@ -226,7 +228,7 @@ function attachSearchListeners() {
       .filter(n => {
         const prod = ST.db.p[n];
         if (catFilter && prod.c !== catFilter) return false;
-        return n.toLowerCase().includes(q);
+        return n.toLowerCase().includes(q) || (prod.n && prod.n.toLowerCase().includes(q));
       })
       .slice(0, 20);
     if (!hits.length) { closeDrop(); return; }
@@ -251,7 +253,7 @@ function attachSearchListeners() {
       if (pv) { if (hi) hi.classList.remove('hi'); pv.classList.add('hi'); }
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const target = hi || its[0]; if (target) pickProduct(target.textContent.trim().replace(/^[^\w\s]+\s*/,''));
+      const target = hi || its[0]; if (target) pickProduct(target.dataset.key || target.textContent.trim().replace(/^[^\w\s]+\s*/,''));
     } else if (e.key === 'Escape') { closeDrop(); }
   });
 
@@ -282,6 +284,8 @@ function pickProduct(rawName) {
   closeDrop();
   showProductCard(p);
   renderPackBtns();
+  // For Goni mode — auto-select the single default variant (index 0)
+  if (ST.mode === 'yellow365') { ST.vi = 0; }
   render();
 }
 
@@ -508,11 +512,11 @@ function renderFront() {
   fp.style.borderRadius = '';
   if (!ST.prod) { fp.innerHTML = '<span class="emptylbl">Select a product to preview</span>'; return; }
   if (ST.mode === 'yellow365') {
+    if (ST.vi < 0 && ST.prod && ST.db.v && ST.db.v[ST.prod._key || ST.prod.n]) ST.vi = 0;
     if (ST.vi < 0) { fp.innerHTML = '<span class="emptylbl">Select product + pack size to preview</span>'; return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
-    const goniOpts = { processType: gv('goni-process-type'), fssai: gv('goni-fssai'), netKg: gv('goni-net-kg'), qcDate: gv('goni-qc-date'), intendedUse: gv('goni-intended') };
     if (typeof generateYellowCanvas === 'function') {
-      const c = generateYellowCanvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb, goniOpts);
+      const c = generateYellowCanvas(ST.prod, ST.db.v[ST.prod._key || ST.prod.n][ST.vi], bn, pd, bb);
       c.style.width = '100%';
       c.style.height = 'auto';
       c.style.display = 'block';
@@ -938,20 +942,19 @@ function pF() {
   if (ST.mode === 'yellow365') {
     if (ST.vi < 0) { showToast('Select pack size first', 'error'); return; }
     const bn = gv('bn'), pd = fmtDate(gv('pd')), bb = getBBValue('bb-sel','bb');
-    const goniOpts = { processType: gv('goni-process-type'), fssai: gv('goni-fssai'), netKg: gv('goni-net-kg'), qcDate: gv('goni-qc-date'), intendedUse: gv('goni-intended') };
     const _savedN_y = ST.prod.n; ST.prod.n = getDisplayName();
     if (typeof qzPrintYellow === 'function') {
-      qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, goniOpts).then(done => {
+      qzPrintYellow(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies).then(done => {
         ST.prod.n = _savedN_y;
         if (done) _doTrack();
         else {
           showToast('Testing preview mode. QZ Tray is offline.', 'info');
-          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false, goniOpts);
+          if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false);
         }
       }).catch(() => {
         ST.prod.n = _savedN_y;
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
-        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false, goniOpts);
+        if (typeof buildYellowTSPL === 'function') buildYellowTSPL(ST.prod, ST.db.v[ST.prod._key || _savedN_y][ST.vi], bn, pd, bb, copies, false);
       });
     } else { ST.prod.n = _savedN_y; }
     return;

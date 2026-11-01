@@ -1104,8 +1104,7 @@ async function qzPrintBack(p, v, bn, pd, bb, copies) {
 // PARTIES MODE (YELLOW 365) - 104.1 x 152.4 mm (4x6)
 // ─────────────────────────────────────────────────────────
 
-function generateYellowCanvas(p, v, bn, pd, bb, goniOpts) {
-  goniOpts = goniOpts || {};
+function generateYellowCanvas(p, v, bn, pd, bb) {
   const DW = 832;
   const DH = 1218;
   const canvas = document.createElement('canvas');
@@ -1118,123 +1117,139 @@ function generateYellowCanvas(p, v, bn, pd, bb, goniOpts) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const PAD = 28;
+  const PAD = 44;
   const usableW = DW - PAD * 2;
+  const FS = 38;         // base font size
+  const INNER_LH = 40;  // spacing between wrapped continuation lines within a field
+  const PAD_TOP = 28;
+  const PAD_BOT = 28;
 
-  // ── Helpers ──
-  function rule(thick) {
-    ctx.fillRect(PAD, curY, usableW, thick || 2);
-    curY += (thick || 2);
-  }
+  const batchCode = bn || (v && v.bn) || p.b || '';
+  const ingredients = p.i || '';
 
-  function centre(text, fs, bold) {
-    ctx.font = `${bold ? 'bold ' : ''}${fs}px Arial, sans-serif`;
-    const w = ctx.measureText(text).width;
-    ctx.fillText(text, PAD + (usableW - w) / 2, curY);
-    curY += fs;
-  }
-
-  // Draws "Label: " bold + value normal, word-wraps value. Returns lines used.
-  function row(label, value, fs, boldVal) {
-    ctx.font = `bold ${fs}px Arial, sans-serif`;
-    ctx.fillText(label, PAD, curY);
-    const lblW = ctx.measureText(label).width;
-    if (value) {
-      ctx.font = boldVal ? `bold ${fs}px Arial, sans-serif` : `${fs}px Arial, sans-serif`;
-      const maxFirst = usableW - lblW - 6;
-      const words = String(value).split(' ');
-      let line = '', first = true;
-      for (let i = 0; i < words.length; i++) {
-        const test = line + words[i] + ' ';
-        const maxW = first ? maxFirst : usableW;
-        if (ctx.measureText(test).width > maxW && i > 0) {
-          ctx.fillText(line.trim(), first ? PAD + lblW + 6 : PAD, curY);
-          curY += fs + 2;
-          line = words[i] + ' ';
-          first = false;
-        } else { line = test; }
-      }
-      ctx.fillText(line.trim(), first ? PAD + lblW + 6 : PAD, curY);
+  // ── word-wrap helper ──
+  function wrapText(text, maxW, fs) {
+    ctx.font = `${fs}px Arial, sans-serif`;
+    const words = String(text).split(' ');
+    const lines = [];
+    let line = '';
+    for (const w of words) {
+      const test = line + (line ? ' ' : '') + w;
+      if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+      else { line = test; }
     }
-    curY += fs;
+    if (line) lines.push(line);
+    return lines;
   }
 
-  function boldFull(text, fs) {
-    ctx.font = `bold ${fs}px Arial, sans-serif`;
-    const w = ctx.measureText(text).width;
-    if (w > usableW) ctx.font = `bold ${Math.floor(fs * usableW / w)}px Arial, sans-serif`;
-    ctx.fillText(text, PAD, curY);
-    curY += fs;
+  // ── measure height a field will occupy ──
+  function fieldHeight(label, value, bold, plain, innerLH) {
+    if (plain) return 0; // height counted in field spacing
+    ctx.font = `bold ${FS}px Arial, sans-serif`;
+    const lblW = ctx.measureText(label).width;
+    if (!value) return 0;
+    const segments = String(value).split('\n');
+    let h = 0;
+    let first = true;
+    for (const seg of segments) {
+      const maxW = first ? usableW - lblW - 6 : usableW;
+      const wrapped = wrapText(seg, maxW, FS);
+      h += (wrapped.length - 1) * innerLH;
+      first = false;
+    }
+    return h;
   }
 
-  const batchCode = bn || v.bn || p.b || '';
-  const productName = p.n ? p.n.toUpperCase() : '';
-  const qcDateStr = goniOpts.qcDate ? (() => {
-    const d = new Date(goniOpts.qcDate);
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-  })() : '';
-  const netKg = goniOpts.netKg ? `${goniOpts.netKg} KG` : '__________________ KG';
+  // ── Build field list ──
+  const prodName = p.n ? p.n.toUpperCase() : '';
 
-  // ── FIRST PASS: measure total height needed so we can compute gaps ──
-  // We have these vertical segments (heights in px at chosen font sizes):
-  const FS_HDR  = 44;  // L V SPICES
-  const FS_SEC  = 32;  // INTERNAL MANUFACTURING
-  const FS_BODY = 34;  // body rows
-  const RULE_H  = 3;
+  const FIELDS = [
+    { label: 'Product Name: ',           value: prodName,    plain: false, nameField: true },
+    { label: 'Ingredients : ',           value: ingredients, plain: false },
+    { label: 'Net Weight: ',             value: '50 Kg',     plain: false },
+    { label: 'Batch / Lot No.: ',        value: batchCode,   plain: false },
+    { label: 'Date Of Manufacturing : ', value: pd || '',    plain: false },
+    { label: 'Expiry Date : ',           value: bb || '',    plain: false },
+    { label: 'QC Status - Approved',     value: '',          plain: true  },
+    { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
+    { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
+    { label: 'NOT FOR RETAIL SALE - INTERNAL USE ONLY \u2013 NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true, bold: true },
+  ];
 
-  // Fixed heights
-  const fixedH =
-    6 + FS_HDR + 4 +          // top gap + header + gap
-    RULE_H + 4 +               // rule1 + gap
-    FS_SEC + 4 +               // section title + gap
-    RULE_H + 4 +               // rule2 + gap
-    FS_BODY * 12 +             // 12 body rows (product, batch, process, mfg, expiry, netWt, mfgBy, fssai, qcStatus, qcDate, storage, intended)
-    4 +                        // gap before footer rule
-    RULE_H + 4 +               // footer rule + gap
-    FS_BODY;                   // footer line
+  // ── Total extra height from wrapping within fields ──
+  let extraH = 0;
+  for (const f of FIELDS) {
+    extraH += fieldHeight(f.label, f.value, false, f.plain, INNER_LH);
+  }
 
-  // Distribute remaining space as gaps between body rows (11 gaps between 12 rows)
-  const remaining = DH - fixedH;
-  const rowGap = Math.max(8, Math.floor(remaining / 14)); // 14 gap slots total
+  // ── Distribute remaining height as base row height ──
+  const nFields = FIELDS.length;
+  const avail = DH - PAD_TOP - PAD_BOT - extraH;
+  const BASE_H = Math.max(52, Math.floor(avail / nFields)); // height per field row
 
-  let curY = 6;
+  let curY = PAD_TOP;
 
-  // ── HEADER ──
-  centre('L V SPICES', FS_HDR, true);
-  curY += 4;
-  rule(RULE_H); curY += 4;
-  centre('INTERNAL MANUFACTURING', FS_SEC, true);
-  rule(RULE_H); curY += rowGap;
-
-  // ── BODY ROWS ──
-  row('Product Name: ', productName, FS_BODY, true); curY += rowGap;
-  row('Batch / Lot No.: ', batchCode, FS_BODY, true); curY += rowGap;
-  row('Process Type: ', goniOpts.processType || '', FS_BODY, false); curY += rowGap;
-  row('Mfg. / Blending Date: ', pd || '', FS_BODY, true); curY += rowGap;
-  row('Expiry Before: ', bb || '', FS_BODY, true); curY += rowGap;
-  row('Net Weight: ', netKg, FS_BODY, !!goniOpts.netKg); curY += rowGap;
-  row('Manufactured By: ', 'L V Spices', FS_BODY, false); curY += rowGap;
-  row('FSSAI Lic. No.: ', goniOpts.fssai || '', FS_BODY, false); curY += rowGap;
-
-  // QC Status with checkbox char
-  ctx.font = `bold ${FS_BODY}px Arial, sans-serif`;
-  ctx.fillText('QC Status: \u2610 Approved', PAD, curY);
-  curY += FS_BODY + rowGap;
-
-  row('QC Date: ', qcDateStr, FS_BODY, false); curY += rowGap;
-  row('Storage: ', 'Store in a cool, dry place.', FS_BODY, false); curY += rowGap;
-  row('Intended Use: ', goniOpts.intendedUse || '', FS_BODY, false);
-
-  // ── FOOTER ──
-  curY += 6;
-  rule(RULE_H); curY += 6;
-  boldFull('NOT FOR RETAIL SALE \u2013 INTERNAL USE ONLY', FS_BODY);
+  // ── Draw each field ──
+  for (const f of FIELDS) {
+    if (f.bold && f.plain) {
+      // Bold disclaimer — auto-shrink to fit one line
+      ctx.font = `bold ${FS}px Arial, sans-serif`;
+      const tw = ctx.measureText(f.label).width;
+      const drawFS = tw > usableW ? Math.floor(FS * usableW / tw) : FS;
+      ctx.font = `bold ${drawFS}px Arial, sans-serif`;
+      ctx.fillText(f.label, PAD, curY);
+      curY += BASE_H;
+    } else if (f.plain) {
+      // Single plain line
+      ctx.font = `${FS}px Arial, sans-serif`;
+      ctx.fillText(f.label, PAD, curY);
+      curY += BASE_H;
+    } else if (f.nameField) {
+      // Product Name — bold label + bold value, auto-shrink value to ONE line
+      ctx.font = `bold ${FS}px Arial, sans-serif`;
+      ctx.fillText(f.label, PAD, curY);
+      const lblW = ctx.measureText(f.label).width;
+      if (f.value) {
+        const valMaxW = usableW - lblW - 6;
+        let valFS = FS;
+        ctx.font = `bold ${valFS}px Arial, sans-serif`;
+        while (ctx.measureText(f.value).width > valMaxW && valFS > 18) {
+          valFS--;
+          ctx.font = `bold ${valFS}px Arial, sans-serif`;
+        }
+        ctx.fillText(f.value, PAD + lblW + 6, curY);
+      }
+      curY += BASE_H;
+    } else {
+      // Standard: bold label + normal value, word-wrapped
+      ctx.font = `bold ${FS}px Arial, sans-serif`;
+      ctx.fillText(f.label, PAD, curY);
+      const lblW = ctx.measureText(f.label).width;
+      if (f.value) {
+        const segments = String(f.value).split('\n');
+        let firstSeg = true;
+        for (const seg of segments) {
+          const maxW = firstSeg ? usableW - lblW - 6 : usableW;
+          const lines = wrapText(seg, maxW, FS);
+          for (let li = 0; li < lines.length; li++) {
+            const xPos = (firstSeg && li === 0) ? PAD + lblW + 6 : PAD;
+            ctx.font = `${FS}px Arial, sans-serif`;
+            ctx.fillText(lines[li], xPos, curY);
+            if (li < lines.length - 1) curY += INNER_LH;
+          }
+          firstSeg = false;
+          if (segments.length > 1) curY += INNER_LH;
+        }
+      }
+      curY += BASE_H;
+    }
+  }
 
   return canvas;
 }
 
-function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup, goniOpts) {
-  const canvas = generateYellowCanvas(p, v, bn, pd, bb, goniOpts);
+function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup) {
+  const canvas = generateYellowCanvas(p, v, bn, pd, bb);
   const DW = canvas.width;
   const DH = canvas.height;
   const ctx = canvas.getContext('2d');
@@ -1298,10 +1313,10 @@ function buildYellowTSPL(p, v, bn, pd, bb, copies, disablePopup, goniOpts) {
   return printData;
 }
 
-async function qzPrintYellow(p, v, bn, pd, bb, copies, goniOpts) {
+async function qzPrintYellow(p, v, bn, pd, bb, copies) {
   if (typeof qz === 'undefined') return false;
   if (!await _ensureConnected()) return false;
-  const printData = buildYellowTSPL(p, v, bn, pd, bb, copies, true, goniOpts);
+  const printData = buildYellowTSPL(p, v, bn, pd, bb, copies, true);
   try {
     const printerName = 'TSC TA210';
     console.log('[GONI STICKER] Sending to printer:', printerName);
