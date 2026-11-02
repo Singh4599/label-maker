@@ -268,27 +268,40 @@ function generateFrontCanvas(name) {
     return lines;
   }
 
-  let lines = balanceLines(n, 1);
-  if (n.length > 15 && n.length <= 26) {
-    lines = smartSplit(n, 2);
-    if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')];
-  } else if (n.length > 26) {
-    lines = smartSplit(n, 3);
-    if (lines.length < 3) {
-      const words = n.split(' ');
-      if (words.length >= 3) {
-        const third = Math.ceil(words.length / 3);
-        let candidate = [
-          words.slice(0, third).join(' '),
-          words.slice(third, third * 2).join(' '),
-          words.slice(third * 2).join(' ')
-        ];
-        // Apply unit-word fix to the fallback split too
-        if (candidate.length >= 2 && UNIT_WORDS.includes(candidate[candidate.length - 1].trim())) {
-          candidate[candidate.length - 2] += ' ' + candidate[candidate.length - 1];
-          candidate = candidate.slice(0, -1);
+  // Dukan "first word BIG, rest small" special products
+  const SPLIT_FIRST_PRODUCTS = [
+    'GREEN CORIANDER SEASONING', 'SARAS CORIANDER SEASONING',
+    'GOLDEN TURMERIC POWDER', 'SELAM TURMERIC POWDER'
+  ];
+  const isDukanSplit = (currentMode === 'dukan') && SPLIT_FIRST_PRODUCTS.includes(n);
+
+  let lines;
+  if (isDukanSplit) {
+    const words = n.split(' ');
+    lines = [words[0], words.slice(1).join(' ')];
+  } else {
+    lines = balanceLines(n, 1);
+    if (n.length > 15 && n.length <= 26) {
+      lines = smartSplit(n, 2);
+      if (lines.length > 2) lines = [lines[0], lines.slice(1).join(' ')];
+    } else if (n.length > 26) {
+      lines = smartSplit(n, 3);
+      if (lines.length < 3) {
+        const words = n.split(' ');
+        if (words.length >= 3) {
+          const third = Math.ceil(words.length / 3);
+          let candidate = [
+            words.slice(0, third).join(' '),
+            words.slice(third, third * 2).join(' '),
+            words.slice(third * 2).join(' ')
+          ];
+          // Apply unit-word fix to the fallback split too
+          if (candidate.length >= 2 && UNIT_WORDS.includes(candidate[candidate.length - 1].trim())) {
+            candidate[candidate.length - 2] += ' ' + candidate[candidate.length - 1];
+            candidate = candidate.slice(0, -1);
+          }
+          lines = candidate;
         }
-        lines = candidate;
       }
     }
   }
@@ -310,11 +323,23 @@ function generateFrontCanvas(name) {
   
   const gap = numLines > 1 ? 8 : 0;
   const totalGap = gap * (numLines - 1);
-  const lineDestH = Math.floor((usableH - totalGap) / numLines);
+
+  // For dukan split: line 0 gets 62% of height, line 1 gets 38%
+  let lineDestH = Math.floor((usableH - totalGap) / numLines);
+  let lineHeights;
+  if (isDukanSplit && numLines === 2) {
+    lineHeights = [
+      Math.floor((usableH - gap) * 0.62),
+      Math.floor((usableH - gap) * 0.38)
+    ];
+  } else {
+    lineHeights = Array(numLines).fill(lineDestH);
+  }
 
   let currentY = SAFE_Y;
 
   for (let i = 0; i < numLines; i++) {
+    const lineDestH = lineHeights[i];
     const ln = lines[i];
     const lCanvas = document.createElement('canvas');
     const lCtx = lCanvas.getContext('2d');
@@ -1119,8 +1144,8 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
 
   const PAD = 44;
   const usableW = DW - PAD * 2;
-  const FS = 38;         // base font size
-  const INNER_LH = 40;  // spacing between wrapped continuation lines within a field
+  const FS = 28;         // base font size
+  const INNER_LH = 32;  // spacing between wrapped continuation lines within a field
   // Top & bottom margins — logo is pre-printed at top, manufacturer block at bottom.
   // We only print the MIDDLE content zone. Leave ~18mm (144px) top, ~22mm (176px) bottom.
   const PAD_TOP = 144;
@@ -1175,7 +1200,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     { label: 'QC Status - Approved',     value: '',          plain: true  },
     { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
     { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
-    { label: 'NOT FOR RETAIL SALE - INTERNAL USE ONLY \u2013 NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true, bold: true },
+    { label: 'NOT FOR RETAIL SALE - INTERNAL USE ONLY – NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true },
   ];
 
   // ── Total extra height from wrapping within fields ──
