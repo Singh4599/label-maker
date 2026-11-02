@@ -1142,146 +1142,166 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   ctx.fillStyle = 'black';
   ctx.textBaseline = 'top';
 
-  const PAD = 44;
+  // PAD = left/right padding inside printable area
+  const PAD = 40;
   const usableW = DW - PAD * 2;
-  const FS = 32;         // base font size
-  const INNER_LH = 36;  // spacing between wrapped continuation lines within a field
-  // Top & bottom margins — logo is pre-printed at top, manufacturer block at bottom.
-  // We only print the MIDDLE content zone. Leave ~18mm (144px) top, ~22mm (176px) bottom.
-  const PAD_TOP = 250;  // top margin
-  const PAD_BOT = 350;  // bottom margin
+
+  // From physical blank sticker measurement:
+  // Logo block (pre-printed) = top ~25% of 152.4mm = ~38mm = 304px
+  // Manufacturer block (pre-printed) = bottom ~22% = ~33mm = 264px
+  // MIDDLE ZONE = remaining 650px (~81mm) — this is where we print
+  const PAD_TOP = 304;
+  const PAD_BOT = 264;
+  const AVAIL_H = DH - PAD_TOP - PAD_BOT; // ~650px
 
   const batchCode = bn || (v && v.bn) || p.b || '';
   const ingredients = p.i || '';
+  const prodName = p.n ? p.n.toUpperCase() : '';
 
-  // ── word-wrap helper ──
-  function wrapText(text, maxW, fs) {
-    ctx.font = `${fs}px Arial, sans-serif`;
+  // ── word-wrap: fills each line completely before wrapping ──
+  function wrapText(text, maxW, fs, bold) {
+    ctx.font = `${bold ? 'bold ' : ''}${fs}px Arial, sans-serif`;
     const words = String(text).split(' ');
     const lines = [];
     let line = '';
     for (const w of words) {
-      const test = line + (line ? ' ' : '') + w;
-      if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
-      else { line = test; }
-    }
-    if (line) lines.push(line);
-    return lines;
-  }
-
-  // ── Build field list ──
-  const prodName = p.n ? p.n.toUpperCase() : '';
-
-  const FIELDS = [
-    { label: 'Product Name: ',           value: prodName,    plain: false, nameField: true },
-    { label: 'Ingredients : ',           value: ingredients, plain: false },
-    { label: 'Net Weight: ',             value: '50 Kg',     plain: false },
-    { label: 'Batch / Lot No.: ',        value: batchCode,   plain: false },
-    { label: 'Date Of Manufacturing : ', value: pd || '',    plain: false },
-    { label: 'Expiry Date : ',           value: (bb || '').replace(/\s*\(.*$/, ''), plain: false },
-    { label: 'QC Status - Approved',     value: '',          plain: true  },
-    { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
-    { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
-    { label: 'NOT FOR RETAIL SALE',               value: '', plain: true },
-    { label: 'INTERNAL USE ONLY',                 value: '', plain: true },
-    { label: 'NOT FOR DIRECT SALE TO CONSUMER',   value: '', plain: true },
-  ];
-
-  const AVAIL_H = DH - PAD_TOP - PAD_BOT; // total printable zone height
-
-  // ── Auto-shrink: find largest FS where all content fits in AVAIL_H ──
-  function measureTotalHeight(fs) {
-    const lh      = fs + 4;   // wrap line height within a field
-    const rowH    = fs + 12;  // base row height = text + inter-field gap
-    const plainH  = fs + 18;  // disclaimer row gap (slightly more)
-    let h = 0;
-    for (const f of FIELDS) {
-      if (f.plain) {
-        h += plainH;
-      } else if (f.nameField) {
-        h += rowH;
+      const test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width > maxW && line) {
+        lines.push(line);
+        line = w;
       } else {
-        ctx.font = `bold ${fs}px Arial, sans-serif`;
-        const lblW = ctx.measureText(f.label).width;
-        let extra = 0;
-        if (f.value) {
-          const segs = String(f.value).split('\n');
-          let first = true;
-          for (const seg of segs) {
-            const maxW = first ? usableW - lblW - 6 : usableW;
-            const wrapped = wrapText(seg, maxW, fs);
-            extra += (wrapped.length - 1) * lh;
-            first = false;
-          }
-        }
-        h += rowH + extra;
+        line = test;
       }
     }
-    return h;
+    if (line) lines.push(line);
+    return lines.length ? lines : [''];
   }
 
-  // Start at FS=36, shrink until all content fits within AVAIL_H
-  let dynFS = 36;
-  while (dynFS > 18 && measureTotalHeight(dynFS) > AVAIL_H) {
+  // ── measure label width (bold) ──
+  function lblW(label, fs) {
+    ctx.font = `bold ${fs}px Arial, sans-serif`;
+    return ctx.measureText(label).width;
+  }
+
+  const FIELDS = [
+    { label: 'Product Name: ',           value: prodName,    nameField: true },
+    { label: 'Ingredients : ',           value: ingredients               },
+    { label: 'Net Weight: ',             value: '50 Kg'                   },
+    { label: 'Batch / Lot No.: ',        value: batchCode                 },
+    { label: 'Date Of Manufacturing : ', value: pd || ''                  },
+    { label: 'Expiry Date : ',           value: (bb || '').replace(/\s*\(.*$/, '') },
+    { label: 'QC Status - Approved',     plain: true                      },
+    { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.' },
+    { label: 'Intended Use: ',           value: 'Retail Packing'          },
+    { label: 'NOT FOR RETAIL SALE',      plain: true                      },
+    { label: 'INTERNAL USE ONLY',        plain: true                      },
+    { label: 'NOT FOR DIRECT SALE TO CONSUMER', plain: true              },
+  ];
+
+  // ── Count total text lines at a given font size ──
+  function countLines(fs) {
+    let total = 0;
+    for (const f of FIELDS) {
+      if (f.plain) {
+        total += 1;
+      } else if (f.nameField) {
+        total += 1; // product name always 1 line (auto-shrinks)
+      } else {
+        if (!f.value) { total += 1; continue; }
+        // first segment: starts after label
+        const lw = lblW(f.label, fs);
+        const firstW = usableW - lw - 8;
+        const segs = String(f.value).split('\n');
+        let first = true;
+        for (const seg of segs) {
+          const mW = first ? firstW : usableW;
+          const wrapped = wrapText(seg, mW, fs, false);
+          total += wrapped.length;
+          first = false;
+        }
+      }
+    }
+    return total;
+  }
+
+  // ── Binary search: find largest FS so all lines fit in AVAIL_H ──
+  // Line height = fs * 1.45 (text + gap), plain gets extra gap
+  // We use a simple budget: AVAIL_H / totalLines = lineH, derive fs = lineH / 1.45
+  // Then verify with actual countLines at that fs.
+  // Iterate from max down to 16.
+  let dynFS = 38;
+  while (dynFS > 16) {
+    const totalLines = countLines(dynFS);
+    // Budget: each normal line = dynFS + 8px gap; plain lines = dynFS + 14px gap
+    // Count normal vs plain lines
+    let normalLines = 0, plainLines = 0;
+    for (const f of FIELDS) {
+      if (f.plain) plainLines++;
+      else {
+        if (!f.value || f.nameField) { normalLines++; continue; }
+        const lw = lblW(f.label, dynFS);
+        const firstW = usableW - lw - 8;
+        const segs = String(f.value).split('\n');
+        let first = true;
+        for (const seg of segs) {
+          const mW = first ? firstW : usableW;
+          normalLines += wrapText(seg, mW, dynFS, false).length;
+          first = false;
+        }
+      }
+    }
+    const needed = normalLines * (dynFS + 8) + plainLines * (dynFS + 16);
+    if (needed <= AVAIL_H) break;
     dynFS--;
   }
 
-  // Row heights at chosen dynFS
-  const INNER_LH_D = dynFS + 4;
-  const BASE_H     = dynFS + 12;
-  const PLAIN_H    = dynFS + 18;
+  const LINE_H  = dynFS + 8;   // normal row line height
+  const PLAIN_H = dynFS + 16;  // plain/disclaimer line height
 
   let curY = PAD_TOP;
 
-  // ── Draw each field ──
   for (const f of FIELDS) {
     if (f.plain) {
-      // Plain line — each "NOT FOR..." line
       ctx.font = `${dynFS}px Arial, sans-serif`;
-      const plainLines = wrapText(f.label, usableW, dynFS);
-      for (let pi = 0; pi < plainLines.length; pi++) {
-        ctx.fillText(plainLines[pi], PAD, curY);
-        if (pi < plainLines.length - 1) curY += INNER_LH_D;
-      }
+      ctx.fillText(f.label, PAD, curY);
       curY += PLAIN_H;
     } else if (f.nameField) {
-      // Product Name — bold label + bold value, auto-shrink value to ONE line
+      // Product Name: bold label on same line, value auto-shrinks to fit
       ctx.font = `bold ${dynFS}px Arial, sans-serif`;
       ctx.fillText(f.label, PAD, curY);
-      const lblW = ctx.measureText(f.label).width;
+      const lw = ctx.measureText(f.label).width;
       if (f.value) {
-        const valMaxW = usableW - lblW - 6;
         let valFS = dynFS;
         ctx.font = `bold ${valFS}px Arial, sans-serif`;
-        while (ctx.measureText(f.value).width > valMaxW && valFS > 14) {
+        while (ctx.measureText(f.value).width > usableW - lw - 8 && valFS > 12) {
           valFS--;
           ctx.font = `bold ${valFS}px Arial, sans-serif`;
         }
-        ctx.fillText(f.value, PAD + lblW + 6, curY);
+        ctx.fillText(f.value, PAD + lw + 8, curY);
       }
-      curY += BASE_H;
+      curY += LINE_H;
     } else {
-      // Standard: bold label + normal value, word-wrapped
+      // Bold label, then normal wrapped value — label and first value on same line
       ctx.font = `bold ${dynFS}px Arial, sans-serif`;
       ctx.fillText(f.label, PAD, curY);
-      const lblW = ctx.measureText(f.label).width;
+      const lw = ctx.measureText(f.label).width;
       if (f.value) {
-        const segments = String(f.value).split('\n');
+        const segs = String(f.value).split('\n');
         let firstSeg = true;
-        for (const seg of segments) {
-          const maxW = firstSeg ? usableW - lblW - 6 : usableW;
-          const lines = wrapText(seg, maxW, dynFS);
+        for (const seg of segs) {
+          const maxW = firstSeg ? usableW - lw - 8 : usableW;
+          const lines = wrapText(seg, maxW, dynFS, false);
           for (let li = 0; li < lines.length; li++) {
-            const xPos = (firstSeg && li === 0) ? PAD + lblW + 6 : PAD;
+            const xPos = (firstSeg && li === 0) ? PAD + lw + 8 : PAD;
             ctx.font = `${dynFS}px Arial, sans-serif`;
             ctx.fillText(lines[li], xPos, curY);
-            if (li < lines.length - 1) curY += INNER_LH_D;
+            if (li < lines.length - 1) curY += LINE_H;
           }
           firstSeg = false;
-          if (segments.length > 1) curY += INNER_LH_D;
+          if (segments && segs.length > 1) curY += LINE_H;
         }
       }
-      curY += BASE_H;
+      curY += LINE_H;
     }
   }
 
