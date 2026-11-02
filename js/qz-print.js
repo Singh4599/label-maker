@@ -1149,7 +1149,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   // Top & bottom margins — logo is pre-printed at top, manufacturer block at bottom.
   // We only print the MIDDLE content zone. Leave ~18mm (144px) top, ~22mm (176px) bottom.
   const PAD_TOP = 250;  // top margin
-  const PAD_BOT = 510;  // bottom margin
+  const PAD_BOT = 350;  // bottom margin
 
   const batchCode = bn || (v && v.bn) || p.b || '';
   const ingredients = p.i || '';
@@ -1191,20 +1191,16 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
 
   // ── Auto-shrink: find largest FS where all content fits in AVAIL_H ──
   function measureTotalHeight(fs) {
-    const lh = Math.round(fs * 1.15);   // inner wrap line height
-    const rowH = Math.round(fs * 1.6);  // base row height (label + gap)
-    const plainRowH = Math.round(fs * 2.2); // plain disclaimer rows (taller gap)
+    const lh      = fs + 4;   // wrap line height within a field
+    const rowH    = fs + 12;  // base row height = text + inter-field gap
+    const plainH  = fs + 18;  // disclaimer row gap (slightly more)
     let h = 0;
     for (const f of FIELDS) {
       if (f.plain) {
-        // plain: text height + gap
-        ctx.font = `${fs}px Arial, sans-serif`;
-        const pw = wrapText(f.label, usableW, fs);
-        h += (pw.length - 1) * lh + plainRowH;
+        h += plainH;
       } else if (f.nameField) {
         h += rowH;
       } else {
-        // bold label + wrapped value
         ctx.font = `bold ${fs}px Arial, sans-serif`;
         const lblW = ctx.measureText(f.label).width;
         let extra = 0;
@@ -1224,16 +1220,16 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     return h;
   }
 
-  // Start at desired FS=32, shrink until fits
-  let dynFS = FS;
-  while (dynFS > 16 && measureTotalHeight(dynFS) > AVAIL_H) {
+  // Start at FS=36, shrink until all content fits within AVAIL_H
+  let dynFS = 36;
+  while (dynFS > 18 && measureTotalHeight(dynFS) > AVAIL_H) {
     dynFS--;
   }
 
-  // Recalculate row heights for chosen dynFS
-  const INNER_LH_D = Math.round(dynFS * 1.15);
-  const BASE_H     = Math.round(dynFS * 1.6);
-  const PLAIN_H    = Math.round(dynFS * 2.2);
+  // Row heights at chosen dynFS
+  const INNER_LH_D = dynFS + 4;
+  const BASE_H     = dynFS + 12;
+  const PLAIN_H    = dynFS + 18;
 
   let curY = PAD_TOP;
 
