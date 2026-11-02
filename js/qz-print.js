@@ -1169,24 +1169,6 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     return lines;
   }
 
-  // ── measure height a field will occupy ──
-  function fieldHeight(label, value, bold, plain, innerLH) {
-    if (plain) return 0; // height counted in field spacing
-    ctx.font = `bold ${FS}px Arial, sans-serif`;
-    const lblW = ctx.measureText(label).width;
-    if (!value) return 0;
-    const segments = String(value).split('\n');
-    let h = 0;
-    let first = true;
-    for (const seg of segments) {
-      const maxW = first ? usableW - lblW - 6 : usableW;
-      const wrapped = wrapText(seg, maxW, FS);
-      h += (wrapped.length - 1) * innerLH;
-      first = false;
-    }
-    return h;
-  }
-
   // ── Build field list ──
   const prodName = p.n ? p.n.toUpperCase() : '';
 
@@ -1200,53 +1182,82 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     { label: 'QC Status - Approved',     value: '',          plain: true  },
     { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
     { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
-    { label: 'NOT FOR RETAIL SALE', value: '', plain: true },
-    { label: 'INTERNAL USE ONLY', value: '', plain: true },
-    { label: 'NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true },
+    { label: 'NOT FOR RETAIL SALE',               value: '', plain: true },
+    { label: 'INTERNAL USE ONLY',                 value: '', plain: true },
+    { label: 'NOT FOR DIRECT SALE TO CONSUMER',   value: '', plain: true },
   ];
 
-  // ── Total extra height from wrapping within fields ──
-  let extraH = 0;
-  for (const f of FIELDS) {
-    extraH += fieldHeight(f.label, f.value, false, f.plain, INNER_LH);
+  const AVAIL_H = DH - PAD_TOP - PAD_BOT; // total printable zone height
+
+  // ── Auto-shrink: find largest FS where all content fits in AVAIL_H ──
+  function measureTotalHeight(fs) {
+    const lh = Math.round(fs * 1.15);   // inner wrap line height
+    const rowH = Math.round(fs * 1.6);  // base row height (label + gap)
+    const plainRowH = Math.round(fs * 2.2); // plain disclaimer rows (taller gap)
+    let h = 0;
+    for (const f of FIELDS) {
+      if (f.plain) {
+        // plain: text height + gap
+        ctx.font = `${fs}px Arial, sans-serif`;
+        const pw = wrapText(f.label, usableW, fs);
+        h += (pw.length - 1) * lh + plainRowH;
+      } else if (f.nameField) {
+        h += rowH;
+      } else {
+        // bold label + wrapped value
+        ctx.font = `bold ${fs}px Arial, sans-serif`;
+        const lblW = ctx.measureText(f.label).width;
+        let extra = 0;
+        if (f.value) {
+          const segs = String(f.value).split('\n');
+          let first = true;
+          for (const seg of segs) {
+            const maxW = first ? usableW - lblW - 6 : usableW;
+            const wrapped = wrapText(seg, maxW, fs);
+            extra += (wrapped.length - 1) * lh;
+            first = false;
+          }
+        }
+        h += rowH + extra;
+      }
+    }
+    return h;
   }
 
-  // ── Distribute remaining height as base row height ──
-  const nFields = FIELDS.length;
-  const avail = DH - PAD_TOP - PAD_BOT - extraH;
-  const BASE_H = Math.max(40, Math.floor(avail / nFields)); // height per field row
+  // Start at desired FS=32, shrink until fits
+  let dynFS = FS;
+  while (dynFS > 16 && measureTotalHeight(dynFS) > AVAIL_H) {
+    dynFS--;
+  }
+
+  // Recalculate row heights for chosen dynFS
+  const INNER_LH_D = Math.round(dynFS * 1.15);
+  const BASE_H     = Math.round(dynFS * 1.6);
+  const PLAIN_H    = Math.round(dynFS * 2.2);
 
   let curY = PAD_TOP;
 
   // ── Draw each field ──
   for (const f of FIELDS) {
-    if (f.bold && f.plain) {
-      // Bold disclaimer — auto-shrink to fit one line
-      ctx.font = `bold ${FS}px Arial, sans-serif`;
-      const tw = ctx.measureText(f.label).width;
-      const drawFS = tw > usableW ? Math.floor(FS * usableW / tw) : FS;
-      ctx.font = `bold ${drawFS}px Arial, sans-serif`;
-      ctx.fillText(f.label, PAD, curY);
-      curY += BASE_H;
-    } else if (f.plain) {
-      // Plain line — each "NOT FOR..." line gets compact spacing
-      ctx.font = `${FS}px Arial, sans-serif`;
-      const plainLines = wrapText(f.label, usableW, FS);
+    if (f.plain) {
+      // Plain line — each "NOT FOR..." line
+      ctx.font = `${dynFS}px Arial, sans-serif`;
+      const plainLines = wrapText(f.label, usableW, dynFS);
       for (let pi = 0; pi < plainLines.length; pi++) {
         ctx.fillText(plainLines[pi], PAD, curY);
-        if (pi < plainLines.length - 1) curY += INNER_LH;
+        if (pi < plainLines.length - 1) curY += INNER_LH_D;
       }
-      curY += Math.round(BASE_H * 1.4); // extra spacing between 3 disclaimer lines
+      curY += PLAIN_H;
     } else if (f.nameField) {
       // Product Name — bold label + bold value, auto-shrink value to ONE line
-      ctx.font = `bold ${FS}px Arial, sans-serif`;
+      ctx.font = `bold ${dynFS}px Arial, sans-serif`;
       ctx.fillText(f.label, PAD, curY);
       const lblW = ctx.measureText(f.label).width;
       if (f.value) {
         const valMaxW = usableW - lblW - 6;
-        let valFS = FS;
+        let valFS = dynFS;
         ctx.font = `bold ${valFS}px Arial, sans-serif`;
-        while (ctx.measureText(f.value).width > valMaxW && valFS > 18) {
+        while (ctx.measureText(f.value).width > valMaxW && valFS > 14) {
           valFS--;
           ctx.font = `bold ${valFS}px Arial, sans-serif`;
         }
@@ -1255,7 +1266,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
       curY += BASE_H;
     } else {
       // Standard: bold label + normal value, word-wrapped
-      ctx.font = `bold ${FS}px Arial, sans-serif`;
+      ctx.font = `bold ${dynFS}px Arial, sans-serif`;
       ctx.fillText(f.label, PAD, curY);
       const lblW = ctx.measureText(f.label).width;
       if (f.value) {
@@ -1263,15 +1274,15 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
         let firstSeg = true;
         for (const seg of segments) {
           const maxW = firstSeg ? usableW - lblW - 6 : usableW;
-          const lines = wrapText(seg, maxW, FS);
+          const lines = wrapText(seg, maxW, dynFS);
           for (let li = 0; li < lines.length; li++) {
             const xPos = (firstSeg && li === 0) ? PAD + lblW + 6 : PAD;
-            ctx.font = `${FS}px Arial, sans-serif`;
+            ctx.font = `${dynFS}px Arial, sans-serif`;
             ctx.fillText(lines[li], xPos, curY);
-            if (li < lines.length - 1) curY += INNER_LH;
+            if (li < lines.length - 1) curY += INNER_LH_D;
           }
           firstSeg = false;
-          if (segments.length > 1) curY += INNER_LH;
+          if (segments.length > 1) curY += INNER_LH_D;
         }
       }
       curY += BASE_H;
