@@ -1121,8 +1121,10 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   const usableW = DW - PAD * 2;
   const FS = 38;         // base font size
   const INNER_LH = 40;  // spacing between wrapped continuation lines within a field
-  const PAD_TOP = 90;   // top margin — enough space so content doesn't clip
-  const PAD_BOT = 90;   // bottom margin
+  // Top & bottom margins — logo is pre-printed at top, manufacturer block at bottom.
+  // We only print the MIDDLE content zone. Leave ~18mm (144px) top, ~22mm (176px) bottom.
+  const PAD_TOP = 144;
+  const PAD_BOT = 176;
 
   const batchCode = bn || (v && v.bn) || p.b || '';
   const ingredients = p.i || '';
@@ -1161,10 +1163,9 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   }
 
   // ── Build field list ──
-  const prodName = p.n ? p.n.toUpperCase() : '';
-
+  // NOTE: Logo (top) and Manufacturer/FSSAI block (bottom) are PRE-PRINTED on the sticker paper.
+  // We only print the middle content zone: Ingredients → Intended Use.
   const FIELDS = [
-    { label: 'Product Name: ',           value: prodName,    plain: false, nameField: true },
     { label: 'Ingredients : ',           value: ingredients, plain: false },
     { label: 'Net Weight: ',             value: '50 Kg',     plain: false },
     { label: 'Batch / Lot No.: ',        value: batchCode,   plain: false },
@@ -1173,7 +1174,6 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     { label: 'QC Status - Approved',     value: '',          plain: true  },
     { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
     { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
-    { label: 'NOT FOR RETAIL SALE - INTERNAL USE ONLY \u2013 NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true, bold: true },
   ];
 
   // ── Total extra height from wrapping within fields ──
