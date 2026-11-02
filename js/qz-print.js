@@ -1298,7 +1298,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
             if (li < lines.length - 1) curY += LINE_H;
           }
           firstSeg = false;
-          if (segments && segs.length > 1) curY += LINE_H;
+          if (segs.length > 1) curY += LINE_H;
         }
       }
       curY += LINE_H;
