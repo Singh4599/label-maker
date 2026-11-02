@@ -1150,7 +1150,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   // Logo block (pre-printed) = top ~25% of 152.4mm = ~38mm = 304px
   // Manufacturer block (pre-printed) = bottom ~22% = ~33mm = 264px
   // MIDDLE ZONE = remaining 650px (~81mm) — this is where we print
-  const PAD_TOP = 304;
+  const PAD_TOP = 344;
   const PAD_BOT = 264;
   const AVAIL_H = DH - PAD_TOP - PAD_BOT; // ~650px
 
