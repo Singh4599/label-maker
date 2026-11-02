@@ -1148,8 +1148,8 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   const INNER_LH = 36;  // spacing between wrapped continuation lines within a field
   // Top & bottom margins — logo is pre-printed at top, manufacturer block at bottom.
   // We only print the MIDDLE content zone. Leave ~18mm (144px) top, ~22mm (176px) bottom.
-  const PAD_TOP = 400;  // 50mm top margin
-  const PAD_BOT = 400;  // 50mm bottom margin
+  const PAD_TOP = 240;  // 30mm top margin
+  const PAD_BOT = 520;  // 65mm bottom margin
 
   const batchCode = bn || (v && v.bn) || p.b || '';
   const ingredients = p.i || '';
