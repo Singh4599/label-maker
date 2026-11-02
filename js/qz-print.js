@@ -1144,8 +1144,8 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
 
   const PAD = 44;
   const usableW = DW - PAD * 2;
-  const FS = 28;         // base font size
-  const INNER_LH = 32;  // spacing between wrapped continuation lines within a field
+  const FS = 32;         // base font size
+  const INNER_LH = 36;  // spacing between wrapped continuation lines within a field
   // Top & bottom margins — logo is pre-printed at top, manufacturer block at bottom.
   // We only print the MIDDLE content zone. Leave ~18mm (144px) top, ~22mm (176px) bottom.
   const PAD_TOP = 400;  // 50mm top margin
