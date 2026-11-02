@@ -1121,8 +1121,8 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   const usableW = DW - PAD * 2;
   const FS = 38;         // base font size
   const INNER_LH = 40;  // spacing between wrapped continuation lines within a field
-  const PAD_TOP = 28;
-  const PAD_BOT = 28;
+  const PAD_TOP = 90;   // top margin — enough space so content doesn't clip
+  const PAD_BOT = 90;   // bottom margin
 
   const batchCode = bn || (v && v.bn) || p.b || '';
   const ingredients = p.i || '';
