@@ -1148,8 +1148,8 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   const INNER_LH = 32;  // spacing between wrapped continuation lines within a field
   // Top & bottom margins — logo is pre-printed at top, manufacturer block at bottom.
   // We only print the MIDDLE content zone. Leave ~18mm (144px) top, ~22mm (176px) bottom.
-  const PAD_TOP = 144;
-  const PAD_BOT = 176;
+  const PAD_TOP = 400;  // 50mm top margin
+  const PAD_BOT = 400;  // 50mm bottom margin
 
   const batchCode = bn || (v && v.bn) || p.b || '';
   const ingredients = p.i || '';
@@ -1212,7 +1212,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   // ── Distribute remaining height as base row height ──
   const nFields = FIELDS.length;
   const avail = DH - PAD_TOP - PAD_BOT - extraH;
-  const BASE_H = Math.max(52, Math.floor(avail / nFields)); // height per field row
+  const BASE_H = Math.max(40, Math.floor(avail / nFields)); // height per field row
 
   let curY = PAD_TOP;
 
@@ -1227,9 +1227,13 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
       ctx.fillText(f.label, PAD, curY);
       curY += BASE_H;
     } else if (f.plain) {
-      // Single plain line
+      // Plain line — wrap if too long
       ctx.font = `${FS}px Arial, sans-serif`;
-      ctx.fillText(f.label, PAD, curY);
+      const plainLines = wrapText(f.label, usableW, FS);
+      for (let pi = 0; pi < plainLines.length; pi++) {
+        ctx.fillText(plainLines[pi], PAD, curY);
+        if (pi < plainLines.length - 1) curY += INNER_LH;
+      }
       curY += BASE_H;
     } else if (f.nameField) {
       // Product Name — bold label + bold value, auto-shrink value to ONE line
