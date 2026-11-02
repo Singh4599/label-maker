@@ -1196,7 +1196,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     { label: 'Net Weight: ',             value: '50 Kg',     plain: false },
     { label: 'Batch / Lot No.: ',        value: batchCode,   plain: false },
     { label: 'Date Of Manufacturing : ', value: pd || '',    plain: false },
-    { label: 'Expiry Date : ',           value: bb || '',    plain: false },
+    { label: 'Expiry Date : ',           value: (bb || '').replace(/\s*\(.*$/, ''), plain: false },
     { label: 'QC Status - Approved',     value: '',          plain: true  },
     { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
     { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
