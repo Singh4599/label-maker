@@ -32,8 +32,8 @@ const DUKAN_DB = {
       "i": "(In Descending Order By Weight) Red Chillies, Coriander, Poppy Seeds, Garlic, Onion, Coconut, Nutmeg, Turmeric, Cumin, Shahjeera, Cardamom, Cloves, Mace, Black Pepper, Fenugreek Seeds, Star Anise, Stoneflower, Fennel Seeds, Black Cardamom, Bay Leaves, Asafoetida, Sichuan Pepper, Iodised Salt.",
       "e": 350, "p": 12.0, "cb": 50.0, "tf": 14.0, "so": 1200, "ts": 3.0, "as": 0
     },
-    "CORIANDER GREEN SEASONING": {
-      "n": "CORIANDER GREEN SEASONING",
+    "GREEN CORIANDER SEASONING": {
+      "n": "GREEN CORIANDER SEASONING",
       "b": "CGSKMU1-1026",
       "c": "category - seasoning",
       "i": "(In Descending Order By Weight) CORIANDER, DEHYDRATED CORIANDER LEAVES POWDER, TURMERIC, EDIBLE RICE BRAN OIL",
@@ -54,8 +54,8 @@ const DUKAN_DB = {
       "ts": 2,
       "as": 0
     },
-    "CORIANDER SARAS SEASONING": {
-      "n": "CORIANDER SARAS SEASONING",
+    "SARAS CORIANDER SEASONING": {
+      "n": "SARAS CORIANDER SEASONING",
       "b": "CSS-1026",
       "c": "category - seasoning",
       "i": "(In Descending Order By Weight) CORIANDER, DEHYDRATED CORIANDER LEAVES POWDER, TURMERIC, EDIBLE RICE BRAN OIL",
@@ -352,7 +352,7 @@ const DUKAN_DB = {
         "bn": "MMSMM-1026"
       }
     ],
-    "CORIANDER GREEN SEASONING": [
+    "GREEN CORIANDER SEASONING": [
       {
         "d": "100g",
         "g": 100,
@@ -412,7 +412,7 @@ const DUKAN_DB = {
         "bn": "DJMMPKMU1-1026"
       }
     ],
-    "CORIANDER SARAS SEASONING": [
+    "SARAS CORIANDER SEASONING": [
       {
         "d": "100g",
         "g": 100,
