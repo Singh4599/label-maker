@@ -1200,7 +1200,9 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     { label: 'QC Status - Approved',     value: '',          plain: true  },
     { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
     { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
-    { label: 'NOT FOR RETAIL SALE - INTERNAL USE ONLY – NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true },
+    { label: 'NOT FOR RETAIL SALE', value: '', plain: true },
+    { label: 'INTERNAL USE ONLY', value: '', plain: true },
+    { label: 'NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true },
   ];
 
   // ── Total extra height from wrapping within fields ──
@@ -1227,14 +1229,14 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
       ctx.fillText(f.label, PAD, curY);
       curY += BASE_H;
     } else if (f.plain) {
-      // Plain line — wrap if too long
+      // Plain line — each "NOT FOR..." line gets compact spacing
       ctx.font = `${FS}px Arial, sans-serif`;
       const plainLines = wrapText(f.label, usableW, FS);
       for (let pi = 0; pi < plainLines.length; pi++) {
         ctx.fillText(plainLines[pi], PAD, curY);
         if (pi < plainLines.length - 1) curY += INNER_LH;
       }
-      curY += BASE_H;
+      curY += Math.round(BASE_H * 0.65); // tighter spacing between 3 disclaimer lines
     } else if (f.nameField) {
       // Product Name — bold label + bold value, auto-shrink value to ONE line
       ctx.font = `bold ${FS}px Arial, sans-serif`;
