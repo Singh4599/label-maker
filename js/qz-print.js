@@ -1236,7 +1236,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
         ctx.fillText(plainLines[pi], PAD, curY);
         if (pi < plainLines.length - 1) curY += INNER_LH;
       }
-      curY += Math.round(BASE_H * 0.65); // tighter spacing between 3 disclaimer lines
+      curY += Math.round(BASE_H * 1.4); // extra spacing between 3 disclaimer lines
     } else if (f.nameField) {
       // Product Name — bold label + bold value, auto-shrink value to ONE line
       ctx.font = `bold ${FS}px Arial, sans-serif`;
