@@ -1163,9 +1163,10 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
   }
 
   // ── Build field list ──
-  // NOTE: Logo (top) and Manufacturer/FSSAI block (bottom) are PRE-PRINTED on the sticker paper.
-  // We only print the middle content zone: Ingredients → Intended Use.
+  const prodName = p.n ? p.n.toUpperCase() : '';
+
   const FIELDS = [
+    { label: 'Product Name: ',           value: prodName,    plain: false, nameField: true },
     { label: 'Ingredients : ',           value: ingredients, plain: false },
     { label: 'Net Weight: ',             value: '50 Kg',     plain: false },
     { label: 'Batch / Lot No.: ',        value: batchCode,   plain: false },
@@ -1174,6 +1175,7 @@ function generateYellowCanvas(p, v, bn, pd, bb) {
     { label: 'QC Status - Approved',     value: '',          plain: true  },
     { label: 'Storage Conditions: ',     value: 'store in a cool, dry place, away from direct sun light.', plain: false },
     { label: 'Intended Use: ',           value: 'Retail Packing', plain: false },
+    { label: 'NOT FOR RETAIL SALE - INTERNAL USE ONLY \u2013 NOT FOR DIRECT SALE TO CONSUMER', value: '', plain: true, bold: true },
   ];
 
   // ── Total extra height from wrapping within fields ──
