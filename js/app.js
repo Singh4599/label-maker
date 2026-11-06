@@ -279,7 +279,7 @@ function pickProduct(rawName) {
   // Show & pre-fill editable name override
   const nameWrap = $('name-override-wrap');
   const nameInput = $('label-name-override');
-  if (nameInput) nameInput.value = p.n;
+  if (nameInput) nameInput.value = p.pn || p.n;
   if (nameWrap) nameWrap.style.display = 'block';
   closeDrop();
   showProductCard(p);
