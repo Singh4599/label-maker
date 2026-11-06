@@ -18,12 +18,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDWHInqsX09xBOaHAlDmAIT0GFvHFE6NV8",
-  authDomain: "batch-f54b6.firebaseapp.com",
-  projectId: "batch-f54b6",
-  storageBucket: "batch-f54b6.firebasestorage.app",
-  messagingSenderId: "1097267346523",
-  appId: "1:1097267346523:web:71f12e8ecab975742f537e"
+  apiKey: "AIzaSyBUC4Ej-pNcQsMbWYavJu9tBH53_WWL-zA",
+  authDomain: "lablerecords-3f897.firebaseapp.com",
+  projectId: "lablerecords-3f897",
+  storageBucket: "lablerecords-3f897.firebasestorage.app",
+  messagingSenderId: "936028827480",
+  appId: "1:936028827480:web:0e6aea6bccddafa75f7f2d"
 };
 
 const COLLECTION_NAME = "labelRecords";

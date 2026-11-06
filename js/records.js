@@ -296,6 +296,10 @@ window.trackPrint = async function(opts) {
   const dateStr = fmtDayStr(now);
   const timeStr = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
 
+  const copies = Math.max(1, parseInt(opts.copies, 10) || 1);
+  const weightG = parseFloat(opts.weightG) || 0;
+  const totalWeightG = weightG * copies;
+
   const record = {
     timestamp:    ts,
     _docId:       String(ts) + '_' + Math.random().toString(36).slice(2, 6),
@@ -304,15 +308,15 @@ window.trackPrint = async function(opts) {
     stickerType:  opts.stickerType || 'unknown',
     stickerLabel: getStickerLabel(opts.stickerType || 'unknown'),
     labelSide:    opts.labelSide || 'back',
-    productName:  (opts.productName || '').toUpperCase(),
+    productName:  (opts.productName || '').toUpperCase().trim(),
     packSize:     opts.packSize || '—',
-    weightG:      parseFloat(opts.weightG) || 0,
-    totalWeightG: (parseFloat(opts.weightG)||0) * (opts.copies||1),
+    weightG:      weightG,
+    totalWeightG: totalWeightG,
     mrp:          opts.mrp || 0,
     batchNo:      opts.batchNo || '—',
     mfgDate:      opts.mfgDate || '—',
     bestBefore:   opts.bestBefore || '—',
-    copies:       opts.copies || 1,
+    copies:       copies,
   };
 
   // Push to Firebase
