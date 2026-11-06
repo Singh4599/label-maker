@@ -1,5 +1,5 @@
 'use strict';
-// Auto-generated from ALL PRODUCT NAME.xlsx
+// Auto-generated from ALL PRODUCT NAME.xlsx + New internal category
 const INTERNAL_DB = {
   p: {
   "SANCHAL": {
@@ -16,13 +16,13 @@ const INTERNAL_DB = {
   },
   "DRY MANGO SEASONING": {
     "n": "DRY MANGO SEASONING",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "DMSM-1026"
   },
   "RAJWADI GARAM MASALA": {
     "n": "RAJWADI GARAM MASALA",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "RGM-1026"
   },
@@ -34,13 +34,13 @@ const INTERNAL_DB = {
   },
   "WHITE ONION POWDER": {
     "n": "WHITE ONION POWDER",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "WOP-1026"
   },
   "CINNAMON POWDER": {
     "n": "CINNAMON POWDER",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "CP-1026"
   },
@@ -58,7 +58,7 @@ const INTERNAL_DB = {
   },
   "CHIVES": {
     "n": "CHIVES",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "C1026"
   },
@@ -76,7 +76,7 @@ const INTERNAL_DB = {
   },
   "CELERY": {
     "n": "CELERY",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "C-1026"
   },
@@ -88,7 +88,7 @@ const INTERNAL_DB = {
   },
   "THYME": {
     "n": "THYME",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "T-1026"
   },
@@ -106,7 +106,7 @@ const INTERNAL_DB = {
   },
   "PIZZA SEASONING": {
     "n": "PIZZA SEASONING",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "PS-1026"
   },
@@ -244,7 +244,7 @@ const INTERNAL_DB = {
   },
   "PANI PURI SEASONING": {
     "n": "PANI PURI SEASONING",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "PPS-1026"
   },
@@ -430,9 +430,237 @@ const INTERNAL_DB = {
   },
   "MUSHROOM WHOLE": {
     "n": "MUSHROOM WHOLE",
-    "c": "INTERNAL",
+    "c": "NEW INTERNAL",
     "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
     "b": "MW-1026"
+  },
+  "HINGTAJ PREMIUM POWDER": {
+    "n": "HINGTAJ PREMIUM POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "HPP-1026"
+  },
+  "DEHYDRATED ONION GRANULES": {
+    "n": "DEHYDRATED ONION GRANULES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "DOG-1026"
+  },
+  "PARSLEY LEAVES": {
+    "n": "PARSLEY LEAVES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "PL-1026"
+  },
+  "MARJORAM": {
+    "n": "MARJORAM",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "M-1026"
+  },
+  "CRUSHED CHILLY": {
+    "n": "CRUSHED CHILLY",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "CC-1026"
+  },
+  "ORIGANUM VULGARE": {
+    "n": "ORIGANUM VULGARE",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "OV-1026"
+  },
+  "ROSEMARY LEAVES": {
+    "n": "ROSEMARY LEAVES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "RL-1026"
+  },
+  "BASIL LEAVES": {
+    "n": "BASIL LEAVES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "BL-1026"
+  },
+  "DEHYDRATED TAMARIND POWDER": {
+    "n": "DEHYDRATED TAMARIND POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "DTP-1026"
+  },
+  "CLOVE STEMS": {
+    "n": "CLOVE STEMS",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "CS-1026"
+  },
+  "PICKLE SEASONING": {
+    "n": "PICKLE SEASONING",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "PS-1026"
+  },
+  "DEHYDRATED WHITE ONION POWDER": {
+    "n": "DEHYDRATED WHITE ONION POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "DWOP-1026"
+  },
+  "DRY GINGER POWDER": {
+    "n": "DRY GINGER POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "DGP-1026"
+  },
+  "SOLAR DRIED RED CHILLI SEEDLESS FLAKES": {
+    "n": "SOLAR DRIED RED CHILLI SEEDLESS FLAKES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "SDRCSF-1026"
+  },
+  "BLACK SALT": {
+    "n": "BLACK SALT",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "BS-1026"
+  },
+  "YELLOW MUSTARD SEASONING": {
+    "n": "YELLOW MUSTARD SEASONING",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "YMS-1026"
+  },
+  "PULVIRISE SUGAR POWDER": {
+    "n": "PULVIRISE SUGAR POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "PSP-1026"
+  },
+  "SUNDRIED CABBAGE POWDER": {
+    "n": "SUNDRIED CABBAGE POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "SCP-1026"
+  },
+  "SUNDRIED GREEN CHILLI POWDER": {
+    "n": "SUNDRIED GREEN CHILLI POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "SGCP-1026"
+  },
+  "SUNDRIED CORRIANDER POWDER": {
+    "n": "SUNDRIED CORRIANDER POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "SCP-1026"
+  },
+  "SD TOMATO POWDER": {
+    "n": "SD TOMATO POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "STP-1026"
+  },
+  "DEHYDRATED GARLIC GRANULES": {
+    "n": "DEHYDRATED GARLIC GRANULES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "DGG-1026"
+  },
+  "P JALJEERA MASALA": {
+    "n": "P JALJEERA MASALA",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "PJM-1026"
+  },
+  "SOLAR DRIED PUDINA POWDER": {
+    "n": "SOLAR DRIED PUDINA POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "SDPP-1026"
+  },
+  "SD LEMON POWDER": {
+    "n": "SD LEMON POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "SLP-1026"
+  },
+  "DRY CABBAGE": {
+    "n": "DRY CABBAGE",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "DC-1026"
+  },
+  "SUNDRIED GREEN CHILLI FLAKES": {
+    "n": "SUNDRIED GREEN CHILLI FLAKES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "SGCF-1026"
+  },
+  "LEMON GRASS": {
+    "n": "LEMON GRASS",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "LG-1026"
+  },
+  "KOTHMIR WHOLE": {
+    "n": "KOTHMIR WHOLE",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "KW-1026"
+  },
+  "YELLOW CHILLI SEASONING": {
+    "n": "YELLOW CHILLI SEASONING",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "YCS-1026"
+  },
+  "PANEER BUTTER SEASONING": {
+    "n": "PANEER BUTTER SEASONING",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "PBS-1026"
+  },
+  "CHAT MASALA": {
+    "n": "CHAT MASALA",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "CM-1026"
+  },
+  "TJ HABIT PERI PERI SEASONING": {
+    "n": "TJ HABIT PERI PERI SEASONING",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "THPPS-1026"
+  },
+  "TJ HABIT SOUR CREAM & ONION SEASONING": {
+    "n": "TJ HABIT SOUR CREAM & ONION SEASONING",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "THSCOS-1026"
+  },
+  "TJ HABIT CHEESE EXTERME SEASONING": {
+    "n": "TJ HABIT CHEESE EXTERME SEASONING",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "THCES-1026"
+  },
+  "GARLIC POWDER": {
+    "n": "GARLIC POWDER",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "GP-1026"
+  },
+  "WHITE ONION FRIED": {
+    "n": "WHITE ONION FRIED",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "WOF-1026"
+  },
+  "DEHYDRATED GARLIC FLAKES": {
+    "n": "DEHYDRATED GARLIC FLAKES",
+    "c": "NEW INTERNAL",
+    "icon": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z\"></path><polyline points=\"3.27 6.96 12 12.01 20.73 6.96\"></polyline><line x1=\"12\" y1=\"22.08\" x2=\"12\" y2=\"12\"></line></svg>",
+    "b": "DGF-1026"
   }
 },
   v: {
@@ -1010,6 +1238,310 @@ const INTERNAL_DB = {
       "g": 10000,
       "m": 0,
       "bn": "MW-1026"
+    }
+  ],
+  "HINGTAJ PREMIUM POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "HPP-1026"
+    }
+  ],
+  "DEHYDRATED ONION GRANULES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "DOG-1026"
+    }
+  ],
+  "PARSLEY LEAVES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "PL-1026"
+    }
+  ],
+  "MARJORAM": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "M-1026"
+    }
+  ],
+  "CRUSHED CHILLY": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "CC-1026"
+    }
+  ],
+  "ORIGANUM VULGARE": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "OV-1026"
+    }
+  ],
+  "ROSEMARY LEAVES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "RL-1026"
+    }
+  ],
+  "BASIL LEAVES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "BL-1026"
+    }
+  ],
+  "DEHYDRATED TAMARIND POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "DTP-1026"
+    }
+  ],
+  "CLOVE STEMS": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "CS-1026"
+    }
+  ],
+  "PICKLE SEASONING": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "PS-1026"
+    }
+  ],
+  "DEHYDRATED WHITE ONION POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "DWOP-1026"
+    }
+  ],
+  "DRY GINGER POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "DGP-1026"
+    }
+  ],
+  "SOLAR DRIED RED CHILLI SEEDLESS FLAKES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "SDRCSF-1026"
+    }
+  ],
+  "BLACK SALT": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "BS-1026"
+    }
+  ],
+  "YELLOW MUSTARD SEASONING": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "YMS-1026"
+    }
+  ],
+  "PULVIRISE SUGAR POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "PSP-1026"
+    }
+  ],
+  "SUNDRIED CABBAGE POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "SCP-1026"
+    }
+  ],
+  "SUNDRIED GREEN CHILLI POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "SGCP-1026"
+    }
+  ],
+  "SUNDRIED CORRIANDER POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "SCP-1026"
+    }
+  ],
+  "SD TOMATO POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "STP-1026"
+    }
+  ],
+  "DEHYDRATED GARLIC GRANULES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "DGG-1026"
+    }
+  ],
+  "P JALJEERA MASALA": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "PJM-1026"
+    }
+  ],
+  "SOLAR DRIED PUDINA POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "SDPP-1026"
+    }
+  ],
+  "SD LEMON POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "SLP-1026"
+    }
+  ],
+  "DRY CABBAGE": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "DC-1026"
+    }
+  ],
+  "SUNDRIED GREEN CHILLI FLAKES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "SGCF-1026"
+    }
+  ],
+  "LEMON GRASS": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "LG-1026"
+    }
+  ],
+  "KOTHMIR WHOLE": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "KW-1026"
+    }
+  ],
+  "YELLOW CHILLI SEASONING": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "YCS-1026"
+    }
+  ],
+  "PANEER BUTTER SEASONING": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "PBS-1026"
+    }
+  ],
+  "CHAT MASALA": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "CM-1026"
+    }
+  ],
+  "TJ HABIT PERI PERI SEASONING": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "THPPS-1026"
+    }
+  ],
+  "TJ HABIT SOUR CREAM & ONION SEASONING": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "THSCOS-1026"
+    }
+  ],
+  "TJ HABIT CHEESE EXTERME SEASONING": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "THCES-1026"
+    }
+  ],
+  "GARLIC POWDER": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "GP-1026"
+    }
+  ],
+  "WHITE ONION FRIED": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "WOF-1026"
+    }
+  ],
+  "DEHYDRATED GARLIC FLAKES": [
+    {
+      "d": "10 Kg",
+      "g": 10000,
+      "m": 0,
+      "bn": "DGF-1026"
     }
   ]
 }
