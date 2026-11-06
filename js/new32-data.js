@@ -10,11 +10,11 @@ const NEW32_DB = {
     "SEASONING": { "n": "SEASONING", "b": "CGSKMU1-1026" },
     "MIX MASALA POWDER": { "n": "MIX MASALA POWDER", "b": "DJMMPKMU1-1026" },
     "MASALA": { "n": "MASALA", "b": "DJM-1026" },
-    "CPKKMU1-1026": { "n": "CPKKMU1-1026", "b": "CPKKMU1-1026" },
-    "CPSPLV-1026": { "n": "CPSPLV-1026", "b": "CPSPLV-1026" },
+    "KASHMIRIWALA": { "n": "KASHMIRIWALA", "b": "CPKKMU1-1026" },
+    "CHILLI POWDER SP LAL": { "n": "CHILLI POWDER SP LAL", "b": "CPSPLV-1026" },
     "CLASSIC": { "n": "CLASSIC", "b": "GM-1026" },
     "RAJWADI": { "n": "RAJWADI", "b": "GMR-1026" },
-    "MMSM-1026": { "n": "MMSM-1026", "b": "MMSM-1026" }
+    "MALVANI MIX MASALA": { "n": "MALVANI MIX MASALA", "b": "MMSM-1026" }
   },
   "v": {
     "KASHMIRI SUPER DELUXE SEASONING": [
@@ -77,13 +77,13 @@ const NEW32_DB = {
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 450, "bn": "DJM-1026" },
       { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 900, "bn": "DJM-1026" }
     ],
-    "CPKKMU1-1026": [
+    "KASHMIRIWALA": [
       { "d": "100g", "g": 100, "oz": "3.53oz", "m": 140, "bn": "CPKKMU1-1026" },
       { "d": "250g", "g": 250, "oz": "8.82oz", "m": 350, "bn": "CPKKMU1-1026" },
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 700, "bn": "CPKKMU1-1026" },
       { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 1400, "bn": "CPKKMU1-1026" }
     ],
-    "CPSPLV-1026": [
+    "CHILLI POWDER SP LAL": [
       { "d": "100g", "g": 100, "oz": "3.53oz", "m": 100, "bn": "CPSPLV-1026" },
       { "d": "250g", "g": 250, "oz": "8.82oz", "m": 250, "bn": "CPSPLV-1026" },
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 500, "bn": "CPSPLV-1026" },
@@ -101,7 +101,7 @@ const NEW32_DB = {
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 600, "bn": "GMR-1026" },
       { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 1200, "bn": "GMR-1026" }
     ],
-    "MMSM-1026": [
+    "MALVANI MIX MASALA": [
       { "d": "100g", "g": 100, "oz": "3.53oz", "m": 90, "bn": "MMSM-1026" },
       { "d": "250g", "g": 250, "oz": "8.82oz", "m": 225, "bn": "MMSM-1026" },
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 450, "bn": "MMSM-1026" },
