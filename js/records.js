@@ -298,7 +298,7 @@ window.trackPrint = async function(opts) {
 
   const record = {
     timestamp:    ts,
-    _docId:       String(ts),
+    _docId:       String(ts) + '_' + Math.random().toString(36).slice(2, 6),
     date:         dateStr,
     time:         timeStr,
     stickerType:  opts.stickerType || 'unknown',

@@ -18,12 +18,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBUC4Ej-pNcQsMbWYavJu9tBH53_WWL-zA",
-  authDomain: "lablerecords-3f897.firebaseapp.com",
-  projectId: "lablerecords-3f897",
-  storageBucket: "lablerecords-3f897.firebasestorage.app",
-  messagingSenderId: "936028827480",
-  appId: "1:936028827480:web:0e6aea6bccddafa75f7f2d"
+  apiKey: "AIzaSyDWHInqsX09xBOaHAlDmAIT0GFvHFE6NV8",
+  authDomain: "batch-f54b6.firebaseapp.com",
+  projectId: "batch-f54b6",
+  storageBucket: "batch-f54b6.firebasestorage.app",
+  messagingSenderId: "1097267346523",
+  appId: "1:1097267346523:web:71f12e8ecab975742f537e"
 };
 
 const COLLECTION_NAME = "labelRecords";
@@ -64,7 +64,7 @@ async function syncRecordToCloud(record) {
   if (!db) initLabelFirebase();
   if (!db) return false;
   try {
-    const docId = String(record.id || record.timestamp);
+    const docId = String(record._docId || record.id || record.timestamp);
     await setDoc(doc(db, COLLECTION_NAME, docId), {
       ...record,
       _docId: docId
