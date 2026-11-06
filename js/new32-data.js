@@ -10,6 +10,8 @@ const NEW32_DB = {
     "SEASONING": { "n": "SEASONING", "b": "CGSKMU1-1026" },
     "MIX MASALA POWDER": { "n": "MIX MASALA POWDER", "b": "DJMMPKMU1-1026" },
     "MASALA": { "n": "MASALA", "b": "DJM-1026" },
+    "DANDICUT KHANDELA SEASONING": { "n": "DANDICUT KHANDELA SEASONING", "b": "DDC-1026" },
+    "PALITANA KHANDELA SEASONING": { "n": "PALITANA KHANDELA SEASONING", "b": "PAL-1026" },
     "KASHMIRIWALA": { "n": "KASHMIRIWALA", "b": "CPKKMU1-1026" },
     "CHILLI POWDER SP LAL": { "n": "CHILLI POWDER SP LAL", "b": "CPSPLV-1026" },
     "CLASSIC": { "n": "CLASSIC", "b": "GM-1026" },
@@ -76,6 +78,18 @@ const NEW32_DB = {
       { "d": "250g", "g": 250, "oz": "8.82oz", "m": 225, "bn": "DJM-1026" },
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 450, "bn": "DJM-1026" },
       { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 900, "bn": "DJM-1026" }
+    ],
+    "DANDICUT KHANDELA SEASONING": [
+      { "d": "100g", "g": 100, "oz": "3.53oz", "m": 80, "bn": "DDC-1026" },
+      { "d": "250g", "g": 250, "oz": "8.82oz", "m": 200, "bn": "DDC-1026" },
+      { "d": "500g", "g": 500, "oz": "17.64oz", "m": 400, "bn": "DDC-1026" },
+      { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 800, "bn": "DDC-1026" }
+    ],
+    "PALITANA KHANDELA SEASONING": [
+      { "d": "100g", "g": 100, "oz": "3.53oz", "m": 80, "bn": "PAL-1026" },
+      { "d": "250g", "g": 250, "oz": "8.82oz", "m": 200, "bn": "PAL-1026" },
+      { "d": "500g", "g": 500, "oz": "17.64oz", "m": 400, "bn": "PAL-1026" },
+      { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 800, "bn": "PAL-1026" }
     ],
     "KASHMIRIWALA": [
       { "d": "100g", "g": 100, "oz": "3.53oz", "m": 140, "bn": "CPKKMU1-1026" },
