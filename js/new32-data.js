@@ -6,9 +6,9 @@ const NEW32_DB = {
     "K+B SEASONING": { "n": "K+B SEASONING", "b": "KBKS-1026" },
     "K+R SEASONING": { "n": "K+R SEASONING", "b": "KRKS-1026" },
     "RESHAMPATTI KHANDELA SEASONING": { "n": "RESHAMPATTI KHANDELA SEASONING", "b": "RKCBS-1026" },
-    "GOLDEN": { "n": "GOLDEN", "b": "GTP-1026" },
-    "SEASONING": { "n": "SEASONING", "b": "CGSKMU1-1026" },
-    "MIX MASALA POWDER": { "n": "MIX MASALA POWDER", "b": "DJMMPKMU1-1026" },
+    "HALDI (GOLDEN)": { "n": "HALDI (GOLDEN)", "b": "GTP-1026" },
+    "DHANIYA GREEN (SEASONING)": { "n": "DHANIYA GREEN (SEASONING)", "b": "CGSKMU1-1026" },
+    "DHANAJEERA (MIX MASALA POWDER)": { "n": "DHANAJEERA (MIX MASALA POWDER)", "b": "DJMMPKMU1-1026" },
     "MASALA": { "n": "MASALA", "b": "DJM-1026" },
     "DANDICUT KHANDELA SEASONING": { "n": "DANDICUT KHANDELA SEASONING", "b": "DDC-1026" },
     "PALITANA KHANDELA SEASONING": { "n": "PALITANA KHANDELA SEASONING", "b": "PAL-1026" },
@@ -55,19 +55,19 @@ const NEW32_DB = {
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 450, "bn": "RKCBS-1026" },
       { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 900, "bn": "RKCBS-1026" }
     ],
-    "GOLDEN": [
+    "HALDI (GOLDEN)": [
       { "d": "100g", "g": 100, "oz": "3.53oz", "m": 80, "bn": "GTP-1026" },
       { "d": "250g", "g": 250, "oz": "8.82oz", "m": 200, "bn": "GTP-1026" },
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 400, "bn": "GTP-1026" },
       { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 800, "bn": "GTP-1026" }
     ],
-    "SEASONING": [
+    "DHANIYA GREEN (SEASONING)": [
       { "d": "100g", "g": 100, "oz": "3.53oz", "m": 80, "bn": "CGSKMU1-1026" },
       { "d": "250g", "g": 250, "oz": "8.82oz", "m": 200, "bn": "CGSKMU1-1026" },
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 400, "bn": "CGSKMU1-1026" },
       { "d": "1kg", "g": 1000, "oz": "35.27oz", "m": 800, "bn": "CGSKMU1-1026" }
     ],
-    "MIX MASALA POWDER": [
+    "DHANAJEERA (MIX MASALA POWDER)": [
       { "d": "100g", "g": 100, "oz": "3.53oz", "m": 80, "bn": "DJMMPKMU1-1026" },
       { "d": "250g", "g": 250, "oz": "8.82oz", "m": 200, "bn": "DJMMPKMU1-1026" },
       { "d": "500g", "g": 500, "oz": "17.64oz", "m": 400, "bn": "DJMMPKMU1-1026" },
