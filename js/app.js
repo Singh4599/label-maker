@@ -344,12 +344,12 @@ function selectVariant(idx) {
   if (useDataBn) {
     autoBn = v.bn || ST.prod.b;
   } else {
-    // Dynamic Batch Logic (Initials + MMYY)
+    // Dynamic Batch Logic (Initials + DDMMYY)
     const words = ST.prod.n.toUpperCase().replace(/[-/]/g, ' ').split(/\s+/);
     const initials = words.map(w => w.match(/[A-Z]/) ? w.match(/[A-Z]/)[0] : '').join('').substring(0, 5);
     const now = new Date();
-    const mmyy = String(now.getMonth()+1).padStart(2,'0') + String(now.getFullYear()).substring(2);
-    autoBn = initials + mmyy;
+    const ddmmyy = String(now.getDate()).padStart(2,'0') + String(now.getMonth()+1).padStart(2,'0') + String(now.getFullYear()).substring(2);
+    autoBn = initials + ddmmyy;
   }
 
   const bnEl = $('bn'); if (bnEl) bnEl.value = autoBn;
