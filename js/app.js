@@ -1074,18 +1074,24 @@ function pB() {
   }
 
   // ── Default: QZ back print ──
+  // Apply label-name-override to p.n (same pattern as new32 & internal modes)
+  const _savedN_def = p.n;
+  if (ST.mode !== 'manual') p.n = getDisplayName();
   if (typeof qzPrintBack === 'function') {
     qzPrintBack(p, v, bn, pd, bb, copies).then(function(done) {
+      p.n = _savedN_def;
       if (done) _doTrack();
       else {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildBackTSPL === 'function') buildBackTSPL(p, v, bn, pd, bb, copies);
       }
-    }).catch(function() { 
+    }).catch(function() {
+      p.n = _savedN_def;
       showToast('Testing preview mode. QZ Tray is offline.', 'info');
       if (typeof buildBackTSPL === 'function') buildBackTSPL(p, v, bn, pd, bb, copies);
     });
     return;
   }
+  p.n = _savedN_def;
 }
 
