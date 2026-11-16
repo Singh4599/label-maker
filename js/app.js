@@ -1079,16 +1079,18 @@ function pB() {
   if (ST.mode !== 'manual') p.n = getDisplayName();
   if (typeof qzPrintBack === 'function') {
     qzPrintBack(p, v, bn, pd, bb, copies).then(function(done) {
-      p.n = _savedN_def;
-      if (done) _doTrack();
-      else {
+      if (done) {
+        p.n = _savedN_def;
+        _doTrack();
+      } else {
         showToast('Testing preview mode. QZ Tray is offline.', 'info');
         if (typeof buildBackTSPL === 'function') buildBackTSPL(p, v, bn, pd, bb, copies);
+        p.n = _savedN_def;
       }
     }).catch(function() {
-      p.n = _savedN_def;
       showToast('Testing preview mode. QZ Tray is offline.', 'info');
       if (typeof buildBackTSPL === 'function') buildBackTSPL(p, v, bn, pd, bb, copies);
+      p.n = _savedN_def;
     });
     return;
   }
